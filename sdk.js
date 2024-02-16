@@ -18,7 +18,6 @@ const horizon = Object.defineProperties({}, {
             if (!result && !scope) result = await fetch(`${this.network.endpoint}/${resourceType}/${resourceId}`, { headers }).then(r => r.json())
             if (!result && !this._types[resourceType]) return
             if (!result && !this._types[resourceType].includes(scope)) return
-            if (!result && (resourceType === 'accounts') && (scope === 'data')) result = await fetch(`${this.network.endpoint}/${resourceType}/${resourceId}/${scope}/${params}`, { headers }).then(r => r.json())
             result ||= await fetch(`${this.network.endpoint}/${resourceType}/${resourceId}/${scope}?${new URLSearchParams(params)}`, { headers }).then(r => r.json())
             if (fromStream) return result._embedded?.records ?? [result]
             return result._embedded ? result._embedded.records : result
