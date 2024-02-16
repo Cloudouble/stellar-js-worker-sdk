@@ -9,7 +9,7 @@ const horizon = Object.defineProperties({}, {
         enumerable: true, writable: true,
         value: networks[metaOptions.get('network')] ?? { endpoint: 'https://horizon.stellar.org', passphrase: 'Public Global Stellar Network ; September 2015' },
     },
-    _fetch: {
+    _stream: {
         value: async function* (resourceType, resourceId, scope, params = {}) {
             if (!(resourceType in this._types)) return
             // if (!result && (typeof resourceId === 'object')) {
@@ -62,8 +62,22 @@ const horizon = Object.defineProperties({}, {
             trade_aggregations: null,
             fee_stats: null
         }
+    },
+    get: {
+        enumerable: true,
+        value: {}
+    },
+    stream: {
+        enumerable: true,
+        value: {}
+    },
+    listen: {
+        enumerable: true,
+        value: {}
     }
 })
-for (const t in horizon._types) horizon[t] = horizon._fetch.bind(horizon, t)
+for (const t in horizon._types) {
+    horizon.stream[t] = horizon._stream.bind(horizon, t)
+}
 
 export { horizon }
