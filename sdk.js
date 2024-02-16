@@ -26,9 +26,14 @@ const horizon = Object.defineProperties({}, {
     },
     _listen: {
         value: function (resourceType, resourceId, scope) {
-            const eventSource = new EventSource(`${this.network.endpoint}/${resourceType}/${resourceId}/${scope}`),
-                abortController = new AbortController(), signal = abortController.signal, listener = new EventTarget()
+            console.log('line 29', resourceType, resourceId, scope)
+            if (!resourceType) return
+            const url = resourceId
+                ? (scope ? `${this.network.endpoint}/${resourceType}/${resourceId}/${scope}` : `${this.network.endpoint}/${resourceType}/${resourceId}`)
+                : `${this.network.endpoint}/${resourceType}`, eventSource = new EventSource(url), abortController = new AbortController(),
+                signal = abortController.signal, listener = new EventTarget()
             let hasOpened
+            console.log('line 36', eventSource)
             return new Promise((resolve, reject) => {
                 eventSource.addEventListener('message', event => {
                     const { data, origin, lastEventId, source, ports } = event
