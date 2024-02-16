@@ -41,33 +41,25 @@ const utils = {
     },
 }
 
-const metaUrl = new URL(import.meta.url), metaOptions = metaUrl.searchParams, networkOption = metaOptions.get('network')
-let endpoint
-switch (networkOption) {
-    case 'futurenet':
-        endpoint = 'https://horizon-futurenet.stellar.org'
-        break
-    case 'test':
-        endpoint = 'https://horizon-testnet.stellar.org'
-        break
-    case 'custom':
-
-        break
-    default:
-        endpoint = 'https://horizon.stellar.org'
+const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
+    futurenet: { endpoint: 'https://horizon-futurenet.stellar.org', passphrase: 'Test SDF Future Network ; October 2022' },
+    test: { endpoint: 'https://horizon-testnet.stellar.org', passphrase: 'Test SDF Network ; September 2015' },
+    custom: { endpoint: metaOptions.get('endpoint'), passphrase: metaOptions.get('passphrase') }
 }
 
-const horizon = Object.defineProperties(horizon, {
-    endpoint: {
-        enumerable: true,
-        writable: true,
-        value: 'https://horizon-testnet.stellar.org',
+const horizon = Object.defineProperties({}, {
+    network: {
+        enumerable: true, writable: true,
+        value: networks[metaOptions.get('network')] ?? { endpoint: 'https://horizon.stellar.org', passphrase: 'Public Global Stellar Network ; September 2015' },
     },
     _template: {
         value: async function (resourceType, resourceId, scope, params) {
-            if (!resourceId) return fetch(`${this.endpoint}/${resourceType}?${new URLSearchParams(params)}`, { headers: { Accept: "application/json" } }).then(r => r.json())
-            if (!scope) return fetch(`${this.endpoint}/${resourceType}/${resourceId}`, { headers: { Accept: "application/json" } }).then(r => r.json())
-            return fetch(`${this.endpoint}/${resourceType}/${resourceId}/${scope}?${new URLSearchParams(params)}`, { headers: { Accept: "application/json" } }).then(r => r.json())
+            if (!(resourceType in this._types)) return
+            if (!resourceId) return fetch(`${this.network.endpoint}/${resourceType}?${new URLSearchParams(params)}`, { headers: { Accept: "application/json" } }).then(r => r.json())
+            if (!scope) return fetch(`${this.network.endpoint}/${resourceType}/${resourceId}`, { headers: { Accept: "application/json" } }).then(r => r.json())
+            if (!this._types[resourceType]) return
+            if (!this._types[resourceType].includes(scope)) return
+            return fetch(`${this.network.endpoint}/${resourceType}/${resourceId}/${scope}?${new URLSearchParams(params)}`, { headers: { Accept: "application/json" } }).then(r => r.json())
         }
     },
     _types: {
@@ -90,8 +82,7 @@ const horizon = Object.defineProperties(horizon, {
         }
     }
 })
-
-for (const resourceType in horizonResourceTypes) horizon[resourceType] = horizonResourceTemplateMethod.bind(horizon, resourceType)
+for (const t in horizon._types) horizon[t] = horizon._template.bind(horizon, t)
 
 
 
