@@ -9,25 +9,25 @@ const horizon = Object.defineProperties({}, {
         enumerable: true, writable: true,
         value: networks[metaOptions.get('network')] ?? { endpoint: 'https://horizon.stellar.org', passphrase: 'Public Global Stellar Network ; September 2015' },
     },
+    _get: {
+        value: async function (resourceType, resourceId, scope, params = {}, fromStream = false) {
+            if (!(resourceType in this._types)) return
+            const headers = { Accept: 'application/json' }
+            let result
+            if (!resourceId) result = await fetch(`${this.network.endpoint}/${resourceType}?${new URLSearchParams(params)}`, { headers }).then(r => r.json())
+            if (!result && !scope) result = await fetch(`${this.network.endpoint}/${resourceType}/${resourceId}`, { headers }).then(r => r.json())
+            if (!result && !this._types[resourceType]) return
+            if (!result && !this._types[resourceType].includes(scope)) return
+            if (!result && (resourceType === 'accounts') && (scope === 'data')) result = await fetch(`${this.network.endpoint}/${resourceType}/${resourceId}/${scope}/${params}`, { headers }).then(r => r.json())
+            result ||= await fetch(`${this.network.endpoint}/${resourceType}/${resourceId}/${scope}?${new URLSearchParams(params)}`, { headers }).then(r => r.json())
+            if (fromStream) return result._embedded?.records ?? [result]
+            return result._embedded ? result._embedded.records : result
+        }
+    },
     _stream: {
         value: async function* (resourceType, resourceId, scope, params = {}) {
             if (!(resourceType in this._types)) return
-            // if (!result && (typeof resourceId === 'object')) {
-            //     if (!this._build || !this._sign) Object.assign(this, await import('./transaction.js'))
-            //     const transaction = await this._build(resourceId)
-            //     return fetch(`${this.network.endpoint}/${resourceType}?tx=${await this._sign(transaction)}`, { method: 'POST', headers })
-            // }
-            const headers = { Accept: 'application/json' }, getResultPage = async () => {
-                let result
-                if (!resourceId) result = await fetch(`${this.network.endpoint}/${resourceType}?${new URLSearchParams(params)}`, { headers }).then(r => r.json())
-                if (!result && !scope) result = await fetch(`${this.network.endpoint}/${resourceType}/${resourceId}`, { headers }).then(r => r.json())
-                if (!result && !this._types[resourceType]) return
-                if (!result && !this._types[resourceType].includes(scope)) return
-                if (!result && (resourceType === 'accounts') && (scope === 'data')) result = await fetch(`${this.network.endpoint}/${resourceType}/${resourceId}/${scope}/${params}`, { headers }).then(r => r.json())
-                result ||= await fetch(`${this.network.endpoint}/${resourceType}/${resourceId}/${scope}?${new URLSearchParams(params)}`, { headers: { Accept: "application/json" } }).then(r => r.json())
-                return result._embedded?.records ?? [result]
-            }
-            let page = await getResultPage(), pageOrigLength = page.length, isLastPage = pageOrigLength < (params?.limit ?? 10), pagingToken
+            let page = await this._get(resourceType, resourceId, scope, params, true), pageOrigLength = page.length, isLastPage = pageOrigLength < (params?.limit ?? 10), pagingToken
             while (page.length) {
                 const record = await page.shift()
                 if (!record) break
@@ -36,7 +36,7 @@ const horizon = Object.defineProperties({}, {
                 yield record
                 if (!page.length && !isLastPage && pagingToken && (params && (typeof params === 'object'))) {
                     params.cursor = pagingToken
-                    page = await getResultPage()
+                    page = await this._get(resourceType, resourceId, scope, params, true)
                     pageOrigLength = page.length
                     isLastPage = pageOrigLength < (params?.limit ?? 10)
                 }
@@ -74,9 +74,24 @@ const horizon = Object.defineProperties({}, {
     listen: {
         enumerable: true,
         value: {}
+    },
+    data: {
+        enumerable: true,
+        value: async function (accountId, key) {
+            return (await fetch(`${this.network.endpoint}/accounts/${accountId}/data/${key}`, { headers: { Accept: "application/json" } }).then(r => r.json()))?.value
+        }
+    },
+    send: {
+        enumerable: true,
+        value: async function (transaction) {
+            if (!this._build || !this._sign) Object.assign(this, await import('./transaction.js'))
+            const transactionXdr = await this._build(transaction)
+            return fetch(`${this.network.endpoint}/transactions?tx=${await this._sign(transactionXdr)}`, { method: 'POST', headers: { Accept: "application/json" } })
+        }
     }
 })
 for (const t in horizon._types) {
+    horizon.get[t] = horizon._get.bind(horizon, t)
     horizon.stream[t] = horizon._stream.bind(horizon, t)
 }
 
