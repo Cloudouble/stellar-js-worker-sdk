@@ -24,6 +24,26 @@ const horizon = Object.defineProperties({}, {
             return result._embedded ? result._embedded.records : result
         }
     },
+    _listen: {
+        value: async function (resourceType, resourceId, scope) {
+            const eventSource = new EventSource(`${this.network.endpoint}/${resourceType}/${resourceId}/${scope}`),
+                abortController = new AbortController(), signal = abortController.signal, listener = new EventTarget()
+            let hasOpened
+            return new Promise((resolve, reject) => {
+                eventSource.addEventListener('message', event => {
+                    const { data, origin, lastEventId, source, ports } = event
+                    listener.dispatchEvent(new MessageEvent('message', { data, origin, lastEventId, source, ports }))
+                }, { signal })
+                eventSource.addEventListener('open', event => {
+                    hasOpened = true
+                    resolve({ listener, abortController })
+                }, { signal })
+                eventSource.addEventListener('error', event => {
+                    hasOpened ? listener.dispatchEvent(new CustomEvent('error')) : reject()
+                }, { signal })
+            })
+        }
+    },
     _stream: {
         value: async function* (resourceType, resourceId, scope, params = {}) {
             if (!(resourceType in this._types)) return
@@ -90,9 +110,11 @@ const horizon = Object.defineProperties({}, {
         }
     }
 })
+const listenable = ['ledgers', 'transactions', 'operations', 'payments', 'effects', 'accounts', 'trades', 'order_book']
 for (const t in horizon._types) {
     horizon.get[t] = horizon._get.bind(horizon, t)
     horizon.stream[t] = horizon._stream.bind(horizon, t)
+    if (listenable.includes(t)) horizon.listen[t] = horizon._listen.bind(horizon, t)
 }
 
 export { horizon }
