@@ -25,7 +25,7 @@ const horizon = Object.defineProperties({}, {
         }
     },
     _listen: {
-        value: async function (resourceType, resourceId, scope) {
+        value: function (resourceType, resourceId, scope) {
             const eventSource = new EventSource(`${this.network.endpoint}/${resourceType}/${resourceId}/${scope}`),
                 abortController = new AbortController(), signal = abortController.signal, listener = new EventTarget()
             let hasOpened
