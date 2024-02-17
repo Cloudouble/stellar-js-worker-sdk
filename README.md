@@ -35,6 +35,25 @@ Only then will the more weighty `xdr.js` module be loaded into the SDK.
 
 This allows for applications to load quickly for initial rendering of data read from the network, while still allowing developers transparent access to the write functions without thinking about the underlying implementation.
 
+## Network Selection
+
+To choose which network to use, specify the network name in the import URL: 
+
+```
+// connect to the public / production network
+import { horizon } from './horizon.js'
+
+// connect to the test network
+import { horizon } from './horizon.js?network=test'
+
+// connect to the future network
+import { horizon } from './horizon.js?network=future'
+
+// connect to a custom network
+import { horizon } from './horizon.js?network=custom&endpoint=ENDPOINT&passphrase=PASSPHRASE'
+
+```
+
 ## Refection of Horizon API endpoints
 
 The SDK is designed to be as close to the Horizon API as possible. This means that the SDK will have the same endpoints as the Horizon itself, this allows for developers to intuitively understand how to use the SDK by simply reading the API documentation. 
