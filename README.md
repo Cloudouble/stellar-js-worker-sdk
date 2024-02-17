@@ -62,7 +62,7 @@ const myOperationEffects = await horizon.get.operations(operationId, 'effects')
 
 ## Auto Pagination using `stream`
 
-The SDK also provides a `stream` function to allow for auto pagination of API endpoints. This function works on all API endpoints with the same semantics as the previous `get` set of functions.
+The SDK also provides a `stream` endpoint to allow for auto pagination of API endpoints. This endpoint works on all API endpoints with the same semantics as the previous `get` endpoint.
 
 We could re-write the examples above to use `stream` instead of `get`, in order to loop over each individual record instead of retrieving all at once: 
 
