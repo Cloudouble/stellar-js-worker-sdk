@@ -60,4 +60,58 @@ const myOperationEffects = await horizon.get.operations(operationId, 'effects')
 
 ```
 
+## Auto Pagination using `stream`
+
+The SDK also provides a `stream` function to allow for auto pagination of API endpoints. This function works on all API endpoints with the same semantics as the previous `get` set of functions.
+
+We could re-write the examples above to use `stream` instead of `get`, in order to loop over each individual record instead of retrieving all at once: 
+
+```
+// this will loop over all found transactions until it reaches one with the `id` of "abc"
+for await (const t of horizon.stream.transactions(accountId, 'transactions')) {
+    console.log(t)
+    if (t.id === 'abc') break
+}
+
+// loop over a single given operation if it exists
+for await (const op of horizon.stream.operations(operationId)) {
+    console.log(op)
+}
+
+// loop over all effects of a given operation
+for await (const effect of horizon.stream.operations(operationId, 'effects')) {
+    console.log(effect)
+}
+
+```
+
+In all cases, the potential looping will continue until the complete record set if exhausted, and background requests will be made to capture each subsequent result page.
+
+
+## Listening for New Records
+
+The EventSource capabilities of the Horizon API are encapsulated just as easily: 
+
+```
+// Create an EventSource for the transactions endpoint, emitting the records as they are received
+const { listener: transactions, abortController } = await horizon.listen.transactions()
+transactions.addEventListener('message', event => console.log(event.data))
+
+//when you want to stop listening, do this
+abortController.abort()
+
+// handle errors, including when the connection is closed prematurely
+
+transactions.addEventListener('error', event => {
+    //do something about the error
+})
+
+transactions.addEventListener('close', event => {
+    // do something about the close, perhaps re-initialize the transactions listener
+    abortController.abort()
+    transactions = (await horizon.listen.transactions()).listener
+    transactions.addEventListener('message', event => console.log(event.data))    
+})
+
+```
 
