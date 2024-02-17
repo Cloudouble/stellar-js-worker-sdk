@@ -12,11 +12,10 @@
     <script type="module">
         import { horizon } from './horizon.js?network=test'
 
-        console.log(horizon)
+        // const { listener: transactions } = await horizon.listen.transactions()
+        // transactions.addEventListener('message', event => console.log(event.data))
 
         window.horizon = horizon
-
-
 
     </script>
 
