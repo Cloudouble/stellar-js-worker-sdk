@@ -85,7 +85,7 @@ for await (const effect of horizon.stream.operations(operationId, 'effects')) {
 
 ```
 
-In all cases, the potential looping will continue until the complete record set if exhausted, and background requests will be made to capture each subsequent result page.
+In all cases, the potential looping will continue until the complete record set is exhausted, and background requests will be made to capture each subsequent result page.
 
 
 ## Listening for New Records
@@ -101,7 +101,6 @@ transactions.addEventListener('message', event => console.log(event.data))
 abortController.abort()
 
 // handle errors, including when the connection is closed prematurely
-
 transactions.addEventListener('error', event => {
     //do something about the error
 })
