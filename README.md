@@ -1,4 +1,4 @@
-# stellar-js-sdk
+# stellar-js-worker-sdk
 A lightweight JavaScript SDK for Stellar
 
 ## Technical Architecture
