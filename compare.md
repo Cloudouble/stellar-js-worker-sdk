@@ -1,6 +1,6 @@
 # Comparison of JavaScript SDKs
 
-This document will provide a quick comparison of coding styles between the two JavaScript Stellar SDKs - the existing [JS Stellar SDK](https://github.com/stellar/js-stellar-sdk) and the [Stellar JS Worker SDK](https://github.com/Cloudouble/stellar-js-worker-sdk).
+This document will provide a quick comparison of coding styles between the two JavaScript Stellar SDKs - the existing [JS Stellar SDK](https://github.com/stellar/js-stellar-sdk) and this ***new*** [Stellar JS Worker SDK](https://github.com/Cloudouble/stellar-js-worker-sdk).
 
 The code examples will be drawn from the examples found in the [JS Stellar SDK](https://github.com/stellar/js-stellar-sdk), and attempt to reproduce the same functionality using the [Stellar JS Worker SDK](https://github.com/Cloudouble/stellar-js-worker-sdk).
 
