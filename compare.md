@@ -80,7 +80,7 @@ As of mid-February 2024, the *Stellar JS Worker SDK* does not provide capacity t
 ```
 import { horizon } from 'https://cdn.jsdelivr.net/gh/Cloudouble/stellar-js-worker-sdk/horizon.min.js?network=test'
 
-// code to get the value for the sending account, fee, and create an array of operation objects
+// some code here to get the values for the sending account, fee, and to create an array of operation objects
 
 cons transactionResult = await horizon.send({account, fee, operations})
 
