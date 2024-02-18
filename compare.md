@@ -4,7 +4,7 @@ This document will provide a quick comparison of coding styles between the two J
 
 The code examples will be drawn from the examples found in the [JS Stellar SDK](https://github.com/stellar/js-stellar-sdk), and attempt to reproduce the same functionality using the [Stellar JS Worker SDK](https://github.com/Cloudouble/stellar-js-worker-sdk).
 
-**Note**: at the time of writing (February 2024) the JS Worker SDK is still in early development and lacks many features of the mature [JS Stellar SDK](https://github.com/stellar/js-stellar-sdk). This document will be updated as the JS Worker SDK matures. 
+**Note**: at the time of writing (February 2024) the JS Worker SDK is still in early development and lacks many features of the mature [JS Stellar SDK](https://github.com/stellar/js-stellar-sdk). This document will be updated as the *Stellar JS Worker SDK* matures. 
 
 ## Querying Horizon
 
