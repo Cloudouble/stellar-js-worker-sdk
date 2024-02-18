@@ -8,7 +8,7 @@ The code examples will be drawn from the examples found in the [JS Stellar SDK](
 
 ## Querying Horizon
 
-### JS Stellar SDK
+### JS Stellar SDK (Existing)
 
 ```
 var StellarSdk = require('@stellar/stellar-sdk');
@@ -24,7 +24,7 @@ server.transactions()
     .call().then(function(r){ console.log(r); });
 ```
 
-### Stellar JS Worker SDK
+### Stellar JS Worker SDK (New)
 
 ```
 import { horizon } from 'https://cdn.jsdelivr.net/gh/Cloudouble/stellar-js-worker-sdk/horizon.min.js?network=test'
@@ -38,7 +38,7 @@ const r = await horizon.get.accounts("GASOCNHNNLYFNMDJYQ3XFMI7BYHIOCFW3GJEOWRPEG
 
 ## Streaming Requests
 
-### JS Stellar SDK
+### JS Stellar SDK (Existing)
 
 ```
 var StellarSdk = require('@stellar/stellar-sdk')
@@ -57,7 +57,7 @@ var es = server.transactions()
     })
 ```
 
-### Stellar JS Worker SDK
+### Stellar JS Worker SDK (New)
 
 ```
 import { horizon } from 'https://cdn.jsdelivr.net/gh/Cloudouble/stellar-js-worker-sdk/horizon.min.js?network=test'
