@@ -68,12 +68,12 @@ transactions.addEventListener('message', event => console.log(event.data))
 
 ```
 
-### XDR
+## XDR
 
 As of mid-February 2024, the Stellar JS Worker SDK does not provide an XDR decoder/encoder, however this is next on the roadmap for the near future and should be added by around the end of February 2024.
 
 
-### Submitting Transactions
+## Submitting Transactions
 
 As of mid-February 2024, the Stellar JS Worker SDK does not provide capacity to submit transactions (see XDR point above!), however this is next on the roadmap for right after XDR support is added. The anticipated syntax for submitting transactions will be as close as possible to: 
 
