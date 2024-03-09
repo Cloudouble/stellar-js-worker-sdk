@@ -1,0 +1,173 @@
+body {
+    background: black;
+    color: white;
+    font-family: sans-serif;
+}
+
+
+header {
+    h1 {
+        text-align: center;
+    }
+
+    p {
+        font-style: italic;
+        opacity: 0.8;
+        text-align: center;
+
+        a {
+            color: inherit;
+            font-weight: bold;
+        }
+    }
+
+    form {
+        text-align: center;
+        margin: 3em;
+
+        label {
+            display: block;
+            font-size: larger;
+            font-weight: bold;
+            margin: 1em;
+
+            select {
+                display: block;
+                text-align: center;
+                font-size: large;
+                padding: 0.2em;
+                padding-left: 1em;
+                padding-right: 1em;
+                margin: 1em;
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
+        fieldset {
+            border: none;
+            margin: 1em;
+
+            small {
+                display: block;
+                margin: 0.2em;
+                font-style: italic;
+            }
+        }
+
+        button {
+            cursor: pointer;
+            font-weight: bold;
+            padding: 0.25em;
+            padding-left: 1em;
+            padding-right: 1em;
+        }
+    }
+
+}
+
+main {
+    margin: 2em;
+    border-top: 1px solid grey;
+
+    section {
+        margin: 2em;
+        border-top: 1px solid grey;
+
+        &:first-of-type {
+            border-top: none;
+        }
+
+        &>pre {
+            display: block;
+            margin-top: 2em;
+            margin-bottom: 3em;
+            padding: 1em;
+            outline: 1px dashed green;
+            color: green;
+            height: 10em;
+            overflow: auto;
+        }
+
+        form {
+            display: block;
+            margin: 1em;
+            margin-top: 2em;
+            margin-bottom: 3em;
+
+            label {
+                display: block;
+                margin-bottom: 1em;
+
+                strong {
+                    display: inline-block;
+                    min-width: 10em;
+
+                    &::after {
+                        content: ': '
+                    }
+                }
+
+                button {
+                    background-color: yellow;
+                    color: green;
+                    padding: 1px;
+                    padding-left: 6px;
+                    padding-right: 6px;
+                    font-size: 13px;
+                }
+
+                fieldset {
+                    border: 1px dashed yellow;
+                    color: yellow;
+                    margin-top: 0.25em;
+
+                    small {
+                        font-style: italic;
+                    }
+                }
+            }
+
+            button {
+                font-weight: bold;
+                cursor: pointer;
+                border-radius: 3px;
+                outline: none;
+                border: none;
+                padding: 6px;
+                padding-left: 19px;
+                padding-right: 19px;
+                opacity: 0.6;
+                font-size: 17px;
+                background-color: green;
+                color: white;
+
+                &:hover {
+                    opacity: 0.8;
+                }
+
+                &:active {
+                    opacity: 1;
+                }
+            }
+
+        }
+    }
+}
+
+footer {
+    margin: 3em;
+    margin-top: 7em;
+    font-size: smaller;
+    text-align: center;
+}
+
+#network {
+    li {
+        font-weight: bold;
+
+        pre {
+            font-weight: lighter;
+        }
+    }
+}

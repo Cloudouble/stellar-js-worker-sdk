@@ -1,0 +1,139 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Read-Only Test of Horizon API :: Stella JavaScript Worker SDK</title>
+    <meta name="description" content="Showcase of Steller JS Worker SDK">
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="modulepreload" href="../horizon.js?network=test">
+    <script type="module">
+        const queryParams = new URLSearchParams(document.location.search),
+            params = Object.fromEntries(queryParams.entries()),
+            { horizon } = await import(`../horizon.js?${queryParams}`),
+            networkSelector = document.getElementById('select-network')
+        for (const paramName in params) networkSelector.querySelector(`[name="${paramName}"]`).value = params[paramName]
+
+        console.log('line 20', horizon)
+
+        const networkSection = document.getElementById('network')
+        for (const networkProperty in horizon.network) networkSection.querySelector(`[name="${networkProperty}"]`).innerHTML = horizon.network[networkProperty]
+
+        const getSection = document.getElementById('get'), resourceTypeOptions = [],
+            resourceTypeSelect = getSection.querySelector('[name="resource-type"]'),
+            resourceScopeSelect = getSection.querySelector('[name="resource-scope"]'),
+            addQueryParameterButton = getSection.querySelector('[name="add-query-parameter"]'),
+            queryParamsFieldset = getSection.querySelector('fieldset'),
+            populateGetResourceScopes = () => {
+                const resourceType = resourceTypeSelect.value, resourceScopeOptions = []
+                for (const scope of (horizon._types[resourceType] ?? [])) resourceScopeOptions.push(`<option>${scope}</option>`)
+                resourceScopeSelect.innerHTML = resourceScopeOptions.join('')
+            }
+        for (const getType in horizon.get) if (typeof horizon.get[getType] === 'function') resourceTypeOptions.push(`<option>${getType}</option>`)
+        resourceTypeSelect.innerHTML = resourceTypeOptions.join('')
+        populateGetResourceScopes()
+        resourceTypeSelect.addEventListener('change', event => populateGetResourceScopes())
+        addQueryParameterButton.addEventListener('click', event => {
+            const newParameter = document.createElement('div')
+            newParameter.innerHTML = `<input placeholder="name"><input placeholder="value">`
+            queryParamsFieldset.querySelector('small') ? queryParamsFieldset.replaceChildren(newParameter) : queryParamsFieldset.append(newParameter)
+
+        })
+
+
+
+
+        // const { listener: transactions } = await horizon.listen.transactions()
+        // transactions.addEventListener('message', event => console.log(event.data))
+
+        // for await (const t of horizon.stream.transactions()) console.log(t)
+
+        // await horizon.get.transactions()
+
+        window.horizon = horizon
+
+    </script>
+
+</head>
+
+<body>
+    <header>
+        <h1>Read-Only Test of Horizon API</h1>
+        <p>Using <a href="https://github.com/Cloudouble/stellar-js-worker-sdk">JS Worker SDK</a></p>
+        <form id="select-network">
+            <label>
+                <small>Select Network</small>
+                <select name="network">
+                    <option>public</option>
+                    <option>test</option>
+                    <option>futurenet</option>
+                    <option>custom</option>
+                </select>
+            </label>
+            <fieldset>
+                <small>Optional: only if "custom" network selected above</small>
+                <input name="endpoint" placeholder="Custom Network Endpoint" type="url">
+                <input name="passphrase" placeholder="Passphrase for Custom Network">
+            </fieldset>
+            <button type="submit">Connect to Network</button>
+        </form>
+    </header>
+    <main>
+        <section id="network">
+            <h2>Network</h2>
+            <p>Information about the currently selected network</p>
+            <ul>
+                <li>Endpoint:
+                    <pre name="endpoint"></pre>
+                </li>
+                <li>Passphrase:
+                    <pre name="passphrase"></pre>
+                </li>
+            </ul>
+        </section>
+        <section id="get">
+            <h2>Get</h2>
+            <form>
+                <label>
+                    <strong>Resource Type</strong>
+                    <select name="resource-type"></select>
+                </label>
+                <label>
+                    <strong>Resource Id</strong>
+                    <input name="resource-id" placeholder="Resource Id">
+                </label>
+                <label>
+                    <strong>Resource Scope</strong>
+                    <select name="resource-scope"></select>
+                </label>
+                <label>
+                    <strong>Query Parameters</strong><button type="button" name="add-query-parameter"
+                        title="click to add a query parameter">+</button>
+                    <fieldset name="params"><small>No query parameters set.</small></fieldset>
+                </label>
+                <button type="button">Get Result</button>
+            </form>
+            <pre class="result"></pre>
+        </section>
+        <section id="stream">
+            <h2>Stream</h2>
+        </section>
+        <section id="listen">
+            <h2>Listen</h2>
+        </section>
+        <section id="data">
+            <h2>Data</h2>
+        </section>
+    </main>
+    <footer>
+        <p>Created as the deliverable for the Milestone One of Stella JavaScript Worker SDK</p>
+    </footer>
+
+</body>
+
+</html>
+
+<!-- GA5VCCBNG4SIEST6HYIW2F3KKZRHA4UZZ2XFSMZ4VRQ4MCBRHSQRRIPE -->
