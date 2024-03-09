@@ -24,11 +24,14 @@
 
         const getSection = document.getElementById('get'), resourceTypeOptions = [],
             resourceTypeSelect = getSection.querySelector('[name="resource-type"]'),
+            resourceIdInput = getSection.querySelector('[name="resource-id"]'),
             resourceScopeSelect = getSection.querySelector('[name="resource-scope"]'),
             addQueryParameterButton = getSection.querySelector('[name="add-query-parameter"]'),
             queryParamsFieldset = getSection.querySelector('fieldset'),
+            getResultButton = getSection.querySelector('form > button'),
+            getResultOutput = getSection.querySelector('pre'),
             populateGetResourceScopes = () => {
-                const resourceType = resourceTypeSelect.value, resourceScopeOptions = []
+                const resourceType = resourceTypeSelect.value, resourceScopeOptions = [`<option value="">(optional) Select a Result Scope</option>`]
                 for (const scope of (horizon._types[resourceType] ?? [])) resourceScopeOptions.push(`<option>${scope}</option>`)
                 resourceScopeSelect.innerHTML = resourceScopeOptions.join('')
             }
@@ -40,7 +43,13 @@
             const newParameter = document.createElement('div')
             newParameter.innerHTML = `<input placeholder="name"><input placeholder="value">`
             queryParamsFieldset.querySelector('small') ? queryParamsFieldset.replaceChildren(newParameter) : queryParamsFieldset.append(newParameter)
-
+        })
+        getResultButton.addEventListener('click', async event => {
+            const resourceType = resourceTypeSelect.value, resourceId = resourceIdInput.value || undefined, resourceScope = resourceScopeSelect.value || undefined
+            console.log('line 48', resourceType, resourceId, resourceScope)
+            const result = await horizon.get[resourceType](resourceId, resourceScope)
+            getResultOutput.textContent = JSON.stringify(result, null, 4)
+            console.log('line 50', result)
         })
 
 
