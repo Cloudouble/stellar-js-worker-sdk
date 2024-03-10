@@ -44,16 +44,22 @@
         resourceTypeSelect.addEventListener('change', event => populateGetResourceScopes())
         addQueryParameterButton.addEventListener('click', event => {
             const newParameter = document.createElement('div')
-            newParameter.innerHTML = `<input placeholder="name"><input placeholder="value">`
+            newParameter.innerHTML = `<input placeholder="name"><input placeholder="value (JSON-encoded)">`
             queryParamsFieldset.querySelector('small') ? queryParamsFieldset.replaceChildren(newParameter) : queryParamsFieldset.append(newParameter)
         })
         getResultButton.addEventListener('click', async event => {
-            const resourceType = resourceTypeSelect.value, resourceId = resourceIdInput.value || undefined, resourceScope = resourceScopeSelect.value || undefined
-            let exampleCode = `await horizon.get.${resourceType}(${[resourceId, resourceScope].map(s => s === undefined ? "undefined" : JSON.stringify(s, null, 4)).join(', ')})`
+            const resourceType = resourceTypeSelect.value, resourceId = resourceIdInput.value || undefined,
+                resourceScope = resourceScopeSelect.value || undefined,
+                paramFields = queryParamsFieldset.querySelectorAll('div'),
+                params = paramFields.length
+                    ? Object.fromEntries(Array.from(paramFields).map(f => Array.from(f.querySelectorAll('input')).map(i => i.value)).filter(f => f[0] && f[1]))
+                    : undefined
+            if (params) for (const k in params) try { params[k] = JSON.parse(params[k]) } catch (e) { }
+            let exampleCode = `await horizon.get.${resourceType}(${[resourceId, resourceScope, params].map(s => s === undefined ? "undefined" : JSON.stringify(s, null, 4)).join(', ')})`
             while (exampleCode.endsWith(', undefined)')) exampleCode = exampleCode.slice(0, -12) + ')'
             if (exampleCode.endsWith('(undefined)')) exampleCode = exampleCode.replace('(undefined)', '()')
             getExampleCode.textContent = exampleCode
-            const result = await horizon.get[resourceType](resourceId, resourceScope)
+            const result = await horizon.get[resourceType](resourceId, resourceScope, params)
             getResultOutput.textContent = JSON.stringify(result, null, 4)
         })
 
