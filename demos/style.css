@@ -96,6 +96,7 @@ main {
             outline: 1px dashed grey;
             color: grey;
             font-family: monospace;
+            white-space: pre-wrap;
         }
 
         form {

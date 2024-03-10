@@ -24,44 +24,77 @@
         networkExampleCode.textContent = (params.network !== 'public' || params.endpoint || params.passphrase)
             ? `const { horizon } = await import('../horizon.js?${queryParams}')` : `const { horizon } = await import('../horizon.js')`
 
-        const getSection = document.getElementById('get'), resourceTypeOptions = [],
-            resourceTypeSelect = getSection.querySelector('[name="resource-type"]'),
-            resourceIdInput = getSection.querySelector('[name="resource-id"]'),
-            resourceScopeSelect = getSection.querySelector('[name="resource-scope"]'),
-            addQueryParameterButton = getSection.querySelector('[name="add-query-parameter"]'),
-            queryParamsFieldset = getSection.querySelector('fieldset'),
-            getResultButton = getSection.querySelector('form > button'),
-            getExampleCode = getSection.querySelector('code.example'),
-            getResultOutput = getSection.querySelector('pre'),
-            populateGetResourceScopes = () => {
-                const resourceType = resourceTypeSelect.value, resourceScopeOptions = [`<option value="">(optional) Select a Result Scope</option>`]
-                for (const scope of (horizon._types[resourceType] ?? [])) resourceScopeOptions.push(`<option>${scope}</option>`)
-                resourceScopeSelect.innerHTML = resourceScopeOptions.join('')
-            }
-        for (const getType in horizon.get) if (typeof horizon.get[getType] === 'function') resourceTypeOptions.push(`<option>${getType}</option>`)
-        resourceTypeSelect.innerHTML = resourceTypeOptions.join('')
-        populateGetResourceScopes()
-        resourceTypeSelect.addEventListener('change', event => populateGetResourceScopes())
-        addQueryParameterButton.addEventListener('click', event => {
-            const newParameter = document.createElement('div')
-            newParameter.innerHTML = `<input placeholder="name"><input placeholder="value (JSON-encoded)">`
-            queryParamsFieldset.querySelector('small') ? queryParamsFieldset.replaceChildren(newParameter) : queryParamsFieldset.append(newParameter)
-        })
-        getResultButton.addEventListener('click', async event => {
-            const resourceType = resourceTypeSelect.value, resourceId = resourceIdInput.value || undefined,
-                resourceScope = resourceScopeSelect.value || undefined,
-                paramFields = queryParamsFieldset.querySelectorAll('div'),
-                params = paramFields.length
-                    ? Object.fromEntries(Array.from(paramFields).map(f => Array.from(f.querySelectorAll('input')).map(i => i.value)).filter(f => f[0] && f[1]))
-                    : undefined
-            if (params) for (const k in params) try { params[k] = JSON.parse(params[k]) } catch (e) { }
-            let exampleCode = `await horizon.get.${resourceType}(${[resourceId, resourceScope, params].map(s => s === undefined ? "undefined" : JSON.stringify(s, null, 4)).join(', ')})`
-            while (exampleCode.endsWith(', undefined)')) exampleCode = exampleCode.slice(0, -12) + ')'
-            if (exampleCode.endsWith('(undefined)')) exampleCode = exampleCode.replace('(undefined)', '()')
-            getExampleCode.textContent = exampleCode
-            const result = await horizon.get[resourceType](resourceId, resourceScope, params)
-            getResultOutput.textContent = JSON.stringify(result, null, 4)
-        })
+        const setupSection = sectionId => {
+            const section = document.getElementById(sectionId), resourceTypeOptions = [],
+                resourceTypeSelect = section.querySelector('[name="resource-type"]'),
+                resourceIdInput = section.querySelector('[name="resource-id"]'),
+                resourceScopeSelect = section.querySelector('[name="resource-scope"]'),
+                addQueryParameterButton = section.querySelector('[name="add-query-parameter"]'),
+                queryParamsFieldset = section.querySelector('fieldset'),
+                resultButton = section.querySelector('form > button'),
+                exampleCode = section.querySelector('code.example'),
+                resultOutput = section.querySelector('pre'),
+                populateResourceScopes = () => {
+                    const resourceType = resourceTypeSelect.value, resourceScopeOptions = [`<option value="">(optional) Select a Result Scope</option>`]
+                    for (const scope of (horizon._types[resourceType] ?? [])) resourceScopeOptions.push(`<option>${scope}</option>`)
+                    resourceScopeSelect.innerHTML = resourceScopeOptions.join('')
+                }
+            for (const t in horizon[sectionId]) if (typeof horizon[sectionId][t] === 'function') resourceTypeOptions.push(`<option>${t}</option>`)
+            resourceTypeSelect.innerHTML = resourceTypeOptions.join('')
+            populateResourceScopes()
+            resourceTypeSelect.addEventListener('change', event => populateResourceScopes())
+            addQueryParameterButton.addEventListener('click', event => {
+                const newParameter = document.createElement('div')
+                newParameter.innerHTML = `<input placeholder="name"><input placeholder="value (JSON-encoded)">`
+                queryParamsFieldset.querySelector('small') ? queryParamsFieldset.replaceChildren(newParameter) : queryParamsFieldset.append(newParameter)
+                const inputs = Array.from(queryParamsFieldset.querySelectorAll('input'))
+                inputs[inputs.length - 2].focus()
+            })
+            resultButton.addEventListener('click', async event => {
+                const resourceType = resourceTypeSelect.value, resourceId = resourceIdInput.value || undefined,
+                    resourceScope = resourceScopeSelect.value || undefined,
+                    paramFields = queryParamsFieldset.querySelectorAll('div'),
+                    params = paramFields.length
+                        ? Object.fromEntries(Array.from(paramFields).map(f => Array.from(f.querySelectorAll('input')).map(i => i.value)).filter(f => f[0] && f[1]))
+                        : undefined
+                if (params) for (const k in params) try { params[k] = JSON.parse(params[k]) } catch (e) { }
+
+                let exampleCodeContent
+                switch (sectionId) {
+                    case 'get':
+                        exampleCodeContent = `await horizon.${sectionId}.${resourceType}(${[resourceId, resourceScope, params].map(s => s === undefined ? "undefined" : JSON.stringify(s, null, 4)).join(', ')})`
+                        while (exampleCodeContent.endsWith(', undefined)')) exampleCodeContent = exampleCodeContent.slice(0, -12) + ')'
+                        if (exampleCodeContent.endsWith('(undefined)')) exampleCodeContent = exampleCodeContent.replace('(undefined)', '()')
+                        break
+                    case 'stream':
+                        let iteratorCode = `horizon.${sectionId}.${resourceType}(${[resourceId, resourceScope, params].map(s => s === undefined ? "undefined" : JSON.stringify(s, null, 4)).join(', ')})`
+                        while (iteratorCode.endsWith(', undefined)')) iteratorCode = iteratorCode.slice(0, -12) + ')'
+                        if (iteratorCode.endsWith('(undefined)')) iteratorCode = iteratorCode.replace('(undefined)', '()')
+                        exampleCodeContent = `for await (const record of ${iteratorCode}) { 
+    console.log(record) 
+}`
+                        break
+                }
+                exampleCode.textContent = exampleCodeContent
+
+                switch (sectionId) {
+                    case 'get':
+                        resultOutput.textContent = JSON.stringify(await horizon[sectionId][resourceType](resourceId, resourceScope, params), null, 4)
+                        break
+                    case 'stream':
+                        resultOutput.textContent = ''
+                        for await (const t of horizon[sectionId][resourceType](resourceId, resourceScope, params)) {
+                            resultOutput.textContent = `${resultOutput.textContent}\n${JSON.stringify(t, null, 4)}`
+                        }
+                        break
+
+                }
+
+            })
+        }
+
+        setupSection('get')
+        setupSection('stream')
 
 
 
@@ -119,6 +152,7 @@
         </section>
         <section id="get">
             <h2>Get</h2>
+            <p>Retrieve a single result or page of results.</p>
             <form>
                 <label>
                     <strong>Resource Type</strong>
@@ -142,9 +176,40 @@
             <code class="example">Example Code</code>
             <pre class="result">Result output</pre>
         </section>
+
+
+
+
         <section id="stream">
             <h2>Stream</h2>
+            <p>Retrieve a single result or a filtered set of results with automatic pagination.</p>
+            <form>
+                <label>
+                    <strong>Resource Type</strong>
+                    <select name="resource-type"></select>
+                </label>
+                <label>
+                    <strong>Resource Id</strong>
+                    <input name="resource-id" placeholder="Resource Id">
+                </label>
+                <label>
+                    <strong>Resource Scope</strong>
+                    <select name="resource-scope"></select>
+                </label>
+                <label>
+                    <strong>Query Parameters</strong><button type="button" name="add-query-parameter"
+                        title="click to add a query parameter">+</button>
+                    <fieldset name="params"><small>No query parameters set.</small></fieldset>
+                </label>
+                <button type="button">Get Result</button>
+            </form>
+            <code class="example">Example Code</code>
+            <pre class="result">Result output</pre>
         </section>
+
+
+
+
         <section id="listen">
             <h2>Listen</h2>
         </section>
