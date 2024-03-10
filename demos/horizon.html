@@ -16,14 +16,10 @@
             { horizon } = await import(`../horizon.js?${queryParams}`),
             networkSelector = document.getElementById('select-network')
         for (const paramName in params) networkSelector.querySelector(`[name="${paramName}"]`).value = params[paramName]
-
-        console.log('line 20', horizon)
-
         const networkSection = document.getElementById('network'), networkExampleCode = networkSection.querySelector('code.example')
         for (const networkProperty in horizon.network) networkSection.querySelector(`[name="${networkProperty}"]`).innerHTML = horizon.network[networkProperty]
         networkExampleCode.textContent = (params.network !== 'public' || params.endpoint || params.passphrase)
             ? `const { horizon } = await import('../horizon.js?${queryParams}')` : `const { horizon } = await import('../horizon.js')`
-
         const setupSection = sectionId => {
             const section = document.getElementById(sectionId), resourceTypeOptions = [],
                 resourceTypeSelect = section.querySelector('[name="resource-type"]'),
@@ -71,7 +67,6 @@
                         ? Object.fromEntries(Array.from(paramFields).map(f => Array.from(f.querySelectorAll('input')).map(i => i.value)).filter(f => f[0] && f[1]))
                         : undefined
                 if (params) for (const k in params) try { params[k] = JSON.parse(params[k]) } catch (e) { }
-
                 let exampleCodeContent
                 switch (sectionId) {
                     case 'get': case 'listen':
@@ -91,7 +86,6 @@ listener.addEventListener('message', event => console.log(event.data))`
                         break
                 }
                 exampleCode.textContent = exampleCodeContent
-
                 switch (sectionId) {
                     case 'get':
                         resultOutput.textContent = JSON.stringify(await horizon[sectionId][resourceType](resourceId, resourceScope, params), null, 4)
@@ -126,27 +120,27 @@ listener.addEventListener('message', event => console.log(event.data))`
                         })
                         break
                 }
-
             })
         }
-
         setupSection('get')
         setupSection('stream')
         setupSection('listen')
 
-
-
-
-        // const { listener: transactions } = await horizon.listen.transactions()
-        // transactions.addEventListener('message', event => console.log(event.data))
-
-        // for await (const t of horizon.stream.transactions()) console.log(t)
-
-        // await horizon.get.transactions()
-
+        console.log('line 129', horizon)
         // GA5VCCBNG4SIEST6HYIW2F3KKZRHA4UZZ2XFSMZ4VRQ4MCBRHSQRRIPE
 
-        window.horizon = horizon
+        const dataSection = document.getElementById('data'), accountIdInput = dataSection.querySelector('[name="account-id"]'),
+            dataKeyInput = dataSection.querySelector('[name="data-key"]'), getDataButton = dataSection.querySelector('.get-data'),
+            exampleCode = dataSection.querySelector('.example'), resultOutput = dataSection.querySelector('.result')
+        getDataButton.addEventListener('click', async event => {
+            const accountId = accountIdInput.value || undefined, key = dataKeyInput.value || undefined
+            if (!accountId || !key) return
+            let exampleCodeContent = `await horizon.data(${[accountId, key].map(s => s === undefined ? "undefined" : JSON.stringify(s, null, 4)).join(', ')})`
+            while (exampleCodeContent.endsWith(', undefined)')) exampleCodeContent = exampleCodeContent.slice(0, -12) + ')'
+            if (exampleCodeContent.endsWith('(undefined)')) exampleCodeContent = exampleCodeContent.replace('(undefined)', '()')
+            exampleCode.textContent = exampleCodeContent
+            resultOutput.textContent = JSON.stringify(await horizon.data(accountId, key), null, 4)
+        })
 
     </script>
 
@@ -263,6 +257,20 @@ listener.addEventListener('message', event => console.log(event.data))`
         </section>
         <section id="data">
             <h2>Data</h2>
+            <p>Retrieve account data by the given key.</p>
+            <form>
+                <label>
+                    <strong>Account Id</strong>
+                    <input name="account-id" placeholder="Account Id">
+                </label>
+                <label>
+                    <strong>Data Key</strong>
+                    <input name="data-key" placeholder="Data Key">
+                </label>
+                <button type="button" class="get-data">Get Data</button>
+            </form>
+            <code class="example">Example Code</code>
+            <pre class="result">Result output</pre>
         </section>
     </main>
     <footer>
@@ -272,5 +280,3 @@ listener.addEventListener('message', event => console.log(event.data))`
 </body>
 
 </html>
-
-<!-- GA5VCCBNG4SIEST6HYIW2F3KKZRHA4UZZ2XFSMZ4VRQ4MCBRHSQRRIPE -->
