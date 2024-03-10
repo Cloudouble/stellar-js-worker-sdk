@@ -31,7 +31,7 @@
                 resourceScopeSelect = section.querySelector('[name="resource-scope"]'),
                 addQueryParameterButton = section.querySelector('[name="add-query-parameter"]'),
                 queryParamsFieldset = section.querySelector('fieldset'),
-                resultButton = section.querySelector('form > button'),
+                resultButton = section.querySelector('form > button.get-result'),
                 exampleCode = section.querySelector('code.example'),
                 resultOutput = section.querySelector('pre'),
                 populateResourceScopes = () => {
@@ -50,7 +50,10 @@
                 const inputs = Array.from(queryParamsFieldset.querySelectorAll('input'))
                 inputs[inputs.length - 2].focus()
             })
+            let running = false
             resultButton.addEventListener('click', async event => {
+                running = !running
+                if (!running) return
                 const resourceType = resourceTypeSelect.value, resourceId = resourceIdInput.value || undefined,
                     resourceScope = resourceScopeSelect.value || undefined,
                     paramFields = queryParamsFieldset.querySelectorAll('div'),
@@ -80,12 +83,22 @@
                 switch (sectionId) {
                     case 'get':
                         resultOutput.textContent = JSON.stringify(await horizon[sectionId][resourceType](resourceId, resourceScope, params), null, 4)
+                        running = false
                         break
                     case 'stream':
+                        resultButton.textContent = 'Stop Streaming Results'
+                        resultButton.classList.add('running')
                         resultOutput.textContent = ''
                         for await (const t of horizon[sectionId][resourceType](resourceId, resourceScope, params)) {
                             resultOutput.textContent = `${resultOutput.textContent}\n${JSON.stringify(t, null, 4)}`
+                            resultOutput.scrollTo({ top: resultOutput.scrollHeight, behavior: 'smooth' })
+                            if (!running) {
+                                resultButton.textContent = 'Start Streaming Results'
+                                resultButton.classList.remove('running')
+                                break
+                            }
                         }
+
                         break
 
                 }
@@ -171,7 +184,7 @@
                         title="click to add a query parameter">+</button>
                     <fieldset name="params"><small>No query parameters set.</small></fieldset>
                 </label>
-                <button type="button">Get Result</button>
+                <button type="button" class="get-result">Get Result</button>
             </form>
             <code class="example">Example Code</code>
             <pre class="result">Result output</pre>
@@ -201,7 +214,7 @@
                         title="click to add a query parameter">+</button>
                     <fieldset name="params"><small>No query parameters set.</small></fieldset>
                 </label>
-                <button type="button">Get Result</button>
+                <button type="button" class="get-result">Start Streaming Results</button>
             </form>
             <code class="example">Example Code</code>
             <pre class="result">Result output</pre>
