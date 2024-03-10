@@ -29,6 +29,7 @@
             addQueryParameterButton = getSection.querySelector('[name="add-query-parameter"]'),
             queryParamsFieldset = getSection.querySelector('fieldset'),
             getResultButton = getSection.querySelector('form > button'),
+            getExampleCode = getSection.querySelector('code'),
             getResultOutput = getSection.querySelector('pre'),
             populateGetResourceScopes = () => {
                 const resourceType = resourceTypeSelect.value, resourceScopeOptions = [`<option value="">(optional) Select a Result Scope</option>`]
@@ -46,10 +47,12 @@
         })
         getResultButton.addEventListener('click', async event => {
             const resourceType = resourceTypeSelect.value, resourceId = resourceIdInput.value || undefined, resourceScope = resourceScopeSelect.value || undefined
-            console.log('line 48', resourceType, resourceId, resourceScope)
+            let exampleCode = `await horizon.get.${resourceType}(${[resourceId, resourceScope].map(s => s === undefined ? "undefined" : JSON.stringify(s, null, 4)).join(', ')})`
+            while (exampleCode.endsWith(', undefined)')) exampleCode = exampleCode.slice(0, -12) + ')'
+            if (exampleCode.endsWith('(undefined)')) exampleCode = exampleCode.replace('(undefined)', '()')
+            getExampleCode.textContent = exampleCode
             const result = await horizon.get[resourceType](resourceId, resourceScope)
             getResultOutput.textContent = JSON.stringify(result, null, 4)
-            console.log('line 50', result)
         })
 
 
@@ -61,6 +64,8 @@
         // for await (const t of horizon.stream.transactions()) console.log(t)
 
         // await horizon.get.transactions()
+
+        // GA5VCCBNG4SIEST6HYIW2F3KKZRHA4UZZ2XFSMZ4VRQ4MCBRHSQRRIPE
 
         window.horizon = horizon
 
@@ -125,7 +130,8 @@
                 </label>
                 <button type="button">Get Result</button>
             </form>
-            <pre class="result"></pre>
+            <code class="example-code">Example Code</code>
+            <pre class="result">Result output</pre>
         </section>
         <section id="stream">
             <h2>Stream</h2>

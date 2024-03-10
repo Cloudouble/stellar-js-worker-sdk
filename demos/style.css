@@ -78,6 +78,7 @@ main {
             border-top: none;
         }
 
+        &>code,
         &>pre {
             display: block;
             margin-top: 2em;
@@ -87,6 +88,14 @@ main {
             color: green;
             height: 17em;
             overflow: auto;
+        }
+
+        &>code {
+            min-height: 1em;
+            height: auto;
+            outline: 1px dashed grey;
+            color: grey;
+            font-family: monospace;
         }
 
         form {
