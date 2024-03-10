@@ -11,16 +11,18 @@
 
     <link rel="modulepreload" href="../horizon.js?network=test">
     <script type="module">
-        const queryParams = new URLSearchParams(document.location.search),
-            params = Object.fromEntries(queryParams.entries()),
+        const params = Object.fromEntries(Array.from((new URLSearchParams(document.location.search)).entries()).filter(ent => !!ent[1])),
+            queryParams = new URLSearchParams(params),
             { horizon } = await import(`../horizon.js?${queryParams}`),
             networkSelector = document.getElementById('select-network')
         for (const paramName in params) networkSelector.querySelector(`[name="${paramName}"]`).value = params[paramName]
 
         console.log('line 20', horizon)
 
-        const networkSection = document.getElementById('network')
+        const networkSection = document.getElementById('network'), networkExampleCode = networkSection.querySelector('code.example')
         for (const networkProperty in horizon.network) networkSection.querySelector(`[name="${networkProperty}"]`).innerHTML = horizon.network[networkProperty]
+        networkExampleCode.textContent = (params.network !== 'public' || params.endpoint || params.passphrase)
+            ? `const { horizon } = await import('../horizon.js?${queryParams}')` : `const { horizon } = await import('../horizon.js')`
 
         const getSection = document.getElementById('get'), resourceTypeOptions = [],
             resourceTypeSelect = getSection.querySelector('[name="resource-type"]'),
@@ -29,7 +31,7 @@
             addQueryParameterButton = getSection.querySelector('[name="add-query-parameter"]'),
             queryParamsFieldset = getSection.querySelector('fieldset'),
             getResultButton = getSection.querySelector('form > button'),
-            getExampleCode = getSection.querySelector('code'),
+            getExampleCode = getSection.querySelector('code.example'),
             getResultOutput = getSection.querySelector('pre'),
             populateGetResourceScopes = () => {
                 const resourceType = resourceTypeSelect.value, resourceScopeOptions = [`<option value="">(optional) Select a Result Scope</option>`]
@@ -107,6 +109,7 @@
                     <pre name="passphrase"></pre>
                 </li>
             </ul>
+            <code class="example">Example Code</code>
         </section>
         <section id="get">
             <h2>Get</h2>
@@ -130,7 +133,7 @@
                 </label>
                 <button type="button">Get Result</button>
             </form>
-            <code class="example-code">Example Code</code>
+            <code class="example">Example Code</code>
             <pre class="result">Result output</pre>
         </section>
         <section id="stream">
