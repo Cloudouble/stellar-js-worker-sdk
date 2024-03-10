@@ -38,7 +38,7 @@ const horizon = Object.defineProperties({}, {
                 }, { signal })
                 eventSource.addEventListener('open', event => {
                     hasOpened = true
-                    resolve({ listener, abortController })
+                    resolve({ listener, abortController, eventSource })
                 }, { signal })
                 eventSource.addEventListener('error', event => {
                     hasOpened ? listener.dispatchEvent(new CustomEvent('error')) : reject()
