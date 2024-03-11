@@ -60,8 +60,13 @@ const horizon = Object.defineProperties({}, {
     },
     _stream: {
         value: async function* (resourceType, resourceId, scope, params = {}) {
-            if (!(resourceType in this._types)) return
-            let page = await this._get(resourceType, resourceId, scope, params, true), pageOrigLength = page.length, isLastPage = pageOrigLength < (params?.limit ?? 10), pagingToken
+            if (!(resourceType in this._types)) throw new RangeError(`Invalid resource type: ${resourceType}, must be one of ${JSON.stringify(Object.keys(this._types))}`)
+            let page
+            try {
+                page = await this._get(resourceType, resourceId, scope, params, true), pageOrigLength = page.length, isLastPage = pageOrigLength < (params?.limit ?? 10), pagingToken
+            } catch (e) {
+                throw new Error(e.message, { cause: e })
+            }
             while (page.length) {
                 const record = await page.shift()
                 if (!record) break
@@ -70,7 +75,11 @@ const horizon = Object.defineProperties({}, {
                 yield record
                 if (!page.length && !isLastPage && pagingToken && (params && (typeof params === 'object'))) {
                     params.cursor = pagingToken
-                    page = await this._get(resourceType, resourceId, scope, params, true)
+                    try {
+                        page = await this._get(resourceType, resourceId, scope, params, true)
+                    } catch (e) {
+                        throw new Error(e.message, { cause: e })
+                    }
                     pageOrigLength = page.length
                     isLastPage = pageOrigLength < (params?.limit ?? 10)
                 }

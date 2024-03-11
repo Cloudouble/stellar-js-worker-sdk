@@ -96,17 +96,21 @@ listener.addEventListener('message', event => console.log(event.data))`
                         running = false
                         break
                     case 'stream':
-                        resultButton.textContent = 'Stop Streaming Results'
-                        resultButton.classList.add('running')
-                        resultOutput.textContent = ''
-                        for await (const t of horizon[sectionId][resourceType](resourceId, resourceScope, params)) {
-                            resultOutput.textContent = `${resultOutput.textContent}\n${JSON.stringify(t, null, 4)}`
-                            resultOutput.scrollTo({ top: resultOutput.scrollHeight, behavior: 'smooth' })
-                            if (!running) {
-                                resultButton.textContent = 'Start Streaming Results'
-                                resultButton.classList.remove('running')
-                                break
+                        try {
+                            resultButton.textContent = 'Stop Streaming Results'
+                            resultButton.classList.add('running')
+                            resultOutput.textContent = ''
+                            for await (const t of horizon[sectionId][resourceType](resourceId, resourceScope, params)) {
+                                resultOutput.textContent = `${resultOutput.textContent}\n${JSON.stringify(t, null, 4)}`
+                                resultOutput.scrollTo({ top: resultOutput.scrollHeight, behavior: 'smooth' })
+                                if (!running) {
+                                    resultButton.textContent = 'Start Streaming Results'
+                                    resultButton.classList.remove('running')
+                                    break
+                                }
                             }
+                        } catch (e) {
+                            resultOutput.textContent = e
                         }
                         resultButton.textContent = 'Start Streaming Results'
                         resultButton.classList.remove('running')
