@@ -153,22 +153,96 @@ listener.addEventListener('message', event => console.log(event.data))`
         const buildSection = document.getElementById('build'), operationsFieldset = buildSection.querySelector('fieldset[name="operations"]'),
             addOperationButton = buildSection.querySelector('button[name="add-operation"]'),
             operationTypes = [
-                'create_account', 'payment', 'path_payment_strict_receive', 'manage_sell_offer', 'create_passive_sell_offer', 'set_options',
-                'change_trust', 'allow_trust', 'account_merge', 9,
-                'manage_data', 'bump_sequence', 'manage_buy_offer', 'path_payment_strict_send', 'create_claimable_balance', 'claim_claimable_balance',
-                'begin_sponsoring_future_reserves', 'end_sponsoring_future_reserves', 18, 'revoke_sponsorship',
-                20, 21, 'liquidity_pool_deposit', 23, 'invoke_host_function', 'extend_footprint_ttl', 'restore_footprint'
+                { type: 'create_account', attributes: ['starting_balance', 'funder', 'account'] },
+                { type: 'payment', attributes: ['asset_type', 'asset_code', 'asset_issuer', 'from', 'to', 'amount'] },
+                {
+                    type: 'path_payment_strict_receive', attributes: ['asset_type', 'asset_code', 'asset_issuer', 'from', 'to', 'amount', 'path',
+                        'source_amount', 'source_max', 'source_asset_type', 'source_asset_code', 'source_asset_issuer']
+                },
+                {
+                    type: 'manage_sell_offer', attributes: ['amount', 'price', 'price_r', 'buying_asset_type', 'buying_asset_issuer', 'buying_asset_code',
+                        'selling_asset_type', 'selling_asset_issuer', 'selling_asset_code', 'offer_id']
+                },
+                {
+                    type: 'create_passive_sell_offer', attributes: ['amount', 'price', 'price_r', 'buying_asset_type', 'buying_asset_issuer', 'buying_asset_code',
+                        'selling_asset_type', 'selling_asset_issuer', 'selling_asset_code', 'offer_id']
+                },
+                {
+                    type: 'set_options', attributes: ['signer_key', 'signer_weight', 'master_key_weight', 'low_threshold', 'med_threshold', 'high_threshold',
+                        'home_domain', 'set_flags', 'set_flags_s', 'clear_flags', 'clear_flags_s']
+                },
+                { type: 'change_trust', attributes: ['asset_type', 'asset_code', 'asset_issuer', 'limit', 'trustee', 'trustor', 'liquidity_pool_id'] },
+                { type: 'allow_trust', attributes: ['asset_type', 'asset_code', 'asset_issuer', 'authorize', 'trustee', 'trustor'] },
+                { type: 'account_merge', attributes: ['account', 'into'] }, 9,
+                { type: 'manage_data', attributes: ['name', 'value'] },
+                { type: 'bump_sequence', attributes: ['bump_to'] },
+                {
+                    type: 'manage_buy_offer', attributes: ['amount', 'price', 'price_r', 'buying_asset_type', 'buying_asset_issuer', 'buying_asset_code',
+                        'selling_asset_type', 'selling_asset_issuer', 'selling_asset_code', 'offer_id']
+                },
+                {
+                    type: 'path_payment_strict_send', attributes: ['asset_type', 'asset_code', 'asset_issuer', 'from', 'to', 'amount', 'path',
+                        'source_amount', 'destination_min', 'source_asset_type', 'source_asset_code', 'source_asset_issuer']
+                },
+                { type: 'create_claimable_balance', attributes: ['asset', 'amount', 'claimants'] },
+                { type: 'claim_claimable_balance', attributes: ['balance_id', 'claimant'] },
+                { type: 'begin_sponsoring_future_reserves', attributes: ['sponsored_id'] },
+                { type: 'end_sponsoring_future_reserves', attributes: ['begin_sponsor'] }, 18,
+                {
+                    type: 'revoke_sponsorship', attributes: ['account_id', 'claimable_balance_id', 'data_account_id', 'data_name', 'offer_id',
+                        'trustline_account_id', 'trustline_asset', 'signer_account_id', 'signer_key']
+                }, 20, 21,
+                {
+                    type: 'liquidity_pool_deposit', attributes: ['liquidity_pool_id', 'reserves_max', 'min_price', 'min_price_r', 'max_price', 'max_price_r',
+                        'reserves_deposited', 'shares_received']
+                }, 23,
+                { type: 'invoke_host_function', attributes: ['function', 'parameters', 'address', 'salt', 'asset_balance_changes'] },
+                { type: 'extend_footprint_ttl', attributes: ['extend_to'] },
+                { type: 'restore_footprint', attributes: [] }
             ],
-            operationTypeSelect = `<select class="operation-type">${operationTypes.filter(t => typeof t === 'string')
-                .map((t, i) => '<option value="' + i + '">' + t + '</option>')}</select>`
+            operationAttributeTypes = {
+                path: ['object'],
+                price_r: 'object',
+                signer_weight: 'number',
+                master_key_weight: 'number',
+                low_threshold: 'number',
+                med_threshold: 'nunber',
+                high_threshold: 'number',
+                set_flags: ['number'],
+                set_flags_s: ['number'],
+                clear_flags: ['number'],
+                clear_flags_s: ['number'],
+                authorize: 'number',
+                claimants: ['object'],
+                reserves_max: ['object'],
+                min_price_r: 'object',
+                max_price_r: 'object',
+                reserves_deposited: ['object'],
+                parameters: ['object'],
+                asset_balance_changes: ['object'],
+                extend_to: 'number'
+            },
+            operationTypeSelect = `<select class="operation-type">${operationTypes
+                .map((t, i) => typeof t === 'object' ? ('<option value="' + i + '">' + t.type + '</option>') : '').join('')}</select>`
         addOperationButton.addEventListener('click', event => {
             const newOperation = document.createElement('div')
             newOperation.classList.add('operation')
-            newOperation.innerHTML = `${operationTypeSelect}<span class="operation-inputs"></span><i title="remove operation">x</i>`
+            newOperation.innerHTML = `${operationTypeSelect}<span class="operation-attributes"></span><i title="remove operation">x</i>`
             operationsFieldset.querySelector('small') ? operationsFieldset.replaceChildren(newOperation) : operationsFieldset.append(newOperation)
-            const typeSelector = newOperation.querySelector('select.operation-type')
+            const typeSelector = newOperation.querySelector('select.operation-type'), attributesInputs = newOperation.querySelector('span.operation-attributes')
             typeSelector.focus()
-
+            const setupOperationType = () => {
+                const operationType = typeSelector.value, operationAttributes = operationTypes[operationType].attributes
+                attributesInputs.replaceChildren()
+                for (const attr of operationAttributes) {
+                    const attrInput = document.createElement('input')
+                    attrInput.setAttribute('name', attr)
+                    attrInput.setAttribute('placeholder', operationAttributeTypes[attr] ? `${attr} (JSON-encoded)` : attr)
+                    attributesInputs.append(attrInput)
+                }
+            }
+            setupOperationType()
+            typeSelector.addEventListener('change', event => setupOperationType())
         })
 
 
