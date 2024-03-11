@@ -1,0 +1,290 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Demo Page for Transaction Submission Using Horizon API :: Stellar JavaScript Worker SDK</title>
+    <meta name="description" content="Demo Page for Transaction Submission Using Horizon API">
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="modulepreload" href="../horizon.js?network=test">
+    <script type="module">
+        const params = Object.fromEntries(Array.from((new URLSearchParams(document.location.search)).entries()).filter(ent => !!ent[1])),
+            queryParams = new URLSearchParams(params),
+            { horizon } = await import(`../horizon.js?${queryParams}`),
+            networkSelector = document.getElementById('select-network')
+        for (const paramName in params) networkSelector.querySelector(`[name="${paramName}"]`).value = params[paramName]
+        const networkSection = document.getElementById('network'), networkExampleCode = networkSection.querySelector('code.example')
+        for (const networkProperty in horizon.network) networkSection.querySelector(`[name="${networkProperty}"]`).innerHTML = horizon.network[networkProperty]
+        networkExampleCode.textContent = (params.network !== 'public' || params.endpoint || params.passphrase)
+            ? `const { horizon } = await import('../horizon.js?${queryParams}')` : `const { horizon } = await import('../horizon.js')`
+
+
+
+
+
+
+
+
+
+        const setupSection = sectionId => {
+            const section = document.getElementById(sectionId), resourceTypeOptions = [],
+                resourceTypeSelect = section.querySelector('[name="resource-type"]'),
+                resourceIdInput = section.querySelector('[name="resource-id"]'),
+                resourceScopeSelect = section.querySelector('[name="resource-scope"]'),
+                addQueryParameterButton = section.querySelector('[name="add-query-parameter"]'),
+                queryParamsFieldset = section.querySelector('fieldset'),
+                resultButton = section.querySelector('form > button.get-result'),
+                exampleCode = section.querySelector('code.example'),
+                resultOutput = section.querySelector('pre'),
+                populateResourceScopes = () => {
+                    const resourceType = resourceTypeSelect.value, resourceScopeOptions = [`<option value="">(optional) Select a Result Scope</option>`]
+                    for (const scope of (horizon._types[resourceType] ?? [])) resourceScopeOptions.push(`<option>${scope}</option>`)
+                    resourceScopeSelect.innerHTML = resourceScopeOptions.join('')
+                }
+            for (const t in horizon[sectionId]) if (typeof horizon[sectionId][t] === 'function') resourceTypeOptions.push(`<option>${t}</option>`)
+            resourceTypeSelect.innerHTML = resourceTypeOptions.join('')
+            populateResourceScopes()
+            resourceTypeSelect.addEventListener('change', event => populateResourceScopes())
+            if (addQueryParameterButton) {
+                addQueryParameterButton.addEventListener('click', event => {
+                    const newParameter = document.createElement('div')
+                    newParameter.innerHTML = `<input placeholder="name"><input placeholder="value (JSON-encoded)">`
+                    queryParamsFieldset.querySelector('small') ? queryParamsFieldset.replaceChildren(newParameter) : queryParamsFieldset.append(newParameter)
+                    const inputs = Array.from(queryParamsFieldset.querySelectorAll('input'))
+                    inputs[inputs.length - 2].focus()
+                })
+            }
+            let running = false, abortController, eventSource
+            resultButton.addEventListener('click', async event => {
+                if (running && abortController && eventSource) {
+                    abortController.abort()
+                    eventSource.close()
+                    resultButton.textContent = 'Start Listening for Results'
+                    resultButton.classList.remove('running')
+                    abortController = undefined
+                    eventSource = undefined
+                }
+                running = !running
+                if (!running) return
+                const resourceType = resourceTypeSelect.value, resourceId = resourceIdInput.value || undefined,
+                    resourceScope = resourceScopeSelect.value || undefined,
+                    paramFields = queryParamsFieldset ? queryParamsFieldset.querySelectorAll('div') : undefined,
+                    params = paramFields?.length
+                        ? Object.fromEntries(Array.from(paramFields).map(f => Array.from(f.querySelectorAll('input')).map(i => i.value)).filter(f => f[0] && f[1]))
+                        : undefined
+                if (params) for (const k in params) try { params[k] = JSON.parse(params[k]) } catch (e) { }
+                let exampleCodeContent
+                switch (sectionId) {
+                    case 'get': case 'listen':
+                        exampleCodeContent = `await horizon.${sectionId}.${resourceType}(${[resourceId, resourceScope, params].map(s => s === undefined ? "undefined" : JSON.stringify(s, null, 4)).join(', ')})`
+                        while (exampleCodeContent.endsWith(', undefined)')) exampleCodeContent = exampleCodeContent.slice(0, -12) + ')'
+                        if (exampleCodeContent.endsWith('(undefined)')) exampleCodeContent = exampleCodeContent.replace('(undefined)', '()')
+                        if (sectionId === 'listen') exampleCodeContent = `const { listener, abortController, eventSource }  = ${exampleCodeContent}
+listener.addEventListener('message', event => console.log(event.data))`
+                        break
+                    case 'stream':
+                        let iteratorCode = `horizon.${sectionId}.${resourceType}(${[resourceId, resourceScope, params].map(s => s === undefined ? "undefined" : JSON.stringify(s, null, 4)).join(', ')})`
+                        while (iteratorCode.endsWith(', undefined)')) iteratorCode = iteratorCode.slice(0, -12) + ')'
+                        if (iteratorCode.endsWith('(undefined)')) iteratorCode = iteratorCode.replace('(undefined)', '()')
+                        exampleCodeContent = `for await (const record of ${iteratorCode}) { 
+    console.log(record) 
+}`
+                        break
+                }
+                exampleCode.textContent = exampleCodeContent
+                switch (sectionId) {
+                    case 'get':
+                        try {
+                            resultOutput.textContent = JSON.stringify(await horizon[sectionId][resourceType](resourceId, resourceScope, params), null, 4)
+                        } catch (e) {
+                            resultOutput.textContent = e
+                        }
+                        running = false
+                        break
+                    case 'stream':
+                        try {
+                            resultButton.textContent = 'Stop Streaming Results'
+                            resultButton.classList.add('running')
+                            resultOutput.textContent = ''
+                            for await (const t of horizon[sectionId][resourceType](resourceId, resourceScope, params)) {
+                                resultOutput.textContent = `${resultOutput.textContent}\n${JSON.stringify(t, null, 4)}`
+                                resultOutput.scrollTo({ top: resultOutput.scrollHeight, behavior: 'smooth' })
+                                if (!running) {
+                                    resultButton.textContent = 'Start Streaming Results'
+                                    resultButton.classList.remove('running')
+                                    break
+                                }
+                            }
+                        } catch (e) {
+                            resultOutput.textContent = e
+                        }
+                        resultButton.textContent = 'Start Streaming Results'
+                        resultButton.classList.remove('running')
+                        break
+                    case 'listen':
+                        resultButton.textContent = 'Stop Listening for Results'
+                        resultButton.classList.add('running')
+                        resultOutput.textContent = ''
+                        let output
+                        try {
+                            output = await horizon[sectionId][resourceType](resourceId, resourceScope)
+                            const listener = output.listener
+                            abortController = output.abortController
+                            eventSource = output.eventSource
+                            listener.addEventListener('message', event => {
+                                resultOutput.textContent = `${resultOutput.textContent}\n${event.data}`
+                                resultOutput.scrollTo({ top: resultOutput.scrollHeight, behavior: 'smooth' })
+                            })
+                        } catch (e) {
+                            resultOutput.textContent = `Event source creation failed for resourceType: ${resourceType}, resourceId: ${resourceId}, scope: ${resourceScope}`
+                        }
+                        break
+                }
+            })
+        }
+        // setupSection('get')
+        // setupSection('stream')
+        // setupSection('listen')
+
+
+        const buildSection = document.getElementById('build'), operationsFieldset = buildSection.querySelector('fieldset[name="operations"]'),
+            addOperationButton = buildSection.querySelector('button[name="add-operation"]'),
+            operationTypes = [
+                'create_account', 'payment', 'path_payment_strict_receive', 'manage_sell_offer', 'create_passive_sell_offer', 'set_options',
+                'change_trust', 'allow_trust', 'account_merge', 9,
+                'manage_data', 'bump_sequence', 'manage_buy_offer', 'path_payment_strict_send', 'create_claimable_balance', 'claim_claimable_balance',
+                'begin_sponsoring_future_reserves', 'end_sponsoring_future_reserves', 18, 'revoke_sponsorship',
+                20, 21, 'liquidity_pool_deposit', 23, 'invoke_host_function', 'extend_footprint_ttl', 'restore_footprint'
+            ],
+            operationTypeSelect = `<select class="operation-type">${operationTypes.filter(t => typeof t === 'string')
+                .map((t, i) => '<option value="' + i + '">' + t + '</option>')}</select>`
+        addOperationButton.addEventListener('click', event => {
+            const newOperation = document.createElement('div')
+            newOperation.classList.add('operation')
+            newOperation.innerHTML = `${operationTypeSelect}<span class="operation-inputs"></span><i title="remove operation">x</i>`
+            operationsFieldset.querySelector('small') ? operationsFieldset.replaceChildren(newOperation) : operationsFieldset.append(newOperation)
+            const typeSelector = newOperation.querySelector('select.operation-type')
+            typeSelector.focus()
+
+        })
+
+
+
+
+
+        window.horizon = horizon
+        console.log('line 161', horizon)
+        // test account on test netwwork: GA5VCCBNG4SIEST6HYIW2F3KKZRHA4UZZ2XFSMZ4VRQ4MCBRHSQRRIPE
+
+    </script>
+
+</head>
+
+<body>
+    <header>
+        <h1>Transaction Submission Test Using Horizon API</h1>
+        <p>Using <a href="https://github.com/Cloudouble/stellar-js-worker-sdk">JS Worker SDK</a></p>
+        <form id="select-network">
+            <label>
+                <small>Select Network</small>
+                <select name="network">
+                    <option>public</option>
+                    <option>test</option>
+                    <option>futurenet</option>
+                    <option>custom</option>
+                </select>
+            </label>
+            <fieldset>
+                <small>Optional: only if "custom" network selected above</small>
+                <input name="endpoint" placeholder="Custom Network Endpoint" type="url">
+                <input name="passphrase" placeholder="Passphrase for Custom Network">
+            </fieldset>
+            <button type="submit">Connect to Network</button>
+        </form>
+    </header>
+    <main>
+        <section id="network">
+            <h2>Network</h2>
+            <p>Information about the currently selected network</p>
+            <ul>
+                <li>Endpoint:
+                    <pre name="endpoint"></pre>
+                </li>
+                <li>Passphrase:
+                    <pre name="passphrase"></pre>
+                </li>
+            </ul>
+            <code class="example">Example Code</code>
+        </section>
+        <section id="build">
+            <h2>Build</h2>
+            <p>Build a Transaction to Submit</p>
+            <form>
+                <label>
+                    <strong>Source Account</strong>
+                    <input name>
+                </label>
+                <label>
+                    <strong>Sequence Number</strong>
+                    <input name>
+                </label>
+                <label>
+                    <strong>Base Fee</strong>
+                    <input name>
+                </label>
+                <label>
+                    <strong>Memo</strong>
+                    <fieldset name="memo">
+                        <select>
+                            <option value="">No Memo</option>
+                            <option value="text">Text Memo</option>
+                            <option value="hash">Hash Memo</option>
+                            <option value="return">Return Memo</option>
+                        </select>
+                        <input name placeholder="memo content">
+                    </fieldset>
+                </label>
+                <label>
+                    <strong>Time Bounds (optional)</strong>
+                    <fieldset name="timebounds">
+                        <input name placeholder="lower time bound">
+                        <input name placeholder="upper time bound">
+                    </fieldset>
+                </label>
+                <label>
+                    <strong>Operations</strong><button type="button" name="add-operation"
+                        title="click to add an operation">+</button>
+                    <fieldset name="operations"><small>No operations added.</small></fieldset>
+                </label>
+                <button type="button" class="get-result">Build</button>
+            </form>
+            <code class="example">Example Code</code>
+            <pre class="result">Result output</pre>
+        </section>
+        <section id="envelope">
+            <h2>Envelope</h2>
+            <p>View the transaction envelope in XDR format</p>
+
+        </section>
+        <section id="sign">
+            <h2>Transaction</h2>
+            <p>Sign the transaction</p>
+
+        </section>
+        <section id="submit">
+            <h2>Transaction</h2>
+            <p>Submit the transaction</p>
+
+        </section>
+
+    </main>
+    <footer>
+        <p>Created as the deliverable for Milestone Two of Stellar JavaScript Worker SDK</p>
+    </footer>
+
+</body>
+
+</html>
