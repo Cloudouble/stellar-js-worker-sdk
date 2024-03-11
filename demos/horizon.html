@@ -88,7 +88,11 @@ listener.addEventListener('message', event => console.log(event.data))`
                 exampleCode.textContent = exampleCodeContent
                 switch (sectionId) {
                     case 'get':
-                        resultOutput.textContent = JSON.stringify(await horizon[sectionId][resourceType](resourceId, resourceScope, params), null, 4)
+                        try {
+                            resultOutput.textContent = JSON.stringify(await horizon[sectionId][resourceType](resourceId, resourceScope, params), null, 4)
+                        } catch (e) {
+                            resultOutput.textContent = e
+                        }
                         running = false
                         break
                     case 'stream':
@@ -111,13 +115,23 @@ listener.addEventListener('message', event => console.log(event.data))`
                         resultButton.textContent = 'Stop Listening for Results'
                         resultButton.classList.add('running')
                         resultOutput.textContent = ''
-                        const output = await horizon[sectionId][resourceType](resourceId, resourceScope), listener = output.listener
-                        abortController = output.abortController
-                        eventSource = output.eventSource
-                        listener.addEventListener('message', event => {
-                            resultOutput.textContent = `${resultOutput.textContent}\n${event.data}`
-                            resultOutput.scrollTo({ top: resultOutput.scrollHeight, behavior: 'smooth' })
-                        })
+                        let output
+                        try {
+                            output = await horizon[sectionId][resourceType](resourceId, resourceScope)
+                            const listener = output.listener
+                            abortController = output.abortController
+                            eventSource = output.eventSource
+                            listener.addEventListener('message', event => {
+                                resultOutput.textContent = `${resultOutput.textContent}\n${event.data}`
+                                resultOutput.scrollTo({ top: resultOutput.scrollHeight, behavior: 'smooth' })
+                            })
+                            listener.addEventListener('error', event => {
+                                resultOutput.textContent = `${resultOutput.textContent}\n${event.detail}`
+                                resultOutput.scrollTo({ top: resultOutput.scrollHeight, behavior: 'smooth' })
+                            })
+                        } catch (e) {
+                            resultOutput.textContent = `Event source creation failed for resourceType: ${resourceType}, resourceId: ${resourceId}, scope: ${resourceScope}`
+                        }
                         break
                 }
             })

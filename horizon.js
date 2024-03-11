@@ -11,25 +11,37 @@ const horizon = Object.defineProperties({}, {
     },
     _get: {
         value: async function (resourceType, resourceId, scope, params = {}, fromStream = false) {
-            if (!(resourceType in this._types)) return
+            if (!(resourceType in this._types)) throw new RangeError(`Invalid resource type: ${resourceType}, must be one of ${JSON.stringify(Object.keys(this._types))}`)
             const headers = { Accept: 'application/json' }
-            let result
-            if (!resourceId) result = await fetch(`${this.network.endpoint}/${resourceType}?${new URLSearchParams(params)}`, { headers }).then(r => r.json())
-            if (!result && !scope) result = await fetch(`${this.network.endpoint}/${resourceType}/${resourceId}`, { headers }).then(r => r.json())
+            let result, cause, response
+            if (!resourceId) result = await fetch(`${this.network.endpoint}/${resourceType}?${new URLSearchParams(params)}`, { headers })
+                .then(r => { response = r; return r.json() }).catch(err => cause = err)
+            if (!result && !scope) result = await fetch(`${this.network.endpoint}/${resourceType}/${resourceId}`, { headers })
+                .then(r => { response = r; return r.json() }).catch(err => cause = err)
             if (!result && !this._types[resourceType]) return
-            if (!result && !this._types[resourceType].includes(scope)) return
-            result ||= await fetch(`${this.network.endpoint}/${resourceType}/${resourceId}/${scope}?${new URLSearchParams(params)}`, { headers }).then(r => r.json())
+            if (!result && !this._types[resourceType].includes(scope)) throw new RangeError(`Invalid scope when resourcetype is ${resourceType}: must be one of ${JSON.stringify(this._types[resourceType])}`)
+            result ||= await fetch(`${this.network.endpoint}/${resourceType}/${resourceId}/${scope}?${new URLSearchParams(params)}`, { headers })
+                .then(r => { response = r; return r.json() }).catch(err => cause = err)
+            if (cause || !response.ok) throw new Error(
+                `Network request fetch failed for resourceType: ${resourceType}, resourceId: ${resourceId}, scope: ${scope}, params: ${params ? JSON.stringify(params) : 'undefined'}: ${cause ?? [response.status, response.statusText].join(': ')}`, { cause: cause ?? response })
             if (fromStream) return result._embedded?.records ?? [result]
             return result._embedded ? result._embedded.records : result
         }
     },
     _listen: {
         value: function (resourceType, resourceId, scope) {
-            if (!resourceType) return
+            if (!(resourceType in this._types)) throw new RangeError(`Invalid resource type: ${resourceType}, must be one of ${JSON.stringify(Object.keys(this._types))}`)
             const url = resourceId
                 ? (scope ? `${this.network.endpoint}/${resourceType}/${resourceId}/${scope}` : `${this.network.endpoint}/${resourceType}/${resourceId}`)
-                : `${this.network.endpoint}/${resourceType}`, eventSource = new EventSource(url), abortController = new AbortController(),
+                : `${this.network.endpoint}/${resourceType}`, abortController = new AbortController(),
                 signal = abortController.signal, listener = new EventTarget()
+            let eventSource
+            try {
+                eventSource = new EventSource(url)
+            } catch (e) {
+                throw new Error(
+                    `Event source creation failed for resourceType: ${resourceType}, resourceId: ${resourceId}, scope: ${scope}: ${e}`, { cause: e })
+            }
             let hasOpened
             return new Promise((resolve, reject) => {
                 eventSource.addEventListener('message', event => {
@@ -41,7 +53,7 @@ const horizon = Object.defineProperties({}, {
                     resolve({ listener, abortController, eventSource })
                 }, { signal })
                 eventSource.addEventListener('error', event => {
-                    hasOpened ? listener.dispatchEvent(new CustomEvent('error')) : reject()
+                    hasOpened ? listener.dispatchEvent(new CustomEvent('error', { detail: event })) : reject()
                 }, { signal })
             })
         }
