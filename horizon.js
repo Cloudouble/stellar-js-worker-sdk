@@ -121,7 +121,12 @@ const horizon = Object.defineProperties({}, {
     data: {
         enumerable: true,
         value: async function (accountId, key) {
-            return (await fetch(`${this.network.endpoint}/accounts/${accountId}/data/${key}`, { headers: { Accept: "application/json" } }).then(r => r.json()))?.value
+            let result, cause, response
+            result = (await fetch(`${this.network.endpoint}/accounts/${accountId}/data/${key}`, { headers: { Accept: "application/json" } })
+                .then(r => { response = r; return r.json() }).catch(err => cause = err))?.value
+            if (cause || !response.ok) throw new Error(
+                `Network request fetch failed for accountId: ${accountId}, key: ${key}: ${cause ?? [response.status, response.statusText].join(': ')}`, { cause: cause ?? response })
+            return result
         }
     },
     send: {

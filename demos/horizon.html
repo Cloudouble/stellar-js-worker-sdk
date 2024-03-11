@@ -144,9 +144,6 @@ listener.addEventListener('message', event => console.log(event.data))`
         setupSection('stream')
         setupSection('listen')
 
-        console.log('line 129', horizon)
-        // GA5VCCBNG4SIEST6HYIW2F3KKZRHA4UZZ2XFSMZ4VRQ4MCBRHSQRRIPE
-
         const dataSection = document.getElementById('data'), accountIdInput = dataSection.querySelector('[name="account-id"]'),
             dataKeyInput = dataSection.querySelector('[name="data-key"]'), getDataButton = dataSection.querySelector('.get-data'),
             exampleCode = dataSection.querySelector('.example'), resultOutput = dataSection.querySelector('.result')
@@ -157,8 +154,16 @@ listener.addEventListener('message', event => console.log(event.data))`
             while (exampleCodeContent.endsWith(', undefined)')) exampleCodeContent = exampleCodeContent.slice(0, -12) + ')'
             if (exampleCodeContent.endsWith('(undefined)')) exampleCodeContent = exampleCodeContent.replace('(undefined)', '()')
             exampleCode.textContent = exampleCodeContent
-            resultOutput.textContent = JSON.stringify(await horizon.data(accountId, key), null, 4)
+            try {
+                resultOutput.textContent = JSON.stringify(await horizon.data(accountId, key), null, 4)
+            } catch (e) {
+                resultOutput.textContent = e
+            }
         })
+
+        window.horizon = horizon
+        console.log('line 165', horizon)
+        // test account on test netwwork: GA5VCCBNG4SIEST6HYIW2F3KKZRHA4UZZ2XFSMZ4VRQ4MCBRHSQRRIPE
 
     </script>
 
