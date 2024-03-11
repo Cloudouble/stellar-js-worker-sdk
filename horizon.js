@@ -123,6 +123,8 @@ const horizon = Object.defineProperties({}, {
     data: {
         enumerable: true,
         value: async function (accountId, key) {
+            if (!accountId) throw new TypeError(`Invalid accountId: ${accountId}`)
+            if (!key) throw new TypeError(`Invalid key: ${key}`)
             let result, cause, response
             result = (await fetch(`${this.network.endpoint}/accounts/${accountId}/data/${key}`, { headers: { Accept: "application/json" } })
                 .then(r => { response = r; return r.json() }).catch(err => cause = err))?.value
