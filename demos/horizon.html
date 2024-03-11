@@ -129,10 +129,6 @@ listener.addEventListener('message', event => console.log(event.data))`
                                 resultOutput.textContent = `${resultOutput.textContent}\n${event.data}`
                                 resultOutput.scrollTo({ top: resultOutput.scrollHeight, behavior: 'smooth' })
                             })
-                            listener.addEventListener('error', event => {
-                                resultOutput.textContent = `${resultOutput.textContent}\n${event.detail}`
-                                resultOutput.scrollTo({ top: resultOutput.scrollHeight, behavior: 'smooth' })
-                            })
                         } catch (e) {
                             resultOutput.textContent = `Event source creation failed for resourceType: ${resourceType}, resourceId: ${resourceId}, scope: ${resourceScope}`
                         }
@@ -162,7 +158,7 @@ listener.addEventListener('message', event => console.log(event.data))`
         })
 
         window.horizon = horizon
-        console.log('line 165', horizon)
+        console.log('line 161', horizon)
         // test account on test netwwork: GA5VCCBNG4SIEST6HYIW2F3KKZRHA4UZZ2XFSMZ4VRQ4MCBRHSQRRIPE
 
     </script>
