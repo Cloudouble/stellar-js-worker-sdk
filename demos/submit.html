@@ -222,17 +222,21 @@ listener.addEventListener('message', event => console.log(event.data))`
                 asset_balance_changes: ['object'],
                 extend_to: 'number'
             },
-            operationTypeSelect = `<select class="operation-type">${operationTypes
+            operationTypeSelect = `<select class="operation-type"><option value="">Select Operation Type</option>${operationTypes
                 .map((t, i) => typeof t === 'object' ? ('<option value="' + i + '">' + t.type + '</option>') : '').join('')}</select>`
         addOperationButton.addEventListener('click', event => {
             const newOperation = document.createElement('div')
             newOperation.classList.add('operation')
             newOperation.innerHTML = `${operationTypeSelect}<span class="operation-attributes"></span><i title="remove operation">x</i>`
             operationsFieldset.querySelector('small') ? operationsFieldset.replaceChildren(newOperation) : operationsFieldset.append(newOperation)
-            const typeSelector = newOperation.querySelector('select.operation-type'), attributesInputs = newOperation.querySelector('span.operation-attributes')
+            const typeSelector = newOperation.querySelector('select.operation-type'),
+                attributesInputs = newOperation.querySelector('span.operation-attributes'),
+                removeButton = newOperation.querySelector('i')
             typeSelector.focus()
             const setupOperationType = () => {
-                const operationType = typeSelector.value, operationAttributes = operationTypes[operationType].attributes
+                const operationType = typeSelector.value
+                if (!operationType || !operationTypes[operationType]) return attributesInputs.replaceChildren()
+                const operationAttributes = operationTypes[operationType].attributes
                 attributesInputs.replaceChildren()
                 for (const attr of operationAttributes) {
                     const attrInput = document.createElement('input')
@@ -243,6 +247,9 @@ listener.addEventListener('message', event => console.log(event.data))`
             }
             setupOperationType()
             typeSelector.addEventListener('change', event => setupOperationType())
+            removeButton.addEventListener('click', event => {
+                newOperation.remove()
+            })
         })
 
 
