@@ -145,7 +145,6 @@ listener.addEventListener('message', event => console.log(event.data))`
             exampleCode = dataSection.querySelector('.example'), resultOutput = dataSection.querySelector('.result')
         getDataButton.addEventListener('click', async event => {
             const accountId = accountIdInput.value || undefined, key = dataKeyInput.value || undefined
-            if (!accountId || !key) return
             let exampleCodeContent = `await horizon.data(${[accountId, key].map(s => s === undefined ? "undefined" : JSON.stringify(s, null, 4)).join(', ')})`
             while (exampleCodeContent.endsWith(', undefined)')) exampleCodeContent = exampleCodeContent.slice(0, -12) + ')'
             if (exampleCodeContent.endsWith('(undefined)')) exampleCodeContent = exampleCodeContent.replace('(undefined)', '()')

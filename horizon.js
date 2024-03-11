@@ -39,8 +39,7 @@ const horizon = Object.defineProperties({}, {
             try {
                 eventSource = new EventSource(url)
             } catch (e) {
-                throw new Error(
-                    `Event source creation failed for resourceType: ${resourceType}, resourceId: ${resourceId}, scope: ${scope}: ${e}`, { cause: e })
+                throw new Error(`Event source creation failed for resourceType: ${resourceType}, resourceId: ${resourceId}, scope: ${scope}: ${e}`, { cause: e })
             }
             let hasOpened
             return new Promise((resolve, reject) => {
@@ -86,7 +85,6 @@ const horizon = Object.defineProperties({}, {
                     isLastPage = pageOrigLength < (params?.limit ?? 10)
                 }
             }
-            return
         }
     },
     _types: {
