@@ -207,7 +207,7 @@ listener.addEventListener('message', event => console.log(event.data))`
                 signer_weight: 'number',
                 master_key_weight: 'number',
                 low_threshold: 'number',
-                med_threshold: 'nunber',
+                med_threshold: 'number',
                 high_threshold: 'number',
                 set_flags: ['number'],
                 set_flags_s: ['number'],
@@ -242,7 +242,17 @@ listener.addEventListener('message', event => console.log(event.data))`
                 for (const attr of operationAttributes) {
                     const attrInput = document.createElement('input')
                     attrInput.setAttribute('name', attr)
-                    attrInput.setAttribute('placeholder', operationAttributeTypes[attr] ? `${attr} (JSON-encoded)` : attr)
+                    if (operationAttributeTypes[attr]) {
+                        if (operationAttributeTypes[attr] === 'number') {
+                            attrInput.setAttribute('placeholder', attr)
+                            attrInput.setAttribute('type', 'number')
+                        } else {
+                            attrInput.setAttribute('placeholder', `${attr} as ${JSON.stringify(operationAttributeTypes[attr])} JSON-encoded`)
+                            attrInput.dataset.type = 'json'
+                        }
+                    } else {
+                        attrInput.setAttribute('placeholder', attr)
+                    }
                     attributesInputs.append(attrInput)
                 }
             }
