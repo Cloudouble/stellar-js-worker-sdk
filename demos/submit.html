@@ -302,9 +302,13 @@ listener.addEventListener('message', event => console.log(event.data))`
                     type: operationElement.querySelector('select[name="type"]').value
                 }
                 if (!operationObject.type) continue
+                operationObject.type_i = parseInt(operationObject.type)
+                operationObject.type = operationTypes[operationObject.type_i]?.type
+                if (!operationObject.type) continue
                 for (const operationAttributeInput of operationElement.querySelectorAll('.operation-attributes > input')) {
                     const attrName = operationAttributeInput.name, attrValue = operationAttributeInput.value
-                    if (attrValue) operationObject[attrName] = attrValue
+                    if (!attrValue) continue
+                    operationObject[attrName] = attrValue
                     if (operationAttributeInput.getAttribute('type') === 'number') {
                         operationObject[attrName] = parseInt(operationObject[attrName]) ?? undefined
                     } else if (operationAttributeInput.dataset.type === 'json') {
