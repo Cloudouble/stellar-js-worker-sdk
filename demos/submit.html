@@ -223,14 +223,14 @@ listener.addEventListener('message', event => console.log(event.data))`
                 asset_balance_changes: ['object'],
                 extend_to: 'number'
             },
-            operationTypeSelect = `<select class="operation-type"><option value="">Select Operation Type</option>${operationTypes
+            operationTypeSelect = `<select name="type"><option value="">Select Operation Type</option>${operationTypes
                 .map((t, i) => typeof t === 'object' ? ('<option value="' + i + '">' + t.type + '</option>') : '').join('')}</select>`
         addOperationButton.addEventListener('click', event => {
             const newOperation = document.createElement('div')
             newOperation.classList.add('operation')
             newOperation.innerHTML = `${operationTypeSelect}<span class="operation-attributes"></span><i title="remove operation">x</i>`
             operationsFieldset.querySelector('small') ? operationsFieldset.replaceChildren(newOperation) : operationsFieldset.append(newOperation)
-            const typeSelector = newOperation.querySelector('select.operation-type'),
+            const typeSelector = newOperation.querySelector('select[name="type"]'),
                 attributesInputs = newOperation.querySelector('span.operation-attributes'),
                 removeButton = newOperation.querySelector('i')
             typeSelector.focus()
@@ -263,36 +263,52 @@ listener.addEventListener('message', event => console.log(event.data))`
                     transactionObject.memo_type = memoType
                 }
             }
-            const preconditionElements = buildSection.querySelectorAll('fieldset[name="preconditions"] div')
+            const preconditionElements = buildSection.querySelectorAll('fieldset[name="preconditions"] > div')
             for (const preconditionElement of preconditionElements) {
                 const preconditionName = preconditionElement.getAttribute('name'), preconditionObject = {}
                 for (const inputElement of preconditionElement.querySelectorAll('input')) {
                     const inputName = inputElement.getAttribute('name'), inputValue = inputElement.value
                     if (inputValue) {
-                        if (inputValue && preconditionName === 'extra_signers') {
+                        if (inputValue && inputElement.dataset.type === 'json') {
                             try {
                                 preconditionObject[inputName] = JSON.parse(inputValue)
                             } catch (e) {
-                                console.error('Invalid extra_signers value', e)
+                                console.error(`Invalid ${inputName} JSON value`, e)
                             }
                         } else {
                             preconditionObject[inputName] = (inputElement.getAttribute('type') === 'number') ? (parseInt(inputValue) || undefined) : inputValue
                         }
                     }
                 }
-                console.log('line 283', preconditionObject)
                 if (Object.keys(preconditionObject).length > 0) {
                     transactionObject.preconditions ||= {}
                     const preconditionValue = preconditionObject[null] ?? preconditionObject
                     if (preconditionValue !== undefined) transactionObject.preconditions[preconditionName] = preconditionValue
                 }
             }
-
-
-            //operation_count
-
-
-
+            const operationElements = buildSection.querySelectorAll('fieldset[name="operations"] > div')
+            for (const operationElement of operationElements) {
+                const operationObject = {
+                    type: operationElement.querySelector('select[name="type"]').value
+                }
+                if (!operationObject.type) continue
+                for (const operationAttributeInput of operationElement.querySelectorAll('.operation-attributes > input')) {
+                    const attrName = operationAttributeInput.name, attrValue = operationAttributeInput.value
+                    if (attrValue) operationObject[attrName] = attrValue
+                    if (operationAttributeInput.getAttribute('type') === 'number') {
+                        operationObject[attrName] = parseInt(operationObject[attrName]) ?? undefined
+                    } else if (operationAttributeInput.dataset.type === 'json') {
+                        try {
+                            operationObject[attrName] = JSON.parse(operationObject[attrName])
+                        } catch (e) {
+                            console.error(`Invalid ${attrName} JSON value in ${operationObject.type} operation`, e)
+                        }
+                    }
+                }
+                transactionObject.operations ||= []
+                transactionObject.operations.push(operationObject)
+            }
+            transactionObject.operation_count = transactionObject.operations?.length || 0
             buildResult.textContent = JSON.stringify(transactionObject, null, 4)
         })
 
@@ -393,7 +409,7 @@ listener.addEventListener('message', event => console.log(event.data))`
                                 placeholder="number value">
                         </div>
                         <div name="extra_signers"><strong>extra_signers</strong><input
-                                placeholder="array of strings (JSON encoded)"></div>
+                                placeholder="array of strings (JSON encoded)" data-type="json"></div>
                     </fieldset>
                 </label>
                 <label>
