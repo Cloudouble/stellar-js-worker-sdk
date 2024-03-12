@@ -186,8 +186,20 @@ footer {
 }
 
 #build {
+
+    &>form>label>input {
+        display: inline-block;
+        min-width: 23em;
+    }
+
     label {
         overflow-x: auto;
+
+        fieldset[name="preconditions"] {
+            strong {
+                min-width: 19em;
+            }
+        }
 
         fieldset[name="operations"] {
             overflow-x: auto;

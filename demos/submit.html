@@ -151,6 +151,7 @@ listener.addEventListener('message', event => console.log(event.data))`
 
 
         const buildSection = document.getElementById('build'), operationsFieldset = buildSection.querySelector('fieldset[name="operations"]'),
+            buildButton = buildSection.querySelector('button.get-result'), buildResult = buildSection.querySelector('.result'),
             addOperationButton = buildSection.querySelector('button[name="add-operation"]'),
             operationTypes = [
                 { type: 'create_account', attributes: ['starting_balance', 'funder', 'account'] },
@@ -251,7 +252,49 @@ listener.addEventListener('message', event => console.log(event.data))`
                 newOperation.remove()
             })
         })
+        buildButton.addEventListener('click', event => {
+            const transactionObject = {}, directFields = ['source_account', 'source_account_sequence', 'max_fee']
+            for (const fieldName of directFields) transactionObject[fieldName] = buildSection.querySelector(`input[name="${fieldName}"]`).value
+            const memoType = buildSection.querySelector('select[name="memo_type"]').value
+            if (memoType) {
+                const memo = buildSection.querySelector('input[name="memo"]').value
+                if (memo) {
+                    transactionObject.memo = memo
+                    transactionObject.memo_type = memoType
+                }
+            }
+            const preconditionElements = buildSection.querySelectorAll('fieldset[name="preconditions"] div')
+            for (const preconditionElement of preconditionElements) {
+                const preconditionName = preconditionElement.getAttribute('name'), preconditionObject = {}
+                for (const inputElement of preconditionElement.querySelectorAll('input')) {
+                    const inputName = inputElement.getAttribute('name'), inputValue = inputElement.value
+                    if (inputValue) {
+                        if (inputValue && preconditionName === 'extra_signers') {
+                            try {
+                                preconditionObject[inputName] = JSON.parse(inputValue)
+                            } catch (e) {
+                                console.error('Invalid extra_signers value', e)
+                            }
+                        } else {
+                            preconditionObject[inputName] = (inputElement.getAttribute('type') === 'number') ? (parseInt(inputValue) || undefined) : inputValue
+                        }
+                    }
+                }
+                console.log('line 283', preconditionObject)
+                if (Object.keys(preconditionObject).length > 0) {
+                    transactionObject.preconditions ||= {}
+                    const preconditionValue = preconditionObject[null] ?? preconditionObject
+                    if (preconditionValue !== undefined) transactionObject.preconditions[preconditionName] = preconditionValue
+                }
+            }
 
+
+            //operation_count
+
+
+
+            buildResult.textContent = JSON.stringify(transactionObject, null, 4)
+        })
 
 
 
@@ -306,33 +349,51 @@ listener.addEventListener('message', event => console.log(event.data))`
             <form>
                 <label>
                     <strong>Source Account</strong>
-                    <input name>
+                    <input name="source_account" placeholder="Address of source account">
                 </label>
                 <label>
                     <strong>Sequence Number</strong>
-                    <input name>
+                    <input name="source_account_sequence" placeholder="Sequence number from source account">
                 </label>
                 <label>
-                    <strong>Base Fee</strong>
-                    <input name>
+                    <strong>Max Fee</strong>
+                    <input name="max_fee" type="number" placeholder="Max fee (in stroops)" value="100">
                 </label>
                 <label>
                     <strong>Memo</strong>
                     <fieldset name="memo">
-                        <select>
+                        <select name="memo_type">
                             <option value="">No Memo</option>
-                            <option value="text">Text Memo</option>
-                            <option value="hash">Hash Memo</option>
-                            <option value="return">Return Memo</option>
+                            <option value="MEMO_TEXT">Text Memo</option>
+                            <option value="MEMO_ID">ID Memo</option>
+                            <option value="MEMO_HASH">Hash Memo</option>
+                            <option value="MEMO_RETURN">Return Memo</option>
                         </select>
-                        <input name placeholder="memo content">
+                        <input name="memo" placeholder="memo content">
                     </fieldset>
                 </label>
                 <label>
-                    <strong>Time Bounds (optional)</strong>
-                    <fieldset name="timebounds">
-                        <input name placeholder="lower time bound">
-                        <input name placeholder="upper time bound">
+                    <strong>Preconditions</strong>
+                    <fieldset name="preconditions">
+                        <div name="time_bounds">
+                            <strong>time_bounds</strong><input name="min_time" placeholder="min_time"><input
+                                name="max_time" placeholder="max_time">
+                        </div>
+                        <div name="ledger_bounds">
+                            <strong>ledger_bounds</strong><input name="min_ledger" type="number"
+                                placeholder="min_ledger"><input name="max_ledger" type="number"
+                                placeholder="max_ledger">
+                        </div>
+                        <div name="min_account_sequence"><strong>min_account_sequence</strong><input
+                                placeholder="string value"></div>
+                        <div name="min_account_sequence_age"><strong>min_account_sequence_age</strong><input
+                                type="number" placeholder="number value"></div>
+                        <div name="min_account_sequence_ledger_gap">
+                            <strong>min_account_sequence_ledger_gap</strong><input type="number"
+                                placeholder="number value">
+                        </div>
+                        <div name="extra_signers"><strong>extra_signers</strong><input
+                                placeholder="array of strings (JSON encoded)"></div>
                     </fieldset>
                 </label>
                 <label>
@@ -342,8 +403,8 @@ listener.addEventListener('message', event => console.log(event.data))`
                 </label>
                 <button type="button" class="get-result">Build</button>
             </form>
-            <code class="example">Example Code</code>
-            <pre class="result">Result output</pre>
+            <!-- <code class="example">Example Code</code> -->
+            <pre class="result">Transaction Object</pre>
         </section>
         <section id="envelope">
             <h2>Envelope</h2>
