@@ -150,10 +150,9 @@ const horizon = Object.defineProperties({}, {
                 STRKEY_SIGNED_PAYLOAD: [15 << 3, 'PK'], STRKEY_CONTRACT: [2 << 3, 'Hash']
             },
             crc16: function (bytes) {
-                const polynomial = 0x1021
                 let [crc, i, j] = [0x0000, 0, 0]
                 for (; i < bytes.length; i++) for ((crc ^= bytes[i] << 8, j = 0); j < 8; j++) crc = ((crc & 0x8000) !== 0)
-                    ? (((crc << 1) & 0xFFFF) ^ polynomial) : ((crc << 1) & 0xFFFF)
+                    ? (((crc << 1) & 0xFFFF) ^ 0x1021) : ((crc << 1) & 0xFFFF)
                 return new Uint8Array([crc & 0xFF, crc >> 8])
             },
             base32Decode: function (base32String) {
