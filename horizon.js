@@ -209,39 +209,4 @@ for (const t in horizon._types) {
     if (listenable.includes(t)) horizon.listen[t] = horizon._listen.bind(horizon, t)
 }
 
-window.source = [
-    208,
-    224,
-    69,
-    231,
-    133,
-    162,
-    31,
-    177,
-    250,
-    104,
-    138,
-    186,
-    172,
-    139,
-    34,
-    137,
-    92,
-    20,
-    18,
-    118,
-    232,
-    19,
-    154,
-    16,
-    194,
-    184,
-    127,
-    216,
-    52,
-    179,
-    47,
-    0
-]
-
 export { horizon }
