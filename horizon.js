@@ -188,8 +188,7 @@ const horizon = Object.defineProperties({}, {
                 return [addressBytes, memoBytes, payloadBytes, keyType]
             },
             bytesPublicKeyToAddress: function (addressBytes, memoBytes = [], payloadBytes = [], keyType = 'STRKEY_PUBKEY') {
-                const bytes = []
-                bytes.push(this.keyTypeMap[keyType][0] | this.algorithms[this.keyTypeMap[keyType][1]], ...addressBytes)
+                const bytes = [this.keyTypeMap[keyType][0] | this.algorithms[this.keyTypeMap[keyType][1]], ...addressBytes]
                 if ((keyType === 'STRKEY_MUXED') && memoBytes && memoBytes.length) bytes.push(...memoBytes)
                 if ((keyType === 'STRKEY_SIGNED_PAYLOAD') && payloadBytes && payloadBytes.length) {
                     const payloadLengthView = new DataView(new ArrayBuffer(4))
