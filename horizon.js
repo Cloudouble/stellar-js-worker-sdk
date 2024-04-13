@@ -194,9 +194,7 @@ const horizon = Object.defineProperties({}, {
                 if ((keyType === 'STRKEY_SIGNED_PAYLOAD') && payloadBytes && payloadBytes.length) {
                     const payloadLengthView = new DataView(new ArrayBuffer(4))
                     payloadLengthView.setUint32(0, payloadBytes.length, false)
-                    bytes.push(...(new Uint8Array(payloadLengthView.buffer)))
-                    bytes.push(...payloadBytes)
-                    bytes.push(...(new Uint8Array(4 - payloadBytes.length % 4)).fill(0))
+                    bytes.push(...(new Uint8Array(payloadLengthView.buffer)), ...payloadBytes, ...(new Uint8Array(4 - payloadBytes.length % 4)).fill(0))
                 }
                 bytes.push(...this.crc16(bytes))
                 return this.base32Encode(new Uint8Array(bytes))
