@@ -138,7 +138,64 @@ const horizon = Object.defineProperties({}, {
             const transactionXdr = await this._build(transaction)
             return fetch(`${this.network.endpoint}/transactions?tx=${await this._sign(transactionXdr)}`, { method: 'POST', headers: { Accept: "application/json" } })
         }
-    }
+    },
+    utils: {
+        enumerable: true,
+        value: {
+            keyTypeMap: {
+                STRKEY_PUBKEY: 6 << 3,
+                STRKEY_MUXED: 12 << 3,
+                STRKEY_PRIVKEY: 18 << 3,
+                STRKEY_PRE_AUTH_TX: 19 << 3,
+                STRKEY_HASH_X: 23 << 3,
+                STRKEY_SIGNED_PAYLOAD: 15 << 3,
+                STRKEY_CONTRACT: 2 << 3
+            },
+            algorithmMap: {
+                STRKEY_ALG_ED25519: 0,
+                STRKEY_ALG_SHA256: 0
+            },
+            addressToPublicKeyBytes: function (address) {
+            },
+            bytesPublicKeyToAddress: function (addressBytes, memoBytes = [], payloadBytes = [], keyType = 'STRKEY_PUBKEY', algorithm = 'STRKEY_ALG_ED25519') {
+                // https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md
+                // https://datatracker.ietf.org/doc/html/rfc4648
+                const bytes = []
+
+                // 1. Start with the appropriate version byte computed by the OR of a key type base value and algorithm selector from the tables above
+                const versionByte = this.keyTypeMap[keyType] | this.algorithmMap[algorithm]
+                bytes.push(versionByte)
+
+                // 2. Append the binary bytes of the key (e.g., 32-bytes for ED25519).
+                bytes.push(...Array.from(addressBytes))
+
+                // 3. If we are encoding a multiplexed address, append an 8-byte memo ID in network byte order (most significant byte first).
+                if (keyType === 'STRKEY_MUXED') bytes.push(...Array.from(memoBytes))
+
+                // 4. If we are encoding a signed payload, append a 4-byte length in network byte order (most significant byte first) that holds 
+                // the length of the payload, then append the payload, and finally zero padding of 0 to 3 zero bytes such that the total 
+                // number of bytes of the payload plus the zero padding is a multiple of four.
+                const payloadLengthView = new DataView(new ArrayBuffer(4))
+                payloadLengthView.setUint32(0, payloadBytes.length, false)
+                bytes.push(...Array.from(new Uint8Array(payloadLengthView.buffer)))
+                bytes.push(...Array.from(payloadBytes))
+                bytes.push(...(new Array(paddingLength = 4 - payloadBytes.length % 4)).fill(0))
+
+
+                // 5. Compute a 16-bit CRC16 checksum of the result of the prior step (using polynomial x16 + x12 + x5 + 1). 
+                // Append the two-byte checksum to the result of the previous step (e.g., producing a 35-byte quantity for a 
+                // non-multiplexed ED25519 public key, or 43 byte quantity for a multiplexed one).
+
+
+                // 6. Encode the result of the previous step using RFC4648 base-32 encoding without padding. For example, a multiplexed address 
+                // yields a 43-byte quantity whose base-32 encoding is 69 bytes with no trailing = signs because no padding is allowed.
+
+
+                return bytes
+            }
+        }
+    },
+
 })
 const listenable = ['ledgers', 'transactions', 'operations', 'payments', 'effects', 'accounts', 'trades', 'order_book']
 for (const t in horizon._types) {

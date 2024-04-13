@@ -174,7 +174,8 @@ listener.addEventListener('message', event => console.log(event.data))`
                 },
                 { type: 'change_trust', attributes: ['asset_type', 'asset_code', 'asset_issuer', 'limit', 'trustee', 'trustor', 'liquidity_pool_id'] },
                 { type: 'allow_trust', attributes: ['asset_type', 'asset_code', 'asset_issuer', 'authorize', 'trustee', 'trustor'] },
-                { type: 'account_merge', attributes: ['account', 'into'] }, 9,
+                { type: 'account_merge', attributes: ['account', 'into'] },
+                9,
                 { type: 'manage_data', attributes: ['name', 'value'] },
                 { type: 'bump_sequence', attributes: ['bump_to'] },
                 {
@@ -188,15 +189,19 @@ listener.addEventListener('message', event => console.log(event.data))`
                 { type: 'create_claimable_balance', attributes: ['asset', 'amount', 'claimants'] },
                 { type: 'claim_claimable_balance', attributes: ['balance_id', 'claimant'] },
                 { type: 'begin_sponsoring_future_reserves', attributes: ['sponsored_id'] },
-                { type: 'end_sponsoring_future_reserves', attributes: ['begin_sponsor'] }, 18,
+                { type: 'end_sponsoring_future_reserves', attributes: ['begin_sponsor'] },
                 {
                     type: 'revoke_sponsorship', attributes: ['account_id', 'claimable_balance_id', 'data_account_id', 'data_name', 'offer_id',
                         'trustline_account_id', 'trustline_asset', 'signer_account_id', 'signer_key']
-                }, 20, 21,
+                },
+                { type: 'clawback', attributes: ['asset', 'from', 'amount'] },
+                { type: 'clawback_claimable_balance', attributes: ['balance_id'] },
+                { type: 'set_trust_line_flags', attributes: ['trustor', 'asset', 'set_flags', 'set_flags_s', 'clear_flags', 'clear_flags_s'] },
                 {
                     type: 'liquidity_pool_deposit', attributes: ['liquidity_pool_id', 'reserves_max', 'min_price', 'min_price_r', 'max_price', 'max_price_r',
                         'reserves_deposited', 'shares_received']
-                }, 23,
+                },
+                23,
                 { type: 'invoke_host_function', attributes: ['function', 'parameters', 'address', 'salt', 'asset_balance_changes'] },
                 { type: 'extend_footprint_ttl', attributes: ['extend_to'] },
                 { type: 'restore_footprint', attributes: [] }
@@ -330,7 +335,7 @@ listener.addEventListener('message', event => console.log(event.data))`
 
 
         window.horizon = horizon
-        console.log('line 161', horizon)
+        console.log('line 338', horizon)
         // test account on test netwwork: GA5VCCBNG4SIEST6HYIW2F3KKZRHA4UZZ2XFSMZ4VRQ4MCBRHSQRRIPE
 
     </script>
@@ -442,12 +447,12 @@ listener.addEventListener('message', event => console.log(event.data))`
 
         </section>
         <section id="sign">
-            <h2>Transaction</h2>
+            <h2>Sign</h2>
             <p>Sign the transaction</p>
 
         </section>
         <section id="submit">
-            <h2>Transaction</h2>
+            <h2>Submit</h2>
             <p>Submit the transaction</p>
 
         </section>
