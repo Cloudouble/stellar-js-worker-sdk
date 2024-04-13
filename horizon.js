@@ -142,29 +142,55 @@ const horizon = Object.defineProperties({}, {
     utils: {
         enumerable: true,
         value: {
+            base32Chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567',
+            algorithms: { PK: 0, Hash: 0 },
             keyTypeMap: {
-                STRKEY_PUBKEY: 6 << 3,
-                STRKEY_MUXED: 12 << 3,
-                STRKEY_PRIVKEY: 18 << 3,
-                STRKEY_PRE_AUTH_TX: 19 << 3,
-                STRKEY_HASH_X: 23 << 3,
-                STRKEY_SIGNED_PAYLOAD: 15 << 3,
-                STRKEY_CONTRACT: 2 << 3
+                STRKEY_PUBKEY: [6 << 3, 'PK'], STRKEY_MUXED: [12 << 3, 'PK'], STRKEY_PRIVKEY: [18 << 3, 'PK'],
+                STRKEY_PRE_AUTH_TX: [19 << 3, 'Hash'], STRKEY_HASH_X: [23 << 3, 'Hash'],
+                STRKEY_SIGNED_PAYLOAD: [15 << 3, 'PK'], STRKEY_CONTRACT: [2 << 3, 'Hash']
             },
-            algorithmMap: {
-                STRKEY_ALG_ED25519: 0,
-                STRKEY_ALG_SHA256: 0
+            crc16: function (bytes) {
+                const polynomial = 0x1021
+                let [crc, i, j] = [0x0000, 0, 0]
+                for (; i < bytes.length; i++) for ((crc ^= bytes[i] << 8, j = 0); j < 8; j++) crc = ((crc & 0x8000) !== 0)
+                    ? (((crc << 1) & 0xFFFF) ^ polynomial) : ((crc << 1) & 0xFFFF)
+                return [crc & 0xFF, crc >> 8]
             },
-            addressToPublicKeyBytes: function (address) {
+            base32Decode: function (base32String) {
+                let [bytes, bits, value, index, i] = [[], 0, 0, 0, 0]
+                for (; i < base32String.length; i++) {
+                    [value, bits] = [(value << 5) | (index = this.base32Chars.indexOf(base32String[i])), bits + 5]
+                    if (index === -1) throw new Error('Invalid base-32 character')
+                    while (bits >= 8) {
+                        bytes.push(value >>> (bits - 8) & 0xFF)
+                        bits -= 8
+                        value &= (1 << bits) - 1
+                    }
+                }
+                return new Uint8Array(bytes)
             },
-            bytesPublicKeyToAddress: function (addressBytes, memoBytes = [], payloadBytes = [], keyType = 'STRKEY_PUBKEY', algorithm = 'STRKEY_ALG_ED25519') {
+            base32Encode: function (bytes) {
+                let [base32String, bits, value, index, i] = ['', 0, 0, 0, 0]
+                for (; i < bytes.length; i++) {
+                    [value, bits] = [(value << 8) | bytes[i], bits + 8]
+                    while (bits >= 5) [base32String, bits] = [base32String + this.base32Chars[index = (value >>> (bits - 5)) & 31], bits - 5]
+                }
+                if (bits > 0) [index, base32String] = [(value << (5 - bits)) & 31, base32String + this.base32Chars[index]]
+                return base32String
+            },
+            addressToPublicKeyBytes: function (addressString) {
+                let bytes = this.base32Decode(addressString), addressBytes = [], memoBytes = [], payloadBytes = [], keyType
+                for (const k in this.keyTypeMap) if (this.base32Encode([this.keyTypeMap[k][0]])[0] === addressString[0]) { keyType = k; break }
+
+                return [addressBytes, memoBytes, payloadBytes, keyType]
+            },
+            bytesPublicKeyToAddress: function (addressBytes, memoBytes = [], payloadBytes = [], keyType = 'STRKEY_PUBKEY') {
                 // https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md
                 // https://datatracker.ietf.org/doc/html/rfc4648
                 const bytes = []
 
                 // 1. Start with the appropriate version byte computed by the OR of a key type base value and algorithm selector from the tables above
-                const versionByte = this.keyTypeMap[keyType] | this.algorithmMap[algorithm]
-                bytes.push(versionByte)
+                bytes.push(this.keyTypeMap[keyType][0] | this.algorithms[this.keyTypeMap[keyType][1]])
 
                 // 2. Append the binary bytes of the key (e.g., 32-bytes for ED25519).
                 bytes.push(...Array.from(addressBytes))
@@ -186,13 +212,13 @@ const horizon = Object.defineProperties({}, {
                 // 5. Compute a 16-bit CRC16 checksum of the result of the prior step (using polynomial x16 + x12 + x5 + 1). 
                 // Append the two-byte checksum to the result of the previous step (e.g., producing a 35-byte quantity for a 
                 // non-multiplexed ED25519 public key, or 43 byte quantity for a multiplexed one).
-
+                bytes.push(...this.crc16(bytes))
 
                 // 6. Encode the result of the previous step using RFC4648 base-32 encoding without padding. For example, a multiplexed address 
                 // yields a 43-byte quantity whose base-32 encoding is 69 bytes with no trailing = signs because no padding is allowed.
-
-
-                return bytes
+                // GDIOARPHQWRB7MP2NCFLVLELEKEVYFASO3UBHGQQYK4H7WBUWMXQAMOV
+                console.log('line 214', bytes)
+                return this.base32Encode(bytes)
             }
         }
     },
@@ -204,5 +230,40 @@ for (const t in horizon._types) {
     horizon.stream[t] = horizon._stream.bind(horizon, t)
     if (listenable.includes(t)) horizon.listen[t] = horizon._listen.bind(horizon, t)
 }
+
+window.source = [
+    208,
+    224,
+    69,
+    231,
+    133,
+    162,
+    31,
+    177,
+    250,
+    104,
+    138,
+    186,
+    172,
+    139,
+    34,
+    137,
+    92,
+    20,
+    18,
+    118,
+    232,
+    19,
+    154,
+    16,
+    194,
+    184,
+    127,
+    216,
+    52,
+    179,
+    47,
+    0
+]
 
 export { horizon }
