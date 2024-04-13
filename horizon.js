@@ -170,17 +170,18 @@ const horizon = Object.defineProperties({}, {
                 bytes.push(...Array.from(addressBytes))
 
                 // 3. If we are encoding a multiplexed address, append an 8-byte memo ID in network byte order (most significant byte first).
-                if (keyType === 'STRKEY_MUXED') bytes.push(...Array.from(memoBytes))
+                if ((keyType === 'STRKEY_MUXED') && memoBytes && memoBytes.length) bytes.push(...Array.from(memoBytes))
 
                 // 4. If we are encoding a signed payload, append a 4-byte length in network byte order (most significant byte first) that holds 
                 // the length of the payload, then append the payload, and finally zero padding of 0 to 3 zero bytes such that the total 
                 // number of bytes of the payload plus the zero padding is a multiple of four.
-                const payloadLengthView = new DataView(new ArrayBuffer(4))
-                payloadLengthView.setUint32(0, payloadBytes.length, false)
-                bytes.push(...Array.from(new Uint8Array(payloadLengthView.buffer)))
-                bytes.push(...Array.from(payloadBytes))
-                bytes.push(...(new Array(paddingLength = 4 - payloadBytes.length % 4)).fill(0))
-
+                if ((keyType === 'STRKEY_SIGNED_PAYLOAD') && payloadBytes && payloadBytes.length) {
+                    const payloadLengthView = new DataView(new ArrayBuffer(4))
+                    payloadLengthView.setUint32(0, payloadBytes.length, false)
+                    bytes.push(...Array.from(new Uint8Array(payloadLengthView.buffer)))
+                    bytes.push(...Array.from(payloadBytes))
+                    bytes.push(...(new Array(paddingLength = 4 - payloadBytes.length % 4)).fill(0))
+                }
 
                 // 5. Compute a 16-bit CRC16 checksum of the result of the prior step (using polynomial x16 + x12 + x5 + 1). 
                 // Append the two-byte checksum to the result of the previous step (e.g., producing a 35-byte quantity for a 
