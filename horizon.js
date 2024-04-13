@@ -154,7 +154,7 @@ const horizon = Object.defineProperties({}, {
                 let [crc, i, j] = [0x0000, 0, 0]
                 for (; i < bytes.length; i++) for ((crc ^= bytes[i] << 8, j = 0); j < 8; j++) crc = ((crc & 0x8000) !== 0)
                     ? (((crc << 1) & 0xFFFF) ^ polynomial) : ((crc << 1) & 0xFFFF)
-                return [crc & 0xFF, crc >> 8]
+                return new Uint8Array([crc & 0xFF, crc >> 8])
             },
             base32Decode: function (base32String) {
                 let [bytes, bits, value, index, i] = [[], 0, 0, 0, 0]
@@ -179,46 +179,27 @@ const horizon = Object.defineProperties({}, {
                 return base32String
             },
             addressToPublicKeyBytes: function (addressString) {
-                let bytes = this.base32Decode(addressString), addressBytes = [], memoBytes = [], payloadBytes = [], keyType
+                let [bytes, addressBytes, memoBytes, payloadBytes] = [this.base32Decode(addressString)], keyType
                 for (const k in this.keyTypeMap) if (this.base32Encode([this.keyTypeMap[k][0]])[0] === addressString[0]) { keyType = k; break }
-
+                bytes = bytes.slice(1, -2)
+                addressBytes = bytes.slice(0, 32)
+                if (keyType === 'STRKEY_MUXED') memoBytes = bytes.slice(0, 8)
+                if (keyType === 'STRKEY_SIGNED_PAYLOAD') payloadBytes = bytes.slice(4, 4 + (new DataView(bytes.buffer, 0, 4)).getUint32(0, false))
                 return [addressBytes, memoBytes, payloadBytes, keyType]
             },
             bytesPublicKeyToAddress: function (addressBytes, memoBytes = [], payloadBytes = [], keyType = 'STRKEY_PUBKEY') {
-                // https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md
-                // https://datatracker.ietf.org/doc/html/rfc4648
                 const bytes = []
-
-                // 1. Start with the appropriate version byte computed by the OR of a key type base value and algorithm selector from the tables above
-                bytes.push(this.keyTypeMap[keyType][0] | this.algorithms[this.keyTypeMap[keyType][1]])
-
-                // 2. Append the binary bytes of the key (e.g., 32-bytes for ED25519).
-                bytes.push(...Array.from(addressBytes))
-
-                // 3. If we are encoding a multiplexed address, append an 8-byte memo ID in network byte order (most significant byte first).
-                if ((keyType === 'STRKEY_MUXED') && memoBytes && memoBytes.length) bytes.push(...Array.from(memoBytes))
-
-                // 4. If we are encoding a signed payload, append a 4-byte length in network byte order (most significant byte first) that holds 
-                // the length of the payload, then append the payload, and finally zero padding of 0 to 3 zero bytes such that the total 
-                // number of bytes of the payload plus the zero padding is a multiple of four.
+                bytes.push(this.keyTypeMap[keyType][0] | this.algorithms[this.keyTypeMap[keyType][1]], ...addressBytes)
+                if ((keyType === 'STRKEY_MUXED') && memoBytes && memoBytes.length) bytes.push(...memoBytes)
                 if ((keyType === 'STRKEY_SIGNED_PAYLOAD') && payloadBytes && payloadBytes.length) {
                     const payloadLengthView = new DataView(new ArrayBuffer(4))
                     payloadLengthView.setUint32(0, payloadBytes.length, false)
-                    bytes.push(...Array.from(new Uint8Array(payloadLengthView.buffer)))
-                    bytes.push(...Array.from(payloadBytes))
-                    bytes.push(...(new Array(paddingLength = 4 - payloadBytes.length % 4)).fill(0))
+                    bytes.push(...(new Uint8Array(payloadLengthView.buffer)))
+                    bytes.push(...payloadBytes)
+                    bytes.push(...(new Uint8Array(4 - payloadBytes.length % 4)).fill(0))
                 }
-
-                // 5. Compute a 16-bit CRC16 checksum of the result of the prior step (using polynomial x16 + x12 + x5 + 1). 
-                // Append the two-byte checksum to the result of the previous step (e.g., producing a 35-byte quantity for a 
-                // non-multiplexed ED25519 public key, or 43 byte quantity for a multiplexed one).
                 bytes.push(...this.crc16(bytes))
-
-                // 6. Encode the result of the previous step using RFC4648 base-32 encoding without padding. For example, a multiplexed address 
-                // yields a 43-byte quantity whose base-32 encoding is 69 bytes with no trailing = signs because no padding is allowed.
-                // GDIOARPHQWRB7MP2NCFLVLELEKEVYFASO3UBHGQQYK4H7WBUWMXQAMOV
-                console.log('line 214', bytes)
-                return this.base32Encode(bytes)
+                return this.base32Encode(new Uint8Array(bytes))
             }
         }
     },
