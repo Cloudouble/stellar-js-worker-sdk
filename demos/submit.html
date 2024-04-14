@@ -146,59 +146,43 @@
         const buildSection = document.getElementById('build'), operationsFieldset = buildSection.querySelector('fieldset[name="operations"]'),
             buildButton = buildSection.querySelector('button.get-result'), buildResult = buildSection.querySelector('.result'),
             addOperationButton = buildSection.querySelector('button[name="add-operation"]'),
-            operationTypes = [
-                { type: 'create_account', attributes: ['starting_balance', 'funder', 'account'] },
-                { type: 'payment', attributes: ['asset_type', 'asset_code', 'asset_issuer', 'from', 'to', 'amount'] },
-                {
-                    type: 'path_payment_strict_receive', attributes: ['asset_type', 'asset_code', 'asset_issuer', 'from', 'to', 'amount', 'path',
-                        'source_amount', 'source_max', 'source_asset_type', 'source_asset_code', 'source_asset_issuer']
-                },
-                {
-                    type: 'manage_sell_offer', attributes: ['amount', 'price', 'price_r', 'buying_asset_type', 'buying_asset_issuer', 'buying_asset_code',
-                        'selling_asset_type', 'selling_asset_issuer', 'selling_asset_code', 'offer_id']
-                },
-                {
-                    type: 'create_passive_sell_offer', attributes: ['amount', 'price', 'price_r', 'buying_asset_type', 'buying_asset_issuer', 'buying_asset_code',
-                        'selling_asset_type', 'selling_asset_issuer', 'selling_asset_code', 'offer_id']
-                },
-                {
-                    type: 'set_options', attributes: ['signer_key', 'signer_weight', 'master_key_weight', 'low_threshold', 'med_threshold', 'high_threshold',
-                        'home_domain', 'set_flags', 'set_flags_s', 'clear_flags', 'clear_flags_s']
-                },
-                { type: 'change_trust', attributes: ['asset_type', 'asset_code', 'asset_issuer', 'limit', 'trustee', 'trustor', 'liquidity_pool_id'] },
-                { type: 'allow_trust', attributes: ['asset_type', 'asset_code', 'asset_issuer', 'authorize', 'trustee', 'trustor'] },
-                { type: 'account_merge', attributes: ['account', 'into'] },
-                9,
-                { type: 'manage_data', attributes: ['name', 'value'] },
-                { type: 'bump_sequence', attributes: ['bump_to'] },
-                {
-                    type: 'manage_buy_offer', attributes: ['amount', 'price', 'price_r', 'buying_asset_type', 'buying_asset_issuer', 'buying_asset_code',
-                        'selling_asset_type', 'selling_asset_issuer', 'selling_asset_code', 'offer_id']
-                },
-                {
-                    type: 'path_payment_strict_send', attributes: ['asset_type', 'asset_code', 'asset_issuer', 'from', 'to', 'amount', 'path',
-                        'source_amount', 'destination_min', 'source_asset_type', 'source_asset_code', 'source_asset_issuer']
-                },
-                { type: 'create_claimable_balance', attributes: ['asset', 'amount', 'claimants'] },
-                { type: 'claim_claimable_balance', attributes: ['balance_id', 'claimant'] },
-                { type: 'begin_sponsoring_future_reserves', attributes: ['sponsored_id'] },
-                { type: 'end_sponsoring_future_reserves', attributes: ['begin_sponsor'] },
-                {
-                    type: 'revoke_sponsorship', attributes: ['account_id', 'claimable_balance_id', 'data_account_id', 'data_name', 'offer_id',
-                        'trustline_account_id', 'trustline_asset', 'signer_account_id', 'signer_key']
-                },
-                { type: 'clawback', attributes: ['asset', 'from', 'amount'] },
-                { type: 'clawback_claimable_balance', attributes: ['balance_id'] },
-                { type: 'set_trust_line_flags', attributes: ['trustor', 'asset', 'set_flags', 'set_flags_s', 'clear_flags', 'clear_flags_s'] },
-                {
-                    type: 'liquidity_pool_deposit', attributes: ['liquidity_pool_id', 'reserves_max', 'min_price', 'min_price_r', 'max_price', 'max_price_r',
-                        'reserves_deposited', 'shares_received']
-                },
-                23,
-                { type: 'invoke_host_function', attributes: ['function', 'parameters', 'address', 'salt', 'asset_balance_changes'] },
-                { type: 'extend_footprint_ttl', attributes: ['extend_to'] },
-                { type: 'restore_footprint', attributes: [] }
-            ],
+            operationTypes = {
+                CREATE_ACCOUNT: ['starting_balance', 'funder', 'account'],
+                PAYMENT: ['asset_type', 'asset_code', 'asset_issuer', 'from', 'to', 'amount'],
+                PATH_PAYMENT_STRICT_RECEIVE: ['asset_type', 'asset_code', 'asset_issuer', 'from', 'to', 'amount', 'path',
+                    'source_amount', 'source_max', 'source_asset_type', 'source_asset_code', 'source_asset_issuer'],
+                MANAGE_SELL_OFFER: ['amount', 'price', 'price_r', 'buying_asset_type', 'buying_asset_issuer', 'buying_asset_code',
+                    'selling_asset_type', 'selling_asset_issuer', 'selling_asset_code', 'offer_id'],
+                CREATE_PASSIVE_SELL_OFFER: ['amount', 'price', 'price_r', 'buying_asset_type', 'buying_asset_issuer', 'buying_asset_code',
+                    'selling_asset_type', 'selling_asset_issuer', 'selling_asset_code', 'offer_id'],
+                SET_OPTIONS: ['signer_key', 'signer_weight', 'master_key_weight', 'low_threshold', 'med_threshold', 'high_threshold',
+                    'home_domain', 'set_flags', 'set_flags_s', 'clear_flags', 'clear_flags_s'],
+                CHANGE_TRUST: ['asset_type', 'asset_code', 'asset_issuer', 'limit', 'trustee', 'trustor', 'liquidity_pool_id'],
+                ALLOW_TRUST: ['asset_type', 'asset_code', 'asset_issuer', 'authorize', 'trustee', 'trustor'],
+                ACCOUNT_MERGE: ['account', 'into'],
+                INFLATION: null,
+                MANAGE_DATA: ['name', 'value'],
+                BUMP_SEQUENCE: ['bump_to'],
+                MANAGE_BUY_OFFER: ['amount', 'price', 'price_r', 'buying_asset_type', 'buying_asset_issuer', 'buying_asset_code',
+                    'selling_asset_type', 'selling_asset_issuer', 'selling_asset_code', 'offer_id'],
+                PATH_PAYMENT_STRICT_SEND: ['asset_type', 'asset_code', 'asset_issuer', 'from', 'to', 'amount', 'path',
+                    'source_amount', 'destination_min', 'source_asset_type', 'source_asset_code', 'source_asset_issuer'],
+                CREATE_CLAIMABLE_BALANCE: ['asset', 'amount', 'claimants'],
+                CLAIM_CLAIMABLE_BALANCE: ['balance_id', 'claimant'],
+                BEGIN_SPONSORING_FUTURE_RESERVES: ['sponsored_id'],
+                END_SPONSORING_FUTURE_RESERVES: null,
+                REVOKE_SPONSORSHIP: ['account_id', 'claimable_balance_id', 'data_account_id', 'data_name', 'offer_id',
+                    'trustline_account_id', 'trustline_asset', 'signer_account_id', 'signer_key'],
+                CLAWBACK: ['asset', 'from', 'amount'],
+                CLAWBACK_CLAIMABLE_BALANCE: ['balance_id'],
+                SET_TRUST_LINE_FLAGS: ['trustor', 'asset', 'set_flags', 'set_flags_s', 'clear_flags', 'clear_flags_s'],
+                LIQUIDITY_POOL_DEPOSIT: ['liquidity_pool_id', 'reserves_max', 'min_price', 'min_price_r', 'max_price', 'max_price_r',
+                    'reserves_deposited', 'shares_received'],
+                LIQUIDITY_POOL_WITHDRAW: [],
+                INVOKE_HOST_FUNCTION: ['function', 'parameters', 'address', 'salt', 'asset_balance_changes'],
+                EXTEND_FOOTPRINT_TTL: ['extend_to'],
+                RESTORE_FOOTPRINT: []
+            },
             operationAttributeTypes = {
                 path: ['object'],
                 price_r: 'object',
@@ -221,8 +205,8 @@
                 asset_balance_changes: ['object'],
                 extend_to: 'number'
             },
-            operationTypeSelect = `<select name="type"><option value="">Select Operation Type</option>${operationTypes
-                .map((t, i) => typeof t === 'object' ? ('<option value="' + i + '">' + t.type + '</option>') : '').join('')}</select>`
+            operationTypeSelect = `<select name="type"><option value="">Select Operation Type</option>${Object.keys(operationTypes)
+                .map(t => ('<option value="' + t + '">' + t + '</option>')).join('')}</select>`
         const sourceAccountField = buildSection.querySelector('[name="source_account"]'),
             sourceAccountSequenceField = buildSection.querySelector('[name="source_account_sequence"]'),
             fetchSequenceNumber = async () => sourceAccountSequenceField.value = sourceAccountField.value ? (await horizon.get.accounts(sourceAccountField.value)).sequence : ''
@@ -241,7 +225,7 @@
             const setupOperationType = () => {
                 const operationType = typeSelector.value
                 if (!operationType || !operationTypes[operationType]) return attributesInputs.replaceChildren()
-                const operationAttributes = operationTypes[operationType].attributes
+                const operationAttributes = operationTypes[operationType]
                 attributesInputs.replaceChildren()
                 for (const attr of operationAttributes) {
                     const attrInput = document.createElement('input')
@@ -298,7 +282,6 @@
             }
 
 
-
             const preconditionFieldset = buildSection.querySelector('fieldset[name="preconditions"]'), preconditionsObject = { type: 'PRECOND_NONE' }
             for (const condType of ['timeBounds', 'ledgerBounds', 'minSeqNum', 'minSeqAge', 'minSeqLedgerGap', 'extraSigners']) {
                 switch (condType) {
@@ -342,39 +325,11 @@
             transactionObject.cond = preconditionsObject
 
 
-
-
-            // for (const preconditionElement of preconditionElements) {
-            //     const preconditionName = preconditionElement.getAttribute('name'), preconditionObject = {}
-            //     for (const inputElement of preconditionElement.querySelectorAll('input')) {
-            //         const inputName = inputElement.getAttribute('name'), inputValue = inputElement.value
-            //         if (inputValue) {
-            //             if (inputValue && inputElement.dataset.type === 'json') {
-            //                 try {
-            //                     preconditionObject[inputName] = JSON.parse(inputValue)
-            //                 } catch (e) {
-            //                     console.error(`Invalid ${inputName} JSON value`, e)
-            //                 }
-            //             } else {
-            //                 preconditionObject[inputName] = (inputElement.getAttribute('type') === 'number') ? (parseInt(inputValue) || undefined) : inputValue
-            //             }
-            //         }
-            //     }
-            //     if (Object.keys(preconditionObject).length > 0) {
-            //         transactionObject.cond ||= {}
-            //         const preconditionValue = preconditionObject[null] ?? preconditionObject
-            //         if (preconditionValue !== undefined) transactionObject.cond[preconditionName] = preconditionValue
-            //     }
-            // }
             const operationElements = buildSection.querySelectorAll('fieldset[name="operations"] > div')
             for (const operationElement of operationElements) {
                 const operationObject = {
-                    type: operationElement.querySelector('select[name="type"]').value
+                    type: operationElement.querySelector('select[name="type"]').value, body: {}
                 }
-                if (!operationObject.type) continue
-                operationObject.type_i = parseInt(operationObject.type)
-                operationObject.type = operationTypes[operationObject.type_i]?.type
-                if (!operationObject.type) continue
                 for (const operationAttributeInput of operationElement.querySelectorAll('.operation-attributes > input')) {
                     const attrName = operationAttributeInput.name, attrValue = operationAttributeInput.value
                     if (!attrValue) continue
@@ -392,7 +347,6 @@
                 transactionObject.operations ||= []
                 transactionObject.operations.push(operationObject)
             }
-            transactionObject.operation_count = transactionObject.operations?.length || 0
             buildResult.textContent = JSON.stringify(transactionObject, null, 4)
         })
 
@@ -400,7 +354,7 @@
 
 
         window.horizon = horizon
-        console.log('line 338', horizon)
+        console.log('line 378', horizon)
         // test account on test netwwork: GA5VCCBNG4SIEST6HYIW2F3KKZRHA4UZZ2XFSMZ4VRQ4MCBRHSQRRIPE
 
     </script>
