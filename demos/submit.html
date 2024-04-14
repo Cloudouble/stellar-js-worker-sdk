@@ -226,6 +226,7 @@
                 const operationType = typeSelector.value
                 if (!operationType || !operationTypes[operationType]) return attributesInputs.replaceChildren()
                 const operationAttributes = operationTypes[operationType]
+                operationAttributes.unshift('sourceAccount')
                 attributesInputs.replaceChildren()
                 for (const attr of operationAttributes) {
                     const attrInput = document.createElement('input')
@@ -327,21 +328,33 @@
 
             const operationElements = buildSection.querySelectorAll('fieldset[name="operations"] > div')
             for (const operationElement of operationElements) {
+                const operationType = operationElement.querySelector('select[name="type"]').value
+                if (!operationType) continue
+                const operationProperty = operationType.toLowerCase().split('_').map((v, i) => i ? `${v[0].toUpperCase()}${v.slice(1)}` : v).join('') + 'Op'
                 const operationObject = {
-                    type: operationElement.querySelector('select[name="type"]').value, body: {}
+                    body: {
+                        type: operationType,
+                        [operationProperty]: {}
+                    }
                 }
                 for (const operationAttributeInput of operationElement.querySelectorAll('.operation-attributes > input')) {
                     const attrName = operationAttributeInput.name, attrValue = operationAttributeInput.value
                     if (!attrValue) continue
-                    operationObject[attrName] = attrValue
-                    if (operationAttributeInput.getAttribute('type') === 'number') {
-                        operationObject[attrName] = parseInt(operationObject[attrName]) ?? undefined
+                    if (attrName === 'sourceAccount') {
+                        operationObject.sourceAccount = {
+                            ed25519: horizon.utils.addressToPublicKeyBytes(attrValue)[0],
+                            type: 'KEY_TYPE_ED25519'
+                        }
+                    } else if (operationAttributeInput.getAttribute('type') === 'number') {
+                        operationObject.body[operationProperty][attrName] = parseInt(attrValue) ?? undefined
                     } else if (operationAttributeInput.dataset.type === 'json') {
                         try {
-                            operationObject[attrName] = JSON.parse(operationObject[attrName])
+                            operationObject.body[operationProperty][attrName] = JSON.parse(attrValue)
                         } catch (e) {
                             console.error(`Invalid ${attrName} JSON value in ${operationObject.type} operation`, e)
                         }
+                    } else {
+                        operationObject.body[operationProperty][attrName] = attrValue
                     }
                 }
                 transactionObject.operations ||= []
