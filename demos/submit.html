@@ -23,131 +23,124 @@
 
 
 
+        //         const setupSection = sectionId => {
+        //             const section = document.getElementById(sectionId), resourceTypeOptions = [],
+        //                 resourceTypeSelect = section.querySelector('[name="resource-type"]'),
+        //                 resourceIdInput = section.querySelector('[name="resource-id"]'),
+        //                 resourceScopeSelect = section.querySelector('[name="resource-scope"]'),
+        //                 addQueryParameterButton = section.querySelector('[name="add-query-parameter"]'),
+        //                 queryParamsFieldset = section.querySelector('fieldset'),
+        //                 resultButton = section.querySelector('form > button.get-result'),
+        //                 exampleCode = section.querySelector('code.example'),
+        //                 resultOutput = section.querySelector('pre'),
+        //                 populateResourceScopes = () => {
+        //                     const resourceType = resourceTypeSelect.value, resourceScopeOptions = [`<option value="">(optional) Select a Result Scope</option>`]
+        //                     for (const scope of (horizon._types[resourceType] ?? [])) resourceScopeOptions.push(`<option>${scope}</option>`)
+        //                     resourceScopeSelect.innerHTML = resourceScopeOptions.join('')
+        //                 }
+        //             for (const t in horizon[sectionId]) if (typeof horizon[sectionId][t] === 'function') resourceTypeOptions.push(`<option>${t}</option>`)
+        //             resourceTypeSelect.innerHTML = resourceTypeOptions.join('')
+        //             populateResourceScopes()
+        //             resourceTypeSelect.addEventListener('change', event => populateResourceScopes())
+        //             if (addQueryParameterButton) {
+        //                 addQueryParameterButton.addEventListener('click', event => {
+        //                     const newParameter = document.createElement('div')
+        //                     newParameter.innerHTML = `<input placeholder="name"><input placeholder="value (JSON-encoded)">`
+        //                     queryParamsFieldset.querySelector('small') ? queryParamsFieldset.replaceChildren(newParameter) : queryParamsFieldset.append(newParameter)
+        //                     const inputs = Array.from(queryParamsFieldset.querySelectorAll('input'))
+        //                     inputs[inputs.length - 2].focus()
+        //                 })
+        //             }
+        //             let running = false, abortController, eventSource
+        //             resultButton.addEventListener('click', async event => {
+        //                 if (running && abortController && eventSource) {
+        //                     abortController.abort()
+        //                     eventSource.close()
+        //                     resultButton.textContent = 'Start Listening for Results'
+        //                     resultButton.classList.remove('running')
+        //                     abortController = undefined
+        //                     eventSource = undefined
+        //                 }
+        //                 running = !running
+        //                 if (!running) return
+        //                 const resourceType = resourceTypeSelect.value, resourceId = resourceIdInput.value || undefined,
+        //                     resourceScope = resourceScopeSelect.value || undefined,
+        //                     paramFields = queryParamsFieldset ? queryParamsFieldset.querySelectorAll('div') : undefined,
+        //                     params = paramFields?.length
+        //                         ? Object.fromEntries(Array.from(paramFields).map(f => Array.from(f.querySelectorAll('input')).map(i => i.value)).filter(f => f[0] && f[1]))
+        //                         : undefined
+        //                 if (params) for (const k in params) try { params[k] = JSON.parse(params[k]) } catch (e) { }
+        //                 let exampleCodeContent
+        //                 switch (sectionId) {
+        //                     case 'get': case 'listen':
+        //                         exampleCodeContent = `await horizon.${sectionId}.${resourceType}(${[resourceId, resourceScope, params].map(s => s === undefined ? "undefined" : JSON.stringify(s, null, 4)).join(', ')})`
+        //                         while (exampleCodeContent.endsWith(', undefined)')) exampleCodeContent = exampleCodeContent.slice(0, -12) + ')'
+        //                         if (exampleCodeContent.endsWith('(undefined)')) exampleCodeContent = exampleCodeContent.replace('(undefined)', '()')
+        //                         if (sectionId === 'listen') exampleCodeContent = `const { listener, abortController, eventSource }  = ${exampleCodeContent}
+        // listener.addEventListener('message', event => console.log(event.data))`
+        //                         break
+        //                     case 'stream':
+        //                         let iteratorCode = `horizon.${sectionId}.${resourceType}(${[resourceId, resourceScope, params].map(s => s === undefined ? "undefined" : JSON.stringify(s, null, 4)).join(', ')})`
+        //                         while (iteratorCode.endsWith(', undefined)')) iteratorCode = iteratorCode.slice(0, -12) + ')'
+        //                         if (iteratorCode.endsWith('(undefined)')) iteratorCode = iteratorCode.replace('(undefined)', '()')
+        //                         exampleCodeContent = `for await (const record of ${iteratorCode}) { 
+        //     console.log(record) 
+        // }`
+        //                         break
+        //                 }
+        //                 exampleCode.textContent = exampleCodeContent
+        //                 switch (sectionId) {
+        //                     case 'get':
+        //                         try {
+        //                             resultOutput.textContent = JSON.stringify(await horizon[sectionId][resourceType](resourceId, resourceScope, params), null, 4)
+        //                         } catch (e) {
+        //                             resultOutput.textContent = e
+        //                         }
+        //                         running = false
+        //                         break
+        //                     case 'stream':
+        //                         try {
+        //                             resultButton.textContent = 'Stop Streaming Results'
+        //                             resultButton.classList.add('running')
+        //                             resultOutput.textContent = ''
+        //                             for await (const t of horizon[sectionId][resourceType](resourceId, resourceScope, params)) {
+        //                                 resultOutput.textContent = `${resultOutput.textContent}\n${JSON.stringify(t, null, 4)}`
+        //                                 resultOutput.scrollTo({ top: resultOutput.scrollHeight, behavior: 'smooth' })
+        //                                 if (!running) {
+        //                                     resultButton.textContent = 'Start Streaming Results'
+        //                                     resultButton.classList.remove('running')
+        //                                     break
+        //                                 }
+        //                             }
+        //                         } catch (e) {
+        //                             resultOutput.textContent = e
+        //                         }
+        //                         resultButton.textContent = 'Start Streaming Results'
+        //                         resultButton.classList.remove('running')
+        //                         break
+        //                     case 'listen':
+        //                         resultButton.textContent = 'Stop Listening for Results'
+        //                         resultButton.classList.add('running')
+        //                         resultOutput.textContent = ''
+        //                         let output
+        //                         try {
+        //                             output = await horizon[sectionId][resourceType](resourceId, resourceScope)
+        //                             const listener = output.listener
+        //                             abortController = output.abortController
+        //                             eventSource = output.eventSource
+        //                             listener.addEventListener('message', event => {
+        //                                 resultOutput.textContent = `${resultOutput.textContent}\n${event.data}`
+        //                                 resultOutput.scrollTo({ top: resultOutput.scrollHeight, behavior: 'smooth' })
+        //                             })
+        //                         } catch (e) {
+        //                             resultOutput.textContent = `Event source creation failed for resourceType: ${resourceType}, resourceId: ${resourceId}, scope: ${resourceScope}`
+        //                         }
+        //                         break
+        //                 }
+        //             })
+        //         }
 
 
-
-
-
-
-        const setupSection = sectionId => {
-            const section = document.getElementById(sectionId), resourceTypeOptions = [],
-                resourceTypeSelect = section.querySelector('[name="resource-type"]'),
-                resourceIdInput = section.querySelector('[name="resource-id"]'),
-                resourceScopeSelect = section.querySelector('[name="resource-scope"]'),
-                addQueryParameterButton = section.querySelector('[name="add-query-parameter"]'),
-                queryParamsFieldset = section.querySelector('fieldset'),
-                resultButton = section.querySelector('form > button.get-result'),
-                exampleCode = section.querySelector('code.example'),
-                resultOutput = section.querySelector('pre'),
-                populateResourceScopes = () => {
-                    const resourceType = resourceTypeSelect.value, resourceScopeOptions = [`<option value="">(optional) Select a Result Scope</option>`]
-                    for (const scope of (horizon._types[resourceType] ?? [])) resourceScopeOptions.push(`<option>${scope}</option>`)
-                    resourceScopeSelect.innerHTML = resourceScopeOptions.join('')
-                }
-            for (const t in horizon[sectionId]) if (typeof horizon[sectionId][t] === 'function') resourceTypeOptions.push(`<option>${t}</option>`)
-            resourceTypeSelect.innerHTML = resourceTypeOptions.join('')
-            populateResourceScopes()
-            resourceTypeSelect.addEventListener('change', event => populateResourceScopes())
-            if (addQueryParameterButton) {
-                addQueryParameterButton.addEventListener('click', event => {
-                    const newParameter = document.createElement('div')
-                    newParameter.innerHTML = `<input placeholder="name"><input placeholder="value (JSON-encoded)">`
-                    queryParamsFieldset.querySelector('small') ? queryParamsFieldset.replaceChildren(newParameter) : queryParamsFieldset.append(newParameter)
-                    const inputs = Array.from(queryParamsFieldset.querySelectorAll('input'))
-                    inputs[inputs.length - 2].focus()
-                })
-            }
-            let running = false, abortController, eventSource
-            resultButton.addEventListener('click', async event => {
-                if (running && abortController && eventSource) {
-                    abortController.abort()
-                    eventSource.close()
-                    resultButton.textContent = 'Start Listening for Results'
-                    resultButton.classList.remove('running')
-                    abortController = undefined
-                    eventSource = undefined
-                }
-                running = !running
-                if (!running) return
-                const resourceType = resourceTypeSelect.value, resourceId = resourceIdInput.value || undefined,
-                    resourceScope = resourceScopeSelect.value || undefined,
-                    paramFields = queryParamsFieldset ? queryParamsFieldset.querySelectorAll('div') : undefined,
-                    params = paramFields?.length
-                        ? Object.fromEntries(Array.from(paramFields).map(f => Array.from(f.querySelectorAll('input')).map(i => i.value)).filter(f => f[0] && f[1]))
-                        : undefined
-                if (params) for (const k in params) try { params[k] = JSON.parse(params[k]) } catch (e) { }
-                let exampleCodeContent
-                switch (sectionId) {
-                    case 'get': case 'listen':
-                        exampleCodeContent = `await horizon.${sectionId}.${resourceType}(${[resourceId, resourceScope, params].map(s => s === undefined ? "undefined" : JSON.stringify(s, null, 4)).join(', ')})`
-                        while (exampleCodeContent.endsWith(', undefined)')) exampleCodeContent = exampleCodeContent.slice(0, -12) + ')'
-                        if (exampleCodeContent.endsWith('(undefined)')) exampleCodeContent = exampleCodeContent.replace('(undefined)', '()')
-                        if (sectionId === 'listen') exampleCodeContent = `const { listener, abortController, eventSource }  = ${exampleCodeContent}
-listener.addEventListener('message', event => console.log(event.data))`
-                        break
-                    case 'stream':
-                        let iteratorCode = `horizon.${sectionId}.${resourceType}(${[resourceId, resourceScope, params].map(s => s === undefined ? "undefined" : JSON.stringify(s, null, 4)).join(', ')})`
-                        while (iteratorCode.endsWith(', undefined)')) iteratorCode = iteratorCode.slice(0, -12) + ')'
-                        if (iteratorCode.endsWith('(undefined)')) iteratorCode = iteratorCode.replace('(undefined)', '()')
-                        exampleCodeContent = `for await (const record of ${iteratorCode}) { 
-    console.log(record) 
-}`
-                        break
-                }
-                exampleCode.textContent = exampleCodeContent
-                switch (sectionId) {
-                    case 'get':
-                        try {
-                            resultOutput.textContent = JSON.stringify(await horizon[sectionId][resourceType](resourceId, resourceScope, params), null, 4)
-                        } catch (e) {
-                            resultOutput.textContent = e
-                        }
-                        running = false
-                        break
-                    case 'stream':
-                        try {
-                            resultButton.textContent = 'Stop Streaming Results'
-                            resultButton.classList.add('running')
-                            resultOutput.textContent = ''
-                            for await (const t of horizon[sectionId][resourceType](resourceId, resourceScope, params)) {
-                                resultOutput.textContent = `${resultOutput.textContent}\n${JSON.stringify(t, null, 4)}`
-                                resultOutput.scrollTo({ top: resultOutput.scrollHeight, behavior: 'smooth' })
-                                if (!running) {
-                                    resultButton.textContent = 'Start Streaming Results'
-                                    resultButton.classList.remove('running')
-                                    break
-                                }
-                            }
-                        } catch (e) {
-                            resultOutput.textContent = e
-                        }
-                        resultButton.textContent = 'Start Streaming Results'
-                        resultButton.classList.remove('running')
-                        break
-                    case 'listen':
-                        resultButton.textContent = 'Stop Listening for Results'
-                        resultButton.classList.add('running')
-                        resultOutput.textContent = ''
-                        let output
-                        try {
-                            output = await horizon[sectionId][resourceType](resourceId, resourceScope)
-                            const listener = output.listener
-                            abortController = output.abortController
-                            eventSource = output.eventSource
-                            listener.addEventListener('message', event => {
-                                resultOutput.textContent = `${resultOutput.textContent}\n${event.data}`
-                                resultOutput.scrollTo({ top: resultOutput.scrollHeight, behavior: 'smooth' })
-                            })
-                        } catch (e) {
-                            resultOutput.textContent = `Event source creation failed for resourceType: ${resourceType}, resourceId: ${resourceId}, scope: ${resourceScope}`
-                        }
-                        break
-                }
-            })
-        }
-        // setupSection('get')
-        // setupSection('stream')
-        // setupSection('listen')
 
 
         const buildSection = document.getElementById('build'), operationsFieldset = buildSection.querySelector('fieldset[name="operations"]'),
@@ -230,6 +223,12 @@ listener.addEventListener('message', event => console.log(event.data))`
             },
             operationTypeSelect = `<select name="type"><option value="">Select Operation Type</option>${operationTypes
                 .map((t, i) => typeof t === 'object' ? ('<option value="' + i + '">' + t.type + '</option>') : '').join('')}</select>`
+        const sourceAccountField = buildSection.querySelector('[name="source_account"]'),
+            sourceAccountSequenceField = buildSection.querySelector('[name="source_account_sequence"]'),
+            fetchSequenceNumber = async () => sourceAccountSequenceField.value = sourceAccountField.value ? (await horizon.get.accounts(sourceAccountField.value)).sequence : ''
+        sourceAccountField.addEventListener('change', event => fetchSequenceNumber())
+        if (sourceAccountField.value) fetchSequenceNumber()
+
         addOperationButton.addEventListener('click', event => {
             const newOperation = document.createElement('div')
             newOperation.classList.add('operation')
@@ -268,39 +267,105 @@ listener.addEventListener('message', event => console.log(event.data))`
             })
         })
         buildButton.addEventListener('click', event => {
-            const transactionObject = {}, directFields = ['source_account', 'source_account_sequence', 'max_fee']
-            for (const fieldName of directFields) transactionObject[fieldName] = buildSection.querySelector(`input[name="${fieldName}"]`).value
-            const memoType = buildSection.querySelector('select[name="memo_type"]').value
-            if (memoType) {
-                const memo = buildSection.querySelector('input[name="memo"]').value
-                if (memo) {
-                    transactionObject.memo = memo
-                    transactionObject.memo_type = memoType
+            const transactionObject = {
+                sourceAccount: {
+                    ed25519: horizon.utils.addressToPublicKeyBytes(sourceAccountField.value)[0],
+                    type: 'KEY_TYPE_ED25519'
+                },
+                fee: parseInt(buildSection.querySelector('[name="max_fee"]').value) || 0,
+                seqNum: sourceAccountSequenceField.value ? parseInt(sourceAccountSequenceField.value) : null,
+                cond: {},
+                memo: { type: 'MEMO_NONE' },
+                operations: [],
+                ext: { v: 0 }
+            }, memoContent = buildSection.querySelector('[name="memo_content"]').value
+            if (memoContent) {
+                transactionObject.memo.type = buildSection.querySelector('[name="memo_type"]').value || 'MEMO_NONE'
+                switch (transactionObject.memo.type) {
+                    case 'MEMO_TEXT':
+                        transactionObject.memo.text = memoContent
+                        break
+                    case 'MEMO_ID':
+                        transactionObject.memo.id = memoContent
+                        break
+                    case 'MEMO_HASH':
+                    case 'MEMO_RETURN':
+                        let hash
+                        try { hash = JSON.parse(memoContent) } catch (e) { }
+                        if (!Array.isArray(hash)) throw new Error('hash must be an array of bytes as unsigned integers')
+                        transactionObject.memo[transactionObject.memo.type === 'MEMO_RETURN' ? 'retHash' : 'hash'] = hash
                 }
             }
-            const preconditionElements = buildSection.querySelectorAll('fieldset[name="preconditions"] > div')
-            for (const preconditionElement of preconditionElements) {
-                const preconditionName = preconditionElement.getAttribute('name'), preconditionObject = {}
-                for (const inputElement of preconditionElement.querySelectorAll('input')) {
-                    const inputName = inputElement.getAttribute('name'), inputValue = inputElement.value
-                    if (inputValue) {
-                        if (inputValue && inputElement.dataset.type === 'json') {
-                            try {
-                                preconditionObject[inputName] = JSON.parse(inputValue)
-                            } catch (e) {
-                                console.error(`Invalid ${inputName} JSON value`, e)
+
+
+
+            const preconditionFieldset = buildSection.querySelector('fieldset[name="preconditions"]'), preconditionsObject = { type: 'PRECOND_NONE' }
+            for (const condType of ['timeBounds', 'ledgerBounds', 'minSeqNum', 'minSeqAge', 'minSeqLedgerGap', 'extraSigners']) {
+                switch (condType) {
+                    case 'timeBounds': case 'ledgerBounds':
+                        const boundsElement = preconditionFieldset.querySelector(`[name="${condType}"]`),
+                            min = parseInt(boundsElement.querySelector('[name^="min"]').value),
+                            max = parseInt(boundsElement.querySelector('[name^="max"]').value)
+                        if (min || max) {
+                            preconditionsObject[condType] = {}
+                            if (min) preconditionsObject[condType][condType === 'timeBounds' ? 'minTime' : 'minLedger'] = min
+                            if (max) preconditionsObject[condType][condType === 'timeBounds' ? 'maxTime' : 'maxLedger'] = max
+                            preconditionsObject.type = condType === 'timeBounds' ? 'PRECOND_TIME' : 'PRECOND_V2'
+                            if (condType === 'ledgerBounds') {
+                                preconditionsObject.v2 ||= {}
+                                if (preconditionsObject.timeBounds) preconditionsObject.v2.timeBounds = { ...preconditionsObject.timeBounds }
+                                if (preconditionsObject.ledgerBounds) preconditionsObject.v2.ledgerBounds = { ...preconditionsObject.ledgerBounds }
+                                delete preconditionsObject.timeBounds
+                                delete preconditionsObject.ledgerBounds
                             }
-                        } else {
-                            preconditionObject[inputName] = (inputElement.getAttribute('type') === 'number') ? (parseInt(inputValue) || undefined) : inputValue
                         }
-                    }
-                }
-                if (Object.keys(preconditionObject).length > 0) {
-                    transactionObject.preconditions ||= {}
-                    const preconditionValue = preconditionObject[null] ?? preconditionObject
-                    if (preconditionValue !== undefined) transactionObject.preconditions[preconditionName] = preconditionValue
+                        break
+                    case 'minSeqNum': case 'minSeqAge': case 'minSeqLedgerGap': case 'extraSigners':
+                        const condValue = preconditionFieldset.querySelector(`[name="${condType}"] input`).value
+                        if (!condValue) continue
+                        preconditionsObject.type = 'PRECOND_V2'
+                        preconditionsObject.v2 ||= {}
+                        if (preconditionsObject.timeBounds) preconditionsObject.v2.timeBounds = { ...preconditionsObject.timeBounds }
+                        delete preconditionsObject.timeBounds
+                        switch (condType) {
+                            case 'minSeqNum': case 'minSeqAge': case 'minSeqLedgerGap':
+                                preconditionsObject.v2[condType] = parseInt(condValue)
+                                break
+                            case 'extraSigners':
+                                let extraSigners
+                                try { extraSigners = JSON.parse(condValue) } catch (e) { }
+                                if (extraSigners) preconditionsObject.v2[condType] = extraSigners
+                        }
+                        break
                 }
             }
+            transactionObject.cond = preconditionsObject
+
+
+
+
+            // for (const preconditionElement of preconditionElements) {
+            //     const preconditionName = preconditionElement.getAttribute('name'), preconditionObject = {}
+            //     for (const inputElement of preconditionElement.querySelectorAll('input')) {
+            //         const inputName = inputElement.getAttribute('name'), inputValue = inputElement.value
+            //         if (inputValue) {
+            //             if (inputValue && inputElement.dataset.type === 'json') {
+            //                 try {
+            //                     preconditionObject[inputName] = JSON.parse(inputValue)
+            //                 } catch (e) {
+            //                     console.error(`Invalid ${inputName} JSON value`, e)
+            //                 }
+            //             } else {
+            //                 preconditionObject[inputName] = (inputElement.getAttribute('type') === 'number') ? (parseInt(inputValue) || undefined) : inputValue
+            //             }
+            //         }
+            //     }
+            //     if (Object.keys(preconditionObject).length > 0) {
+            //         transactionObject.cond ||= {}
+            //         const preconditionValue = preconditionObject[null] ?? preconditionObject
+            //         if (preconditionValue !== undefined) transactionObject.cond[preconditionName] = preconditionValue
+            //     }
+            // }
             const operationElements = buildSection.querySelectorAll('fieldset[name="operations"] > div')
             for (const operationElement of operationElements) {
                 const operationObject = {
@@ -384,11 +449,13 @@ listener.addEventListener('message', event => console.log(event.data))`
             <form>
                 <label>
                     <strong>Source Account</strong>
-                    <input name="source_account" placeholder="Address of source account">
+                    <input name="source_account" placeholder="Address of source account"
+                        value="GA5VCCBNG4SIEST6HYIW2F3KKZRHA4UZZ2XFSMZ4VRQ4MCBRHSQRRIPE">
                 </label>
                 <label>
                     <strong>Sequence Number</strong>
-                    <input name="source_account_sequence" placeholder="Sequence number from source account">
+                    <input name="source_account_sequence" placeholder="Auto-populated source account sequence number"
+                        readonly>
                 </label>
                 <label>
                     <strong>Max Fee</strong>
@@ -404,30 +471,27 @@ listener.addEventListener('message', event => console.log(event.data))`
                             <option value="MEMO_HASH">Hash Memo</option>
                             <option value="MEMO_RETURN">Return Memo</option>
                         </select>
-                        <input name="memo" placeholder="memo content">
+                        <input name="memo_content" placeholder="memo content">
                     </fieldset>
                 </label>
                 <label>
                     <strong>Preconditions</strong>
                     <fieldset name="preconditions">
-                        <div name="time_bounds">
-                            <strong>time_bounds</strong><input name="min_time" placeholder="min_time"><input
-                                name="max_time" placeholder="max_time">
+                        <div name="timeBounds">
+                            <strong>timeBounds</strong><input name="minTime" placeholder="minTime"><input name="maxTime"
+                                placeholder="maxTime">
                         </div>
-                        <div name="ledger_bounds">
-                            <strong>ledger_bounds</strong><input name="min_ledger" type="number"
-                                placeholder="min_ledger"><input name="max_ledger" type="number"
-                                placeholder="max_ledger">
+                        <div name="ledgerBounds">
+                            <strong>ledgerBounds</strong><input name="minLedger" type="number"
+                                placeholder="minLedger"><input name="maxLedger" type="number" placeholder="maxLedger">
                         </div>
-                        <div name="min_account_sequence"><strong>min_account_sequence</strong><input
-                                placeholder="string value"></div>
-                        <div name="min_account_sequence_age"><strong>min_account_sequence_age</strong><input
-                                type="number" placeholder="number value"></div>
-                        <div name="min_account_sequence_ledger_gap">
-                            <strong>min_account_sequence_ledger_gap</strong><input type="number"
-                                placeholder="number value">
+                        <div name="minSeqNum"><strong>minSeqNum</strong><input placeholder="string value"></div>
+                        <div name="minSeqAge"><strong>minSeqAge</strong><input type="number" placeholder="minSeqAge">
                         </div>
-                        <div name="extra_signers"><strong>extra_signers</strong><input
+                        <div name="minSeqLedgerGap">
+                            <strong>minSeqLedgerGap</strong><input type="number" placeholder="minSeqLedgerGap">
+                        </div>
+                        <div name="extraSigners"><strong>extraSigners</strong><input
                                 placeholder="array of strings (JSON encoded)" data-type="json"></div>
                     </fieldset>
                 </label>
