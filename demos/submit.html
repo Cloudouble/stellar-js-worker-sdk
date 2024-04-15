@@ -147,61 +147,39 @@
             buildButton = buildSection.querySelector('button.get-result'), buildResult = buildSection.querySelector('.result'),
             addOperationButton = buildSection.querySelector('button[name="add-operation"]'),
             operationTypes = {
-                CREATE_ACCOUNT: { destination: 'account', startingBalance: 'number' },
-                PAYMENT: { destination: 'account', asset: 'asset', amount: 'number' },
-                PATH_PAYMENT_STRICT_RECEIVE: { sendAsset: 'asset', sendMax: 'number', destination: 'account', destAsset: 'asset', destAmount: 'number', path: 'asset[]' },
-                MANAGE_SELL_OFFER: { selling: 'asset', buying: 'asset', amount: 'number', price: 'price', offerID: 'number' },
-                CREATE_PASSIVE_SELL_OFFER: { selling: 'asset', buying: 'asset', amount: 'number', price: 'price' },
+                CREATE_ACCOUNT: { destination: 'string', startingBalance: 'number' },
+                PAYMENT: { destination: 'string', asset: 'string', amount: 'number' },
+                PATH_PAYMENT_STRICT_RECEIVE: { sendAsset: 'string', sendMax: 'number', destination: 'string', destAsset: 'string', destAmount: 'number', path: 'json' },
+                MANAGE_SELL_OFFER: { selling: 'string', buying: 'string', amount: 'number', price: 'string', offerID: 'number' },
+                CREATE_PASSIVE_SELL_OFFER: { selling: 'string', buying: 'string', amount: 'number', price: 'string' },
                 SET_OPTIONS: {
-                    inflationDest: 'account', clearFlags: 'number', setFlags: 'number', masterWeight: 'number', lowThreshold: 'number',
+                    inflationDest: 'string', clearFlags: 'number', setFlags: 'number', masterWeight: 'number', lowThreshold: 'number',
                     medThreshold: 'number', highThreshold: 'number', homeDomain: 'string', signer: 'json'
                 },
-                CHANGE_TRUST: { line: 'asset', limit: 'number' },
-                ALLOW_TRUST: { trustor: 'account', asset: 'asset', authorize: 'number' },
-                ACCOUNT_MERGE: { destination: 'account', '_top': true },
-                INFLATION: null,
+                CHANGE_TRUST: { line: 'string', limit: 'number' },
+                ALLOW_TRUST: { trustor: 'string', asset: 'string', authorize: 'number' },
+                ACCOUNT_MERGE: { destination: 'string' },
+                INFLATION: {},
                 MANAGE_DATA: { dataName: 'string', dataValue: 'json' },
                 BUMP_SEQUENCE: { bumpTo: 'number' },
-                MANAGE_BUY_OFFER: { selling: 'asset', buying: 'asset', buyAmount: 'number', price: 'price', offerId: 'number' },
-                PATH_PAYMENT_STRICT_SEND: ['asset_type', 'asset_code', 'asset_issuer', 'from', 'to', 'amount', 'path',
-                    'source_amount', 'destination_min', 'source_asset_type', 'source_asset_code', 'source_asset_issuer'],
-                CREATE_CLAIMABLE_BALANCE: ['asset', 'amount', 'claimants'],
-                CLAIM_CLAIMABLE_BALANCE: ['balance_id', 'claimant'],
-                BEGIN_SPONSORING_FUTURE_RESERVES: ['sponsored_id'],
-                END_SPONSORING_FUTURE_RESERVES: null,
-                REVOKE_SPONSORSHIP: ['account_id', 'claimable_balance_id', 'data_account_id', 'data_name', 'offer_id',
-                    'trustline_account_id', 'trustline_asset', 'signer_account_id', 'signer_key'],
-                CLAWBACK: ['asset', 'from', 'amount'],
-                CLAWBACK_CLAIMABLE_BALANCE: ['balance_id'],
-                SET_TRUST_LINE_FLAGS: ['trustor', 'asset', 'set_flags', 'set_flags_s', 'clear_flags', 'clear_flags_s'],
-                LIQUIDITY_POOL_DEPOSIT: ['liquidity_pool_id', 'reserves_max', 'min_price', 'min_price_r', 'max_price', 'max_price_r',
-                    'reserves_deposited', 'shares_received'],
-                LIQUIDITY_POOL_WITHDRAW: [],
-                INVOKE_HOST_FUNCTION: ['function', 'parameters', 'address', 'salt', 'asset_balance_changes'],
-                EXTEND_FOOTPRINT_TTL: ['extend_to'],
-                RESTORE_FOOTPRINT: []
+                MANAGE_BUY_OFFER: { selling: 'string', buying: 'string', buyAmount: 'number', price: 'string', offerId: 'number' },
+                PATH_PAYMENT_STRICT_SEND: { sendAsset: 'string', sendAmount: 'number', destination: 'string', destAsset: 'string', destMin: 'number', path: 'json' },
+                CREATE_CLAIMABLE_BALANCE: { asset: 'string', amount: 'number', claimants: 'json' },
+                CLAIM_CLAIMABLE_BALANCE: { balanceID: 'string' },
+                BEGIN_SPONSORING_FUTURE_RESERVES: { sponsoredID: 'string' },
+                END_SPONSORING_FUTURE_RESERVES: {},
+                REVOKE_SPONSORSHIP: { ledgerKey: 'json', signer: 'json' },
+                CLAWBACK: { asset: 'string', from: 'string', amount: 'number' },
+                CLAWBACK_CLAIMABLE_BALANCE: { balanceID: 'string' },
+                SET_TRUST_LINE_FLAGS: { trustor: 'string', asset: 'string', clearFlags: 'number', setFlags: 'number' },
+                LIQUIDITY_POOL_DEPOSIT: { liquidityPoolID: 'string', maxAmountA: 'number', maxAmountB: 'number', minPrice: 'string', maxPrice: 'string' },
+                LIQUIDITY_POOL_WITHDRAW: { liquidityPoolID: 'string', maxAmountA: 'number', maxAmountB: 'number', minPrice: 'string', maxPrice: 'number' },
+                INVOKE_HOST_FUNCTION: { contractAddress: 'string', functionName: 'string', args: 'json' },
+                EXTEND_FOOTPRINT_TTL: { extendTo: 'number' },
+                RESTORE_FOOTPRINT: {}
             },
             operationAttributeTypes = {
-                path: ['object'],
-                price_r: 'object',
-                signer_weight: 'number',
-                master_key_weight: 'number',
-                low_threshold: 'number',
-                med_threshold: 'number',
-                high_threshold: 'number',
-                set_flags: ['number'],
-                set_flags_s: ['number'],
-                clear_flags: ['number'],
-                clear_flags_s: ['number'],
-                authorize: 'number',
-                claimants: ['object'],
-                reserves_max: ['object'],
-                min_price_r: 'object',
-                max_price_r: 'object',
-                reserves_deposited: ['object'],
-                parameters: ['object'],
-                asset_balance_changes: ['object'],
-                extend_to: 'number'
+
             },
             operationTypeSelect = `<select name="type"><option value="">Select Operation Type</option>${Object.keys(operationTypes)
                 .map(t => ('<option value="' + t + '">' + t + '</option>')).join('')}</select>`
@@ -224,21 +202,15 @@
                 const operationType = typeSelector.value
                 if (!operationType || !operationTypes[operationType]) return attributesInputs.replaceChildren()
                 const operationAttributes = operationTypes[operationType]
-                operationAttributes.unshift('sourceAccount')
                 attributesInputs.replaceChildren()
-                for (const attr of operationAttributes) {
+                for (const [attrName, attrType] of Object.entries({ ...operationAttributes, sourceAccount: 'string' })) {
                     const attrInput = document.createElement('input')
-                    attrInput.setAttribute('name', attr)
-                    if (operationAttributeTypes[attr]) {
-                        if (operationAttributeTypes[attr] === 'number') {
-                            attrInput.setAttribute('placeholder', attr)
-                            attrInput.setAttribute('type', 'number')
-                        } else {
-                            attrInput.setAttribute('placeholder', `${attr} as ${JSON.stringify(operationAttributeTypes[attr])} JSON-encoded`)
-                            attrInput.dataset.type = 'json'
-                        }
-                    } else {
-                        attrInput.setAttribute('placeholder', attr)
+                    attrInput.setAttribute('name', attrName)
+                    attrInput.setAttribute('placeholder', attrName)
+                    if (attrType === 'number') attrInput.setAttribute('type', 'number')
+                    if (attrType === 'json') {
+                        attrInput.setAttribute('placeholder', `${attrName} (JSON-encoded)`)
+                        attrInput.dataset.type = 'json'
                     }
                     attributesInputs.append(attrInput)
                 }
