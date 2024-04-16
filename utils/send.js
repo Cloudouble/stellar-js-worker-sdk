@@ -1,5 +1,4 @@
 export default {
-    scope: 'send',
     base32Chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567',
     algorithms: { PK: 0, Hash: 0 },
     keyTypeMap: {

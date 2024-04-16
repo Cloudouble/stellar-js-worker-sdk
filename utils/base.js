@@ -1,3 +1,1 @@
-export default {
-    _scopes: { base: true }
-}
+export default {}

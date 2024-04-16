@@ -2,10 +2,15 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
     futurenet: { endpoint: 'https://horizon-futurenet.stellar.org', passphrase: 'Test SDF Future Network ; October 2022' },
     test: { endpoint: 'https://horizon-testnet.stellar.org', passphrase: 'Test SDF Network ; September 2015' },
     custom: { endpoint: metaOptions.get('endpoint'), passphrase: metaOptions.get('passphrase') }
-}
-
-const horizon = Object.defineProperties({}, {
+}, horizon = Object.defineProperties({}, {
     version: { enumerable: true, value: '0.1.0' },
+    options: {
+        enumerable: true, value: {
+            sources: {
+                xdr: 'https://cdn.jsdelivr.net/gh/cloudouble/simple-xdr@1.0.0/xdr.min.js'
+            }
+        }
+    },
     network: {
         enumerable: true, writable: true,
         value: networks[metaOptions.get('network')] ?? { endpoint: 'https://horizon.stellar.org', passphrase: 'Public Global Stellar Network ; September 2015' },
@@ -134,8 +139,9 @@ const horizon = Object.defineProperties({}, {
     },
     send: {
         enumerable: true,
-        value: async function (transaction, type = 'Transaction') {
-            await this.useUtils('send')
+        value: async function (transaction, type) {
+            await this.utils._install('send')
+            await this.utils._install('xdr', 'xdr')
 
             console.log('line 140', transaction)
 
@@ -162,20 +168,23 @@ const horizon = Object.defineProperties({}, {
             // return fetch(`${this.network.endpoint}/transactions?tx=${await this._sign(transactionXdr)}`, { method: 'POST', headers: { Accept: "application/json" } })
         }
     },
-    useUtils: {
-        enumerable: false,
-        value: async function (scope) {
-            const scopes = { ...(this.utils._scopes ?? {}) }
-            if (!this.utils._scopes?.base) Object.assign(this.utils, (await import((new URL('./utils/base.js', import.meta.url)).href)).default)
-            if (scope && !this.utils._scopes[scope]) Object.assign(this.utils, (await import((new URL(`./utils/${scope}.js`, import.meta.url)).href)).default)
-            if (this.utils.scope) Object.defineProperty(this.utils, '_scopes', { enumerable: false, value: { ...scopes, base: true, [this.utils.scope]: true } })
-        }
-    },
     utils: {
         enumerable: true,
-        value: Object.defineProperty({}, 'scope', { enumerable: false, writable: true, value: undefined })
-    },
-
+        value: Object.defineProperties({}, {
+            _install: {
+                value: async function (scope, namespace) {
+                    if (!this._scopes?.base) this._scopes.base = !!Object.assign(this, (await import((new URL('./utils/base.js', import.meta.url)).href)).default)
+                    if (!scope || this._scopes[scope]) return
+                    const url = (new URL((this._horizon?.options?.sources ?? {})[scope] ?? `./utils/${scope}.js`, import.meta.url)).href
+                    if (namespace) this[namespace] ??= {}
+                    this._scopes[scope] = !!Object.assign(namespace ? this[namespace] : this, (await import(url)).default)
+                    this._scope = scope
+                }
+            },
+            _scope: { writable: true, value: undefined },
+            _scopes: { value: {} }
+        })
+    }
 })
 const listenable = ['ledgers', 'transactions', 'operations', 'payments', 'effects', 'accounts', 'trades', 'order_book']
 for (const t in horizon._types) {
@@ -183,5 +192,5 @@ for (const t in horizon._types) {
     horizon.stream[t] = horizon._stream.bind(horizon, t)
     if (listenable.includes(t)) horizon.listen[t] = horizon._listen.bind(horizon, t)
 }
-
+Object.defineProperty(horizon.utils, '_horizon', { value: horizon })
 export { horizon }

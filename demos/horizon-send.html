@@ -100,7 +100,7 @@
                 newOperation.remove()
             })
         })
-        buildButton.addEventListener('click', event => {
+        buildButton.addEventListener('click', async event => {
             const transactionSimpleObject = {
                 sourceAccount: sourceAccountField.value,
                 fee: parseInt(buildSection.querySelector('[name="max_fee"]').value) || 0,
@@ -110,7 +110,7 @@
                 sorobanData: null
             }
 
-
+            horizon
 
 
 
