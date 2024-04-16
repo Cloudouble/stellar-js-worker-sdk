@@ -151,8 +151,7 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
             switch (transaction?.constructor) {
                 case Array:
                     transaction = new Uint8Array(transaction)
-                case Uint8Array:
-                case String:
+                case Uint8Array: case String:
                     transaction = new type(transaction)
                     break
                 default:
