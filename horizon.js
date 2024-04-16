@@ -139,9 +139,18 @@ const horizon = Object.defineProperties({}, {
             return fetch(`${this.network.endpoint}/transactions?tx=${await this._sign(transactionXdr)}`, { method: 'POST', headers: { Accept: "application/json" } })
         }
     },
+    useUtils: {
+        enumerable: false,
+        value: async function (scope) {
+            const scopes = { ...(this.utils._scopes ?? {}) }
+            if (!this.utils._scopes?.base) Object.assign(this.utils, (await import((new URL('./utils/base.js', import.meta.url)).href)).default)
+            if (scope && !this.utils._scopes[scope]) Object.assign(this.utils, (await import((new URL(`./utils/${scope}.js`, import.meta.url)).href)).default)
+            if (this.utils.scope) Object.defineProperty(this.utils, '_scopes', { enumerable: false, value: { ...scopes, base: true, [this.utils.scope]: true } })
+        }
+    },
     utils: {
         enumerable: true,
-        value: {}
+        value: Object.defineProperty({}, 'scope', { enumerable: false, writable: true, value: undefined })
     },
 
 })

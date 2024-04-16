@@ -1,4 +1,5 @@
-const sendUtils = {
+export default {
+    scope: 'send',
     base32Chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567',
     algorithms: { PK: 0, Hash: 0 },
     keyTypeMap: {
@@ -55,4 +56,3 @@ const sendUtils = {
         return this.base32Encode(new Uint8Array(bytes))
     }
 }
-export { sendUtils }
