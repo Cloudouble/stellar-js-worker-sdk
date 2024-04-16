@@ -139,7 +139,7 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
     },
     send: {
         enumerable: true,
-        value: async function (transaction, type, keys = []) {
+        value: async function (transaction, keys, type) {
             await this.utils._install('send')
             await this.utils._install('xdr', 'xdr')
             if (!this.utils.xdr?.types?.stellar) await this.utils.xdr.load(this.options.sources.types)
