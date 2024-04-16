@@ -7,7 +7,7 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
     options: {
         enumerable: true, value: {
             sources: {
-                xdr: 'https://cdn.jsdelivr.net/gh/cloudouble/simple-xdr@1.0.0/xdr.min.js'
+                xdr: 'https://cdn.jsdelivr.net/gh/cloudouble/simple-xdr@1.1.0/xdr.min.js'
             }
         }
     },
@@ -139,33 +139,46 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
     },
     send: {
         enumerable: true,
-        value: async function (transaction, type) {
+        value: async function (transaction, type, keys = []) {
             await this.utils._install('send')
             await this.utils._install('xdr', 'xdr')
+            if (!this.utils.xdr?.types?.stellar) await this.utils.xdr.load(this.options.sources.types)
+            if (typeof type === 'string') if (this.utils.xdr?.types?.stellar[type]) type = this.utils.xdr.types.stellar[type]
+            if (type.prototype instanceof this.utils.xdr.types.stellar.typedef) { }
 
             console.log('line 140', transaction)
 
-            switch (transaction?.constructor?.name) {
-                case 'Uint8Array':
-
-                    break
-                case 'Array':
+            switch (transaction?.constructor) {
+                case Array:
                     transaction = new Uint8Array(transaction)
-                    break
-                case 'String':
-
-                    break
-                case 'Object':
-
+                case Uint8Array:
+                case String:
+                    transaction = new type(transaction)
                     break
                 default:
-                    throw new Error('transaction not in a supported format')
+                    transaction = type ? new type(transaction) : this.utils.send.buildTransaction(transaction)
             }
+            if (!(transaction instanceof this.utils.xdr.types.stellar.Transaction)
+                && !(transaction instanceof this.utils.xdr.types.stellar.FeeBumpTransaction)) throw new Error('not valid transaction input')
+            const envelopeType = transaction instanceof this.utils.xdr.types.stellar.Transaction ? 'ENVELOPE_TYPE_TX' : 'ENVELOPE_TYPE_TX_FEE_BUMP',
+                transactionSignaturePayload = new this.utils.xdr.types.stellar.TransactionSignaturePayload({
+                    networkID: this.network.networkId,
+                    taggedTransaction: {
+                        type: envelopeType,
+                        [envelopeType === 'ENVELOPE_TYPE_TX_FEE_BUMP' ? 'feeBump' : 'tx']: transaction.value
+                    }
+                }), transactionSignaturePayloadBytes = transactionSignaturePayload.bytes,
+                transactionSignaturePayloadHash = sha256(transactionSignaturePayloadBytes), signatures = []
+            for (const key of keys) signatures.push(sign(transactionSignaturePayloadHash, key))
 
-
-            // if (!this._build || !this._sign) Object.assign(this, await import((new URL('./xdr.js', import.meta.url)).href))
-            // const transactionXdr = await this._build(transaction)
-            // return fetch(`${this.network.endpoint}/transactions?tx=${await this._sign(transactionXdr)}`, { method: 'POST', headers: { Accept: "application/json" } })
+            const transactionEnvelope = new this.utils.xdr.types.stellar.TransactionEnvelope({
+                type: envelopeType,
+                [envelopeType === 'ENVELOPE_TYPE_TX_FEE_BUMP' ? 'feeBump' : 'tx']: {
+                    tx: transaction.value,
+                    signatures: signatures
+                }
+            })
+            return fetch(`${this.network.endpoint}/transactions?tx=${transactionEnvelope}`, { method: 'POST', headers: { Accept: "application/json" } })
         }
     },
     utils: {
