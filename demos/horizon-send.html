@@ -22,127 +22,6 @@
             ? `const { horizon } = await import('../horizon.js?${queryParams}')` : `const { horizon } = await import('../horizon.js')`
 
 
-
-        //         const setupSection = sectionId => {
-        //             const section = document.getElementById(sectionId), resourceTypeOptions = [],
-        //                 resourceTypeSelect = section.querySelector('[name="resource-type"]'),
-        //                 resourceIdInput = section.querySelector('[name="resource-id"]'),
-        //                 resourceScopeSelect = section.querySelector('[name="resource-scope"]'),
-        //                 addQueryParameterButton = section.querySelector('[name="add-query-parameter"]'),
-        //                 queryParamsFieldset = section.querySelector('fieldset'),
-        //                 resultButton = section.querySelector('form > button.get-result'),
-        //                 exampleCode = section.querySelector('code.example'),
-        //                 resultOutput = section.querySelector('pre'),
-        //                 populateResourceScopes = () => {
-        //                     const resourceType = resourceTypeSelect.value, resourceScopeOptions = [`<option value="">(optional) Select a Result Scope</option>`]
-        //                     for (const scope of (horizon._types[resourceType] ?? [])) resourceScopeOptions.push(`<option>${scope}</option>`)
-        //                     resourceScopeSelect.innerHTML = resourceScopeOptions.join('')
-        //                 }
-        //             for (const t in horizon[sectionId]) if (typeof horizon[sectionId][t] === 'function') resourceTypeOptions.push(`<option>${t}</option>`)
-        //             resourceTypeSelect.innerHTML = resourceTypeOptions.join('')
-        //             populateResourceScopes()
-        //             resourceTypeSelect.addEventListener('change', event => populateResourceScopes())
-        //             if (addQueryParameterButton) {
-        //                 addQueryParameterButton.addEventListener('click', event => {
-        //                     const newParameter = document.createElement('div')
-        //                     newParameter.innerHTML = `<input placeholder="name"><input placeholder="value (JSON-encoded)">`
-        //                     queryParamsFieldset.querySelector('small') ? queryParamsFieldset.replaceChildren(newParameter) : queryParamsFieldset.append(newParameter)
-        //                     const inputs = Array.from(queryParamsFieldset.querySelectorAll('input'))
-        //                     inputs[inputs.length - 2].focus()
-        //                 })
-        //             }
-        //             let running = false, abortController, eventSource
-        //             resultButton.addEventListener('click', async event => {
-        //                 if (running && abortController && eventSource) {
-        //                     abortController.abort()
-        //                     eventSource.close()
-        //                     resultButton.textContent = 'Start Listening for Results'
-        //                     resultButton.classList.remove('running')
-        //                     abortController = undefined
-        //                     eventSource = undefined
-        //                 }
-        //                 running = !running
-        //                 if (!running) return
-        //                 const resourceType = resourceTypeSelect.value, resourceId = resourceIdInput.value || undefined,
-        //                     resourceScope = resourceScopeSelect.value || undefined,
-        //                     paramFields = queryParamsFieldset ? queryParamsFieldset.querySelectorAll('div') : undefined,
-        //                     params = paramFields?.length
-        //                         ? Object.fromEntries(Array.from(paramFields).map(f => Array.from(f.querySelectorAll('input')).map(i => i.value)).filter(f => f[0] && f[1]))
-        //                         : undefined
-        //                 if (params) for (const k in params) try { params[k] = JSON.parse(params[k]) } catch (e) { }
-        //                 let exampleCodeContent
-        //                 switch (sectionId) {
-        //                     case 'get': case 'listen':
-        //                         exampleCodeContent = `await horizon.${sectionId}.${resourceType}(${[resourceId, resourceScope, params].map(s => s === undefined ? "undefined" : JSON.stringify(s, null, 4)).join(', ')})`
-        //                         while (exampleCodeContent.endsWith(', undefined)')) exampleCodeContent = exampleCodeContent.slice(0, -12) + ')'
-        //                         if (exampleCodeContent.endsWith('(undefined)')) exampleCodeContent = exampleCodeContent.replace('(undefined)', '()')
-        //                         if (sectionId === 'listen') exampleCodeContent = `const { listener, abortController, eventSource }  = ${exampleCodeContent}
-        // listener.addEventListener('message', event => console.log(event.data))`
-        //                         break
-        //                     case 'stream':
-        //                         let iteratorCode = `horizon.${sectionId}.${resourceType}(${[resourceId, resourceScope, params].map(s => s === undefined ? "undefined" : JSON.stringify(s, null, 4)).join(', ')})`
-        //                         while (iteratorCode.endsWith(', undefined)')) iteratorCode = iteratorCode.slice(0, -12) + ')'
-        //                         if (iteratorCode.endsWith('(undefined)')) iteratorCode = iteratorCode.replace('(undefined)', '()')
-        //                         exampleCodeContent = `for await (const record of ${iteratorCode}) { 
-        //     console.log(record) 
-        // }`
-        //                         break
-        //                 }
-        //                 exampleCode.textContent = exampleCodeContent
-        //                 switch (sectionId) {
-        //                     case 'get':
-        //                         try {
-        //                             resultOutput.textContent = JSON.stringify(await horizon[sectionId][resourceType](resourceId, resourceScope, params), null, 4)
-        //                         } catch (e) {
-        //                             resultOutput.textContent = e
-        //                         }
-        //                         running = false
-        //                         break
-        //                     case 'stream':
-        //                         try {
-        //                             resultButton.textContent = 'Stop Streaming Results'
-        //                             resultButton.classList.add('running')
-        //                             resultOutput.textContent = ''
-        //                             for await (const t of horizon[sectionId][resourceType](resourceId, resourceScope, params)) {
-        //                                 resultOutput.textContent = `${resultOutput.textContent}\n${JSON.stringify(t, null, 4)}`
-        //                                 resultOutput.scrollTo({ top: resultOutput.scrollHeight, behavior: 'smooth' })
-        //                                 if (!running) {
-        //                                     resultButton.textContent = 'Start Streaming Results'
-        //                                     resultButton.classList.remove('running')
-        //                                     break
-        //                                 }
-        //                             }
-        //                         } catch (e) {
-        //                             resultOutput.textContent = e
-        //                         }
-        //                         resultButton.textContent = 'Start Streaming Results'
-        //                         resultButton.classList.remove('running')
-        //                         break
-        //                     case 'listen':
-        //                         resultButton.textContent = 'Stop Listening for Results'
-        //                         resultButton.classList.add('running')
-        //                         resultOutput.textContent = ''
-        //                         let output
-        //                         try {
-        //                             output = await horizon[sectionId][resourceType](resourceId, resourceScope)
-        //                             const listener = output.listener
-        //                             abortController = output.abortController
-        //                             eventSource = output.eventSource
-        //                             listener.addEventListener('message', event => {
-        //                                 resultOutput.textContent = `${resultOutput.textContent}\n${event.data}`
-        //                                 resultOutput.scrollTo({ top: resultOutput.scrollHeight, behavior: 'smooth' })
-        //                             })
-        //                         } catch (e) {
-        //                             resultOutput.textContent = `Event source creation failed for resourceType: ${resourceType}, resourceId: ${resourceId}, scope: ${resourceScope}`
-        //                         }
-        //                         break
-        //                 }
-        //             })
-        //         }
-
-
-
-
         const buildSection = document.getElementById('build'), operationsFieldset = buildSection.querySelector('fieldset[name="operations"]'),
             buildButton = buildSection.querySelector('button.get-result'), buildResult = buildSection.querySelector('.result'),
             addOperationButton = buildSection.querySelector('button[name="add-operation"]'),
@@ -203,7 +82,7 @@
                 if (!operationType || !operationTypes[operationType]) return attributesInputs.replaceChildren()
                 const operationAttributes = operationTypes[operationType]
                 attributesInputs.replaceChildren()
-                for (const [attrName, attrType] of Object.entries({ ...operationAttributes, sourceAccount: 'string' })) {
+                for (const [attrName, attrType] of Object.entries({ sourceAccount: 'string', ...operationAttributes })) {
                     const attrInput = document.createElement('input')
                     attrInput.setAttribute('name', attrName)
                     attrInput.setAttribute('placeholder', attrName)
@@ -222,7 +101,20 @@
             })
         })
         buildButton.addEventListener('click', event => {
-            const transactionObject = {
+            const transactionSimpleObject = {
+                sourceAccount: sourceAccountField.value,
+                fee: parseInt(buildSection.querySelector('[name="max_fee"]').value) || 0,
+                cond: {},
+                memo: buildSection.querySelector('[name="memo_content"]').value,
+                operations: [],
+                sorobanData: null
+            }
+
+
+
+
+
+            const transactionSourceObject = {
                 sourceAccount: {
                     ed25519: Array.from(horizon.utils.addressToPublicKeyBytes(sourceAccountField.value)[0]),
                     type: 'KEY_TYPE_ED25519'
@@ -439,23 +331,44 @@
                 </label>
                 <button type="button" class="get-result">Build</button>
             </form>
-            <!-- <code class="example">Example Code</code> -->
-            <pre class="result">Transaction Object</pre>
+            <code class="example">Example Code</code>
+            <!-- <pre class="result">Transaction Object</pre> -->
         </section>
-        <section id="envelope">
-            <h2>Envelope</h2>
+        <section id="simple-transaction">
+            <h2>Simple Object</h2>
+            <p>View the transaction as a simple object</p>
+            <code class="example">Example Code</code>
+            <pre class="result">Transaction as a simple object</pre>
+        </section>
+        <section id="source-transaction">
+            <h2>Source Object</h2>
+            <p>View the transaction as a source object</p>
+            <code class="example">Example Code</code>
+            <pre class="result">Transaction as a source object</pre>
+        </section>
+        <section id="xdr-transaction">
+            <h2>XDR Transaction</h2>
             <p>View the transaction envelope in XDR format</p>
-
+            <code class="example">Example Code</code>
+            <pre class="result">Transaction as a XDR envelope</pre>
         </section>
         <section id="sign">
             <h2>Sign</h2>
             <p>Sign the transaction</p>
-
+            <code class="example">Example Code</code>
+            <pre class="result"></pre>
+        </section>
+        <section id="envelope">
+            <h2>Transaction Envelope</h2>
+            <p>View the signed transaction envelope in XDR format</p>
+            <code class="example">Example Code</code>
+            <pre class="result">Transaction as a signed XDR envelope</pre>
         </section>
         <section id="submit">
             <h2>Submit</h2>
             <p>Submit the transaction</p>
-
+            <code class="example">Example Code</code>
+            <pre class="result">Transaction as a signed XDR envelope</pre>
         </section>
 
     </main>
