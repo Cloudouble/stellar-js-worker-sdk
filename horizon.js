@@ -5,6 +5,7 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
 }
 
 const horizon = Object.defineProperties({}, {
+    version: { enumerable: true, value: '0.1.0' },
     network: {
         enumerable: true, writable: true,
         value: networks[metaOptions.get('network')] ?? { endpoint: 'https://horizon.stellar.org', passphrase: 'Public Global Stellar Network ; September 2015' },
