@@ -134,10 +134,32 @@ const horizon = Object.defineProperties({}, {
     },
     send: {
         enumerable: true,
-        value: async function (transaction) {
-            if (!this._build || !this._sign) Object.assign(this, await import((new URL('./xdr.js', import.meta.url)).href))
-            const transactionXdr = await this._build(transaction)
-            return fetch(`${this.network.endpoint}/transactions?tx=${await this._sign(transactionXdr)}`, { method: 'POST', headers: { Accept: "application/json" } })
+        value: async function (transaction, type = 'Transaction') {
+            await this.useUtils('send')
+
+            console.log('line 140', transaction)
+
+            switch (transaction?.constructor?.name) {
+                case 'Uint8Array':
+
+                    break
+                case 'Array':
+                    transaction = new Uint8Array(transaction)
+                    break
+                case 'String':
+
+                    break
+                case 'Object':
+
+                    break
+                default:
+                    throw new Error('transaction not in a supported format')
+            }
+
+
+            // if (!this._build || !this._sign) Object.assign(this, await import((new URL('./xdr.js', import.meta.url)).href))
+            // const transactionXdr = await this._build(transaction)
+            // return fetch(`${this.network.endpoint}/transactions?tx=${await this._sign(transactionXdr)}`, { method: 'POST', headers: { Accept: "application/json" } })
         }
     },
     useUtils: {
