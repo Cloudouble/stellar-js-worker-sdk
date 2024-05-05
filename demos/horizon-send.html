@@ -23,7 +23,7 @@
 
 
         const buildSection = document.getElementById('build'), operationsFieldset = buildSection.querySelector('fieldset[name="operations"]'),
-            buildButton = buildSection.querySelector('button.get-result'), buildResult = buildSection.querySelector('.result'),
+            buildButton = buildSection.querySelector('button.get-result'),
             addOperationButton = buildSection.querySelector('button[name="add-operation"]'),
             operationTypes = {
                 CREATE_ACCOUNT: { destination: 'string', startingBalance: 'number' },
@@ -101,6 +101,8 @@
             })
         })
         buildButton.addEventListener('click', async event => {
+            const simpleTransactionSection = document.getElementById('simple-transaction'),
+                simpleTransactionResult = simpleTransactionSection.querySelector('.result')
             const transactionSimpleObject = {
                 sourceAccount: sourceAccountField.value,
                 fee: parseInt(buildSection.querySelector('[name="max_fee"]').value) || 0,
@@ -110,42 +112,7 @@
                 sorobanData: null
             }
 
-            horizon
-
-
-
-            const transactionSourceObject = {
-                sourceAccount: {
-                    ed25519: Array.from(horizon.utils.addressToPublicKeyBytes(sourceAccountField.value)[0]),
-                    type: 'KEY_TYPE_ED25519'
-                },
-                fee: parseInt(buildSection.querySelector('[name="max_fee"]').value) || 0,
-                seqNum: sourceAccountSequenceField.value ? parseInt(sourceAccountSequenceField.value) : null,
-                cond: {},
-                memo: { type: 'MEMO_NONE' },
-                operations: [],
-                ext: { v: 0 }
-            }, memoContent = buildSection.querySelector('[name="memo_content"]').value
-            if (memoContent) {
-                transactionObject.memo.type = buildSection.querySelector('[name="memo_type"]').value || 'MEMO_NONE'
-                switch (transactionObject.memo.type) {
-                    case 'MEMO_TEXT':
-                        transactionObject.memo.text = memoContent
-                        break
-                    case 'MEMO_ID':
-                        transactionObject.memo.id = memoContent
-                        break
-                    case 'MEMO_HASH':
-                    case 'MEMO_RETURN':
-                        let hash
-                        try { hash = JSON.parse(memoContent) } catch (e) { }
-                        if (!Array.isArray(hash)) throw new Error('hash must be an array of bytes as unsigned integers')
-                        transactionObject.memo[transactionObject.memo.type === 'MEMO_RETURN' ? 'retHash' : 'hash'] = hash
-                }
-            }
-
-
-            const preconditionFieldset = buildSection.querySelector('fieldset[name="preconditions"]'), preconditionsObject = { type: 'PRECOND_NONE' }
+            const preconditionFieldset = buildSection.querySelector('fieldset[name="preconditions"]'), preconditionsObject = {}
             for (const condType of ['timeBounds', 'ledgerBounds', 'minSeqNum', 'minSeqAge', 'minSeqLedgerGap', 'extraSigners']) {
                 switch (condType) {
                     case 'timeBounds': case 'ledgerBounds':
@@ -153,41 +120,25 @@
                             min = parseInt(boundsElement.querySelector('[name^="min"]').value),
                             max = parseInt(boundsElement.querySelector('[name^="max"]').value)
                         if (min || max) {
-                            preconditionsObject[condType] = {}
-                            if (min) preconditionsObject[condType][condType === 'timeBounds' ? 'minTime' : 'minLedger'] = min
-                            if (max) preconditionsObject[condType][condType === 'timeBounds' ? 'maxTime' : 'maxLedger'] = max
-                            preconditionsObject.type = condType === 'timeBounds' ? 'PRECOND_TIME' : 'PRECOND_V2'
-                            if (condType === 'ledgerBounds') {
-                                preconditionsObject.v2 ||= {}
-                                if (preconditionsObject.timeBounds) preconditionsObject.v2.timeBounds = { ...preconditionsObject.timeBounds }
-                                if (preconditionsObject.ledgerBounds) preconditionsObject.v2.ledgerBounds = { ...preconditionsObject.ledgerBounds }
-                                delete preconditionsObject.timeBounds
-                                delete preconditionsObject.ledgerBounds
-                            }
+                            preconditionsObject[condType] = { min, max }
                         }
                         break
                     case 'minSeqNum': case 'minSeqAge': case 'minSeqLedgerGap': case 'extraSigners':
                         const condValue = preconditionFieldset.querySelector(`[name="${condType}"] input`).value
                         if (!condValue) continue
-                        preconditionsObject.type = 'PRECOND_V2'
-                        preconditionsObject.v2 ||= {}
-                        if (preconditionsObject.timeBounds) preconditionsObject.v2.timeBounds = { ...preconditionsObject.timeBounds }
-                        delete preconditionsObject.timeBounds
                         switch (condType) {
                             case 'minSeqNum': case 'minSeqAge': case 'minSeqLedgerGap':
-                                preconditionsObject.v2[condType] = parseInt(condValue)
+                                preconditionsObject[condType] = parseInt(condValue)
                                 break
                             case 'extraSigners':
                                 let extraSigners
                                 try { extraSigners = JSON.parse(condValue) } catch (e) { }
-                                if (extraSigners) preconditionsObject.v2[condType] = extraSigners
+                                if (extraSigners) preconditionsObject[condType] = extraSigners
                         }
                         break
                 }
             }
-            transactionObject.cond = preconditionsObject
-
-
+            transactionSimpleObject.cond = preconditionsObject
             const operationElements = buildSection.querySelectorAll('fieldset[name="operations"] > div')
             for (const operationElement of operationElements) {
                 const operationType = operationElement.querySelector('select[name="type"]').value
@@ -219,18 +170,90 @@
                         operationObject.body[operationProperty][attrName] = attrValue
                     }
                 }
-                transactionObject.operations ||= []
-                transactionObject.operations.push(operationObject)
+                transactionSimpleObject.operations ||= []
+                transactionSimpleObject.operations.push(operationObject)
             }
-            buildResult.textContent = JSON.stringify(transactionObject, null, 4)
+            simpleTransactionResult.textContent = JSON.stringify(transactionSimpleObject, null, 4)
         })
 
 
-
-
         window.horizon = horizon
-        console.log('line 378', horizon)
+        console.log('line 181', horizon)
         // test account on test netwwork: GA5VCCBNG4SIEST6HYIW2F3KKZRHA4UZZ2XFSMZ4VRQ4MCBRHSQRRIPE
+
+
+        // const transactionSourceObject = {
+        //     sourceAccount: {
+        //         ed25519: Array.from(horizon.utils.addressToPublicKeyBytes(sourceAccountField.value)[0]),
+        //         type: 'KEY_TYPE_ED25519'
+        //     },
+        //     fee: parseInt(buildSection.querySelector('[name="max_fee"]').value) || 0,
+        //     seqNum: sourceAccountSequenceField.value ? parseInt(sourceAccountSequenceField.value) : null,
+        //     cond: {},
+        //     memo: { type: 'MEMO_NONE' },
+        //     operations: [],
+        //     ext: { v: 0 }
+        // }, memoContent = buildSection.querySelector('[name="memo_content"]').value
+        // if (memoContent) {
+        //     transactionObject.memo.type = buildSection.querySelector('[name="memo_type"]').value || 'MEMO_NONE'
+        //     switch (transactionObject.memo.type) {
+        //         case 'MEMO_TEXT':
+        //             transactionObject.memo.text = memoContent
+        //             break
+        //         case 'MEMO_ID':
+        //             transactionObject.memo.id = memoContent
+        //             break
+        //         case 'MEMO_HASH':
+        //         case 'MEMO_RETURN':
+        //             let hash
+        //             try { hash = JSON.parse(memoContent) } catch (e) { }
+        //             if (!Array.isArray(hash)) throw new Error('hash must be an array of bytes as unsigned integers')
+        //             transactionObject.memo[transactionObject.memo.type === 'MEMO_RETURN' ? 'retHash' : 'hash'] = hash
+        //     }
+        // }
+
+        // const preconditionFieldset = buildSection.querySelector('fieldset[name="preconditions"]'), preconditionsObject = { type: 'PRECOND_NONE' }
+        // for (const condType of ['timeBounds', 'ledgerBounds', 'minSeqNum', 'minSeqAge', 'minSeqLedgerGap', 'extraSigners']) {
+        //     switch (condType) {
+        //         case 'timeBounds': case 'ledgerBounds':
+        //             const boundsElement = preconditionFieldset.querySelector(`[name="${condType}"]`),
+        //                 min = parseInt(boundsElement.querySelector('[name^="min"]').value),
+        //                 max = parseInt(boundsElement.querySelector('[name^="max"]').value)
+        //             if (min || max) {
+        //                 preconditionsObject[condType] = {}
+        //                 if (min) preconditionsObject[condType][condType === 'timeBounds' ? 'minTime' : 'minLedger'] = min
+        //                 if (max) preconditionsObject[condType][condType === 'timeBounds' ? 'maxTime' : 'maxLedger'] = max
+        //                 preconditionsObject.type = condType === 'timeBounds' ? 'PRECOND_TIME' : 'PRECOND_V2'
+        //                 if (condType === 'ledgerBounds') {
+        //                     preconditionsObject.v2 ||= {}
+        //                     if (preconditionsObject.timeBounds) preconditionsObject.v2.timeBounds = { ...preconditionsObject.timeBounds }
+        //                     if (preconditionsObject.ledgerBounds) preconditionsObject.v2.ledgerBounds = { ...preconditionsObject.ledgerBounds }
+        //                     delete preconditionsObject.timeBounds
+        //                     delete preconditionsObject.ledgerBounds
+        //                 }
+        //             }
+        //             break
+        //         case 'minSeqNum': case 'minSeqAge': case 'minSeqLedgerGap': case 'extraSigners':
+        //             const condValue = preconditionFieldset.querySelector(`[name="${condType}"] input`).value
+        //             if (!condValue) continue
+        //             preconditionsObject.type = 'PRECOND_V2'
+        //             preconditionsObject.v2 ||= {}
+        //             if (preconditionsObject.timeBounds) preconditionsObject.v2.timeBounds = { ...preconditionsObject.timeBounds }
+        //             delete preconditionsObject.timeBounds
+        //             switch (condType) {
+        //                 case 'minSeqNum': case 'minSeqAge': case 'minSeqLedgerGap':
+        //                     preconditionsObject.v2[condType] = parseInt(condValue)
+        //                     break
+        //                 case 'extraSigners':
+        //                     let extraSigners
+        //                     try { extraSigners = JSON.parse(condValue) } catch (e) { }
+        //                     if (extraSigners) preconditionsObject.v2[condType] = extraSigners
+        //             }
+        //             break
+        //     }
+        // }
+
+
 
     </script>
 
@@ -314,7 +337,9 @@
                             <strong>ledgerBounds</strong><input name="minLedger" type="number"
                                 placeholder="minLedger"><input name="maxLedger" type="number" placeholder="maxLedger">
                         </div>
-                        <div name="minSeqNum"><strong>minSeqNum</strong><input placeholder="string value"></div>
+                        <div name="minSeqNum"><strong>minSeqNum</strong><input type="number"
+                                placeholder="sequence number">
+                        </div>
                         <div name="minSeqAge"><strong>minSeqAge</strong><input type="number" placeholder="minSeqAge">
                         </div>
                         <div name="minSeqLedgerGap">

@@ -7,7 +7,7 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
     options: {
         enumerable: true, value: {
             sources: {
-                xdr: 'https://cdn.jsdelivr.net/gh/cloudouble/simple-xdr@1.1.0/xdr.min.js'
+                xdr: 'https://cdn.jsdelivr.net/gh/cloudouble/simple-xdr@1.1.2/xdr.min.js'
             }
         }
     },
@@ -146,7 +146,7 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
             if (typeof type === 'string') if (this.utils.xdr?.types?.stellar[type]) type = this.utils.xdr.types.stellar[type]
             if (type.prototype instanceof this.utils.xdr.types.stellar.typedef) { }
 
-            console.log('line 140', transaction)
+            console.log('line 149', transaction)
 
             switch (transaction?.constructor) {
                 case Array:
@@ -206,3 +206,4 @@ for (const t in horizon._types) {
 }
 Object.defineProperty(horizon.utils, '_horizon', { value: horizon })
 export { horizon }
+
