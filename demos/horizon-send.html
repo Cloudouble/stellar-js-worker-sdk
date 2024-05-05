@@ -106,12 +106,18 @@
             const transactionSimpleObject = {
                 sourceAccount: sourceAccountField.value,
                 fee: parseInt(buildSection.querySelector('[name="max_fee"]').value) || 0,
-                cond: {},
-                memo: buildSection.querySelector('[name="memo_content"]').value,
                 operations: [],
                 sorobanData: null
             }
+            const memoContent = buildSection.querySelector('[name="memo_content"]').value,
+                memoType = buildSection.querySelector('[name="memo_type"]').value
+            if (memoContent && memoType) transactionSimpleObject.memo = { type: memoType, content: memoContent }
 
+            if (buildSection.querySelector('[name="soroban_data"]').value) {
+                try {
+                    transactionSimpleObject.sorobanData = JSON.parse(buildSection.querySelector('[name="soroban_data"]').value)
+                } catch (e) { }
+            }
             const preconditionFieldset = buildSection.querySelector('fieldset[name="preconditions"]'), preconditionsObject = {}
             for (const condType of ['timeBounds', 'ledgerBounds', 'minSeqNum', 'minSeqAge', 'minSeqLedgerGap', 'extraSigners']) {
                 switch (condType) {
@@ -119,9 +125,7 @@
                         const boundsElement = preconditionFieldset.querySelector(`[name="${condType}"]`),
                             min = parseInt(boundsElement.querySelector('[name^="min"]').value),
                             max = parseInt(boundsElement.querySelector('[name^="max"]').value)
-                        if (min || max) {
-                            preconditionsObject[condType] = { min, max }
-                        }
+                        if (min || max) preconditionsObject[condType] = { min, max }
                         break
                     case 'minSeqNum': case 'minSeqAge': case 'minSeqLedgerGap': case 'extraSigners':
                         const condValue = preconditionFieldset.querySelector(`[name="${condType}"] input`).value
@@ -138,36 +142,38 @@
                         break
                 }
             }
-            transactionSimpleObject.cond = preconditionsObject
+            if (Object.keys(preconditionsObject).length) transactionSimpleObject.cond = preconditionsObject
             const operationElements = buildSection.querySelectorAll('fieldset[name="operations"] > div')
             for (const operationElement of operationElements) {
                 const operationType = operationElement.querySelector('select[name="type"]').value
                 if (!operationType) continue
                 const operationProperty = operationType.toLowerCase().split('_').map((v, i) => i ? `${v[0].toUpperCase()}${v.slice(1)}` : v).join('') + 'Op'
-                const operationObject = {
-                    body: {
-                        type: operationType,
-                        [operationProperty]: {}
-                    }
-                }
+                const operationObject = { [operationType]: {} }
+                // const operationObject = {
+                //     body: {
+                //         type: operationType,
+                //         [operationProperty]: {}
+                //     }
+                // }
                 for (const operationAttributeInput of operationElement.querySelectorAll('.operation-attributes > input')) {
                     const attrName = operationAttributeInput.name, attrValue = operationAttributeInput.value
                     if (!attrValue) continue
-                    if (attrName === 'sourceAccount') {
-                        operationObject.sourceAccount = {
-                            ed25519: Array.from(horizon.utils.addressToPublicKeyBytes(attrValue)[0]),
-                            type: 'KEY_TYPE_ED25519'
-                        }
-                    } else if (operationAttributeInput.getAttribute('type') === 'number') {
-                        operationObject.body[operationProperty][attrName] = parseInt(attrValue) ?? undefined
+                    // if (attrName === 'sourceAccount') {
+                    //     operationObject.sourceAccount = {
+                    //         ed25519: Array.from(horizon.utils.addressToPublicKeyBytes(attrValue)[0]),
+                    //         type: 'KEY_TYPE_ED25519'
+                    //     }
+                    // } else if (operationAttributeInput.getAttribute('type') === 'number') {
+                    if (operationAttributeInput.getAttribute('type') === 'number') {
+                        operationObject[operationType][attrName] = parseInt(attrValue) ?? undefined
                     } else if (operationAttributeInput.dataset.type === 'json') {
                         try {
-                            operationObject.body[operationProperty][attrName] = JSON.parse(attrValue)
+                            operationObject[operationType][attrName] = JSON.parse(attrValue)
                         } catch (e) {
                             console.error(`Invalid ${attrName} JSON value in ${operationObject.type} operation`, e)
                         }
                     } else {
-                        operationObject.body[operationProperty][attrName] = attrValue
+                        operationObject[operationType][attrName] = attrValue
                     }
                 }
                 transactionSimpleObject.operations ||= []
@@ -312,6 +318,10 @@
                 <label>
                     <strong>Max Fee</strong>
                     <input name="max_fee" type="number" placeholder="Max fee (in stroops)" value="100">
+                </label>
+                <label>
+                    <strong>Soroban Data</strong>
+                    <input name="soroban_data" type="json" placeholder="JSON-encoded Soroban data">
                 </label>
                 <label>
                     <strong>Memo</strong>
