@@ -21,6 +21,7 @@
         networkExampleCode.textContent = (params.network !== 'public' || params.endpoint || params.passphrase)
             ? `const { horizon } = await import('../horizon.js?${queryParams}')` : `const { horizon } = await import('../horizon.js')`
 
+        const transactionObjects = {}
 
         const buildSection = document.getElementById('build'), operationsFieldset = buildSection.querySelector('fieldset[name="operations"]'),
             buildButton = buildSection.querySelector('button.get-result'),
@@ -56,9 +57,6 @@
                 INVOKE_HOST_FUNCTION: { contractAddress: 'string', functionName: 'string', args: 'json' },
                 EXTEND_FOOTPRINT_TTL: { extendTo: 'number' },
                 RESTORE_FOOTPRINT: {}
-            },
-            operationAttributeTypes = {
-
             },
             operationTypeSelect = `<select name="type"><option value="">Select Operation Type</option>${Object.keys(operationTypes)
                 .map(t => ('<option value="' + t + '">' + t + '</option>')).join('')}</select>`
@@ -103,19 +101,18 @@
         buildButton.addEventListener('click', async event => {
             const simpleTransactionSection = document.getElementById('simple-transaction'),
                 simpleTransactionResult = simpleTransactionSection.querySelector('.result')
-            const transactionSimpleObject = {
+            transactionObjects.simple = {
                 sourceAccount: sourceAccountField.value,
                 fee: parseInt(buildSection.querySelector('[name="max_fee"]').value) || 0,
-                operations: [],
-                sorobanData: null
+                operations: []
             }
             const memoContent = buildSection.querySelector('[name="memo_content"]').value,
                 memoType = buildSection.querySelector('[name="memo_type"]').value
-            if (memoContent && memoType) transactionSimpleObject.memo = { type: memoType, content: memoContent }
+            if (memoContent && memoType) transactionObjects.simple.memo = { type: memoType, content: memoContent }
 
             if (buildSection.querySelector('[name="soroban_data"]').value) {
                 try {
-                    transactionSimpleObject.sorobanData = JSON.parse(buildSection.querySelector('[name="soroban_data"]').value)
+                    transactionObjects.simple.sorobanData = JSON.parse(buildSection.querySelector('[name="soroban_data"]').value)
                 } catch (e) { }
             }
             const preconditionFieldset = buildSection.querySelector('fieldset[name="preconditions"]'), preconditionsObject = {}
@@ -142,7 +139,7 @@
                         break
                 }
             }
-            if (Object.keys(preconditionsObject).length) transactionSimpleObject.cond = preconditionsObject
+            if (Object.keys(preconditionsObject).length) transactionObjects.simple.cond = preconditionsObject
             const operationElements = buildSection.querySelectorAll('fieldset[name="operations"] > div')
             for (const operationElement of operationElements) {
                 const operationType = operationElement.querySelector('select[name="type"]').value
@@ -176,10 +173,14 @@
                         operationObject[operationType][attrName] = attrValue
                     }
                 }
-                transactionSimpleObject.operations ||= []
-                transactionSimpleObject.operations.push(operationObject)
+                transactionObjects.simple.operations ||= []
+                transactionObjects.simple.operations.push(operationObject)
             }
-            simpleTransactionResult.textContent = JSON.stringify(transactionSimpleObject, null, 4)
+            simpleTransactionResult.textContent = JSON.stringify(transactionObjects.simple, null, 4)
+
+            await horizon.utils._install('send')
+            console.log('line 182', horizon.utils)
+            transactionObjects.source = horizon.utils.createTransactionSourceObject(transactionObjects.simple)
         })
 
 
@@ -215,47 +216,6 @@
         //             try { hash = JSON.parse(memoContent) } catch (e) { }
         //             if (!Array.isArray(hash)) throw new Error('hash must be an array of bytes as unsigned integers')
         //             transactionObject.memo[transactionObject.memo.type === 'MEMO_RETURN' ? 'retHash' : 'hash'] = hash
-        //     }
-        // }
-
-        // const preconditionFieldset = buildSection.querySelector('fieldset[name="preconditions"]'), preconditionsObject = { type: 'PRECOND_NONE' }
-        // for (const condType of ['timeBounds', 'ledgerBounds', 'minSeqNum', 'minSeqAge', 'minSeqLedgerGap', 'extraSigners']) {
-        //     switch (condType) {
-        //         case 'timeBounds': case 'ledgerBounds':
-        //             const boundsElement = preconditionFieldset.querySelector(`[name="${condType}"]`),
-        //                 min = parseInt(boundsElement.querySelector('[name^="min"]').value),
-        //                 max = parseInt(boundsElement.querySelector('[name^="max"]').value)
-        //             if (min || max) {
-        //                 preconditionsObject[condType] = {}
-        //                 if (min) preconditionsObject[condType][condType === 'timeBounds' ? 'minTime' : 'minLedger'] = min
-        //                 if (max) preconditionsObject[condType][condType === 'timeBounds' ? 'maxTime' : 'maxLedger'] = max
-        //                 preconditionsObject.type = condType === 'timeBounds' ? 'PRECOND_TIME' : 'PRECOND_V2'
-        //                 if (condType === 'ledgerBounds') {
-        //                     preconditionsObject.v2 ||= {}
-        //                     if (preconditionsObject.timeBounds) preconditionsObject.v2.timeBounds = { ...preconditionsObject.timeBounds }
-        //                     if (preconditionsObject.ledgerBounds) preconditionsObject.v2.ledgerBounds = { ...preconditionsObject.ledgerBounds }
-        //                     delete preconditionsObject.timeBounds
-        //                     delete preconditionsObject.ledgerBounds
-        //                 }
-        //             }
-        //             break
-        //         case 'minSeqNum': case 'minSeqAge': case 'minSeqLedgerGap': case 'extraSigners':
-        //             const condValue = preconditionFieldset.querySelector(`[name="${condType}"] input`).value
-        //             if (!condValue) continue
-        //             preconditionsObject.type = 'PRECOND_V2'
-        //             preconditionsObject.v2 ||= {}
-        //             if (preconditionsObject.timeBounds) preconditionsObject.v2.timeBounds = { ...preconditionsObject.timeBounds }
-        //             delete preconditionsObject.timeBounds
-        //             switch (condType) {
-        //                 case 'minSeqNum': case 'minSeqAge': case 'minSeqLedgerGap':
-        //                     preconditionsObject.v2[condType] = parseInt(condValue)
-        //                     break
-        //                 case 'extraSigners':
-        //                     let extraSigners
-        //                     try { extraSigners = JSON.parse(condValue) } catch (e) { }
-        //                     if (extraSigners) preconditionsObject.v2[condType] = extraSigners
-        //             }
-        //             break
         //     }
         // }
 
@@ -366,13 +326,13 @@
                 </label>
                 <button type="button" class="get-result">Build</button>
             </form>
-            <code class="example">Example Code</code>
+            <!-- <code class="example">Example Code</code> -->
             <!-- <pre class="result">Transaction Object</pre> -->
         </section>
         <section id="simple-transaction">
             <h2>Simple Object</h2>
             <p>View the transaction as a simple object</p>
-            <code class="example">Example Code</code>
+            <!-- <code class="example">Example Code</code> -->
             <pre class="result">Transaction as a simple object</pre>
         </section>
         <section id="source-transaction">

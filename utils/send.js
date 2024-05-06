@@ -53,5 +53,76 @@ export default {
         }
         bytes.push(...this.crc16(bytes))
         return this.base32Encode(new Uint8Array(bytes))
+    },
+    createTransactionSourceObject: async function (transactionSimpleObject) {
+        console.log('line 58', transactionSimpleObject)
+        const transactionSourceObject = {
+            sourceAccount: { ed25519: this.addressToPublicKeyBytes(transactionSimpleObject.sourceAccount)[0], type: 'KEY_TYPE_ED25519' },
+            ext: { v: 0 },
+            fee: transactionSimpleObject.fee,
+            memo: { type: 'MEMO_NONE' },
+            cond: { type: 'PRECOND_NONE' },
+            seqNum: (await this._horizon.get.accounts(transactionSimpleObject.sourceAccount)).sequence
+        }
+        switch (transactionSimpleObject.memo?.type) {
+            case 'MEMO_TEXT':
+                transactionSourceObject.memo = { type: 'MEMO_TEXT', text: transactionSimpleObject.memo.content }
+                break
+            case 'MEMO_ID':
+                transactionSourceObject.memo = { type: 'MEMO_ID', id: transactionSimpleObject.memo.content }
+                break
+            case 'MEMO_HASH':
+                transactionSourceObject.memo = { type: 'MEMO_ID', hash: transactionSimpleObject.memo.content }
+                break
+            case 'MEMO_RETURN':
+                transactionSourceObject.memo = { type: 'MEMO_ID', retHash: transactionSimpleObject.memo.content }
+                break
+        }
+        for (const condType of ['timeBounds', 'ledgerBounds', 'minSeqNum', 'minSeqAge', 'minSeqLedgerGap', 'extraSigners']) {
+            if (!(transactionSimpleObject?.cond ?? {})[condType]) continue
+            delete transactionSourceObject.cond.type
+            switch (condType) {
+                case 'timeBounds': case 'ledgerBounds':
+                    const { min, max } = transactionSimpleObject.cond[condType]
+                    if (min || max) {
+                        transactionSourceObject.cond[condType] = {}
+                        if (min) transactionSourceObject.cond[condType][condType === 'timeBounds' ? 'minTime' : 'minLedger'] = min
+                        if (max) transactionSourceObject.cond[condType][condType === 'timeBounds' ? 'maxTime' : 'maxLedger'] = max
+                        transactionSourceObject.cond.type = condType === 'timeBounds' ? 'PRECOND_TIME' : 'PRECOND_V2'
+                        if (condType === 'ledgerBounds') {
+                            transactionSourceObject.cond.v2 ||= {}
+                            if (transactionSourceObject.cond.timeBounds) transactionSourceObject.cond.v2.timeBounds = { ...transactionSourceObject.cond.timeBounds }
+                            if (transactionSourceObject.cond.ledgerBounds) transactionSourceObject.cond.v2.ledgerBounds = { ...transactionSourceObject.cond.ledgerBounds }
+                            delete transactionSourceObject.cond.timeBounds
+                            delete transactionSourceObject.cond.ledgerBounds
+                        }
+                    }
+                    break
+                case 'minSeqNum': case 'minSeqAge': case 'minSeqLedgerGap': case 'extraSigners':
+                    transactionSourceObject.cond.type = 'PRECOND_V2'
+                    transactionSourceObject.cond.v2 ||= {}
+                    if (transactionSourceObject.cond.timeBounds) transactionSourceObject.cond.v2.timeBounds = { ...transactionSourceObject.cond.timeBounds }
+                    delete transactionSourceObject.cond.timeBounds
+                    switch (condType) {
+                        case 'minSeqNum': case 'minSeqAge': case 'minSeqLedgerGap':
+                            transactionSourceObject.cond.v2[condType] = parseInt(transactionSimpleObject.cond[condType])
+                            break
+                        case 'extraSigners':
+                            let extraSigners
+                            try { extraSigners = JSON.parse(transactionSimpleObject.cond[condType]) } catch (e) { }
+                            if (extraSigners) transactionSourceObject.cond.v2[condType] = extraSigners
+                    }
+                    break
+            }
+        }
+
+
+
+
+
+
+
+        console.log('line 125', transactionSourceObject)
     }
+
 }
