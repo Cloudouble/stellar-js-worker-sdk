@@ -62,7 +62,8 @@ export default {
             fee: transactionSimpleObject.fee,
             memo: { type: 'MEMO_NONE' },
             cond: { type: 'PRECOND_NONE' },
-            seqNum: (await this._horizon.get.accounts(transactionSimpleObject.sourceAccount)).sequence
+            seqNum: (await this._horizon.get.accounts(transactionSimpleObject.sourceAccount)).sequence,
+            operations: []
         }
         switch (transactionSimpleObject.memo?.type) {
             case 'MEMO_TEXT':
@@ -72,10 +73,10 @@ export default {
                 transactionSourceObject.memo = { type: 'MEMO_ID', id: transactionSimpleObject.memo.content }
                 break
             case 'MEMO_HASH':
-                transactionSourceObject.memo = { type: 'MEMO_ID', hash: transactionSimpleObject.memo.content }
+                transactionSourceObject.memo = { type: 'MEMO_HASH', hash: transactionSimpleObject.memo.content }
                 break
             case 'MEMO_RETURN':
-                transactionSourceObject.memo = { type: 'MEMO_ID', retHash: transactionSimpleObject.memo.content }
+                transactionSourceObject.memo = { type: 'MEMO_RETURN', retHash: transactionSimpleObject.memo.content }
                 break
         }
         for (const condType of ['timeBounds', 'ledgerBounds', 'minSeqNum', 'minSeqAge', 'minSeqLedgerGap', 'extraSigners']) {
@@ -115,14 +116,20 @@ export default {
                     break
             }
         }
-
-
-
-
-
-
-
-        console.log('line 125', transactionSourceObject)
+        for (const operation of (transactionSimpleObject.operations ?? [])) {
+            const { type, op } = operation
+            const operationProperty = type.toLowerCase().split('_').map((v, i) => i ? `${v[0].toUpperCase()}${v.slice(1)}` : v).join('') + 'Op'
+            const operationObject = {
+                body: { type, [operationProperty]: { ...op } }
+            }
+            if (op.sourceAccount) {
+                delete operationObject.body[[operationProperty]].sourceAccount
+                operationObject.sourceAccount = { ed25519: this.addressToPublicKeyBytes(op.sourceAccount)[0], type: 'KEY_TYPE_ED25519' }
+            }
+            transactionSourceObject.operations.push(operationObject)
+        }
+        if (transactionSimpleObject.sorobanData) transactionSourceObject.ext = { v: 1, sorobanData: transactionSimpleObject.sorobanData }
+        return transactionSourceObject
     }
 
 }

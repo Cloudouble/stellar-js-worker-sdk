@@ -100,7 +100,9 @@
         })
         buildButton.addEventListener('click', async event => {
             const simpleTransactionSection = document.getElementById('simple-transaction'),
-                simpleTransactionResult = simpleTransactionSection.querySelector('.result')
+                sourceTransactionSection = document.getElementById('source-transaction'),
+                simpleTransactionResult = simpleTransactionSection.querySelector('.result'),
+                sourceTransactionResult = sourceTransactionSection.querySelector('.result')
             transactionObjects.simple = {
                 sourceAccount: sourceAccountField.value,
                 fee: parseInt(buildSection.querySelector('[name="max_fee"]').value) || 0,
@@ -144,33 +146,20 @@
             for (const operationElement of operationElements) {
                 const operationType = operationElement.querySelector('select[name="type"]').value
                 if (!operationType) continue
-                const operationProperty = operationType.toLowerCase().split('_').map((v, i) => i ? `${v[0].toUpperCase()}${v.slice(1)}` : v).join('') + 'Op'
-                const operationObject = { [operationType]: {} }
-                // const operationObject = {
-                //     body: {
-                //         type: operationType,
-                //         [operationProperty]: {}
-                //     }
-                // }
+                const operationObject = { type: operationType, op: {} }
                 for (const operationAttributeInput of operationElement.querySelectorAll('.operation-attributes > input')) {
                     const attrName = operationAttributeInput.name, attrValue = operationAttributeInput.value
                     if (!attrValue) continue
-                    // if (attrName === 'sourceAccount') {
-                    //     operationObject.sourceAccount = {
-                    //         ed25519: Array.from(horizon.utils.addressToPublicKeyBytes(attrValue)[0]),
-                    //         type: 'KEY_TYPE_ED25519'
-                    //     }
-                    // } else if (operationAttributeInput.getAttribute('type') === 'number') {
                     if (operationAttributeInput.getAttribute('type') === 'number') {
-                        operationObject[operationType][attrName] = parseInt(attrValue) ?? undefined
+                        operationObject.op[attrName] = parseInt(attrValue) ?? undefined
                     } else if (operationAttributeInput.dataset.type === 'json') {
                         try {
-                            operationObject[operationType][attrName] = JSON.parse(attrValue)
+                            operationObject.op[attrName] = JSON.parse(attrValue)
                         } catch (e) {
                             console.error(`Invalid ${attrName} JSON value in ${operationObject.type} operation`, e)
                         }
                     } else {
-                        operationObject[operationType][attrName] = attrValue
+                        operationObject.op[attrName] = attrValue
                     }
                 }
                 transactionObjects.simple.operations ||= []
@@ -179,47 +168,15 @@
             simpleTransactionResult.textContent = JSON.stringify(transactionObjects.simple, null, 4)
 
             await horizon.utils._install('send')
-            console.log('line 182', horizon.utils)
-            transactionObjects.source = horizon.utils.createTransactionSourceObject(transactionObjects.simple)
+            // console.log('line 182', horizon.utils)
+            transactionObjects.source = await horizon.utils.createTransactionSourceObject(transactionObjects.simple)
+            sourceTransactionResult.textContent = JSON.stringify(transactionObjects.source, null, 4)
         })
 
 
         window.horizon = horizon
-        console.log('line 181', horizon)
+        console.log('line 178', horizon)
         // test account on test netwwork: GA5VCCBNG4SIEST6HYIW2F3KKZRHA4UZZ2XFSMZ4VRQ4MCBRHSQRRIPE
-
-
-        // const transactionSourceObject = {
-        //     sourceAccount: {
-        //         ed25519: Array.from(horizon.utils.addressToPublicKeyBytes(sourceAccountField.value)[0]),
-        //         type: 'KEY_TYPE_ED25519'
-        //     },
-        //     fee: parseInt(buildSection.querySelector('[name="max_fee"]').value) || 0,
-        //     seqNum: sourceAccountSequenceField.value ? parseInt(sourceAccountSequenceField.value) : null,
-        //     cond: {},
-        //     memo: { type: 'MEMO_NONE' },
-        //     operations: [],
-        //     ext: { v: 0 }
-        // }, memoContent = buildSection.querySelector('[name="memo_content"]').value
-        // if (memoContent) {
-        //     transactionObject.memo.type = buildSection.querySelector('[name="memo_type"]').value || 'MEMO_NONE'
-        //     switch (transactionObject.memo.type) {
-        //         case 'MEMO_TEXT':
-        //             transactionObject.memo.text = memoContent
-        //             break
-        //         case 'MEMO_ID':
-        //             transactionObject.memo.id = memoContent
-        //             break
-        //         case 'MEMO_HASH':
-        //         case 'MEMO_RETURN':
-        //             let hash
-        //             try { hash = JSON.parse(memoContent) } catch (e) { }
-        //             if (!Array.isArray(hash)) throw new Error('hash must be an array of bytes as unsigned integers')
-        //             transactionObject.memo[transactionObject.memo.type === 'MEMO_RETURN' ? 'retHash' : 'hash'] = hash
-        //     }
-        // }
-
-
 
     </script>
 
