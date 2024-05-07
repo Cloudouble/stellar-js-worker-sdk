@@ -12,6 +12,10 @@ const bytesToAssetCode = (bytes) => {
     return assetCode
 }
 
+const bytesToHex = (bytes) => {
+    return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('')
+}
+
 const decimalToStellarPrice = (decimalPrice) => {
     const d = 10000000000, n = Math.round(decimalPrice * denominator)
     return { n, d }
@@ -128,9 +132,7 @@ const operationFieldProcessorMap = {
 
 
 
-// const signingAlgorithm = { name: 'ECDSA', hash: 'SHA-256' }
-// const signingAlgorithm = { name: 'ECDSA', hash: {name: 'SHA-256'} }
-const signingAlgorithm = { name: 'ECDSA', namedCurve: 'P-256' }
+const signingAlgorithm = { name: 'ECDSA', namedCurve: 'P-256', hash: 'SHA-256' }
 const signer = {
     generate: async () => {
         const keyPair = await crypto.subtle.generateKey(signingAlgorithm, true, ['sign', 'verify'])
@@ -263,7 +265,14 @@ export default {
         return new Uint8Array(hashBuffer)
     },
     signSignaturePayload: async (payloadHash, secretKey) => {
-        const signature = await signer.sign(payloadHash, secretKey)
+        let signature
+        try {
+            signature = await signer.sign(payloadHash, secretKey)
+        } catch (e) {
+            const ed = await import('https://cdn.jsdelivr.net/npm/@noble/ed25519@2.1.0/+esm')
+            secretKey = base32Decode(secretKey).slice(0, 32)
+            signature = await ed.signAsync(payloadHash, secretKey)
+        }
         return signature
     }
 
