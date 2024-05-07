@@ -28,7 +28,7 @@
             addOperationButton = buildSection.querySelector('button[name="add-operation"]'),
             operationTypes = {
                 CREATE_ACCOUNT: { destination: 'string', startingBalance: 'number' },
-                PAYMENT: { destination: 'string', asset: 'json', amount: 'number' },
+                PAYMENT: { destination: 'string', asset: 'string', amount: 'number' },
                 PATH_PAYMENT_STRICT_RECEIVE: { sendAsset: 'string', sendMax: 'number', destination: 'string', destAsset: 'string', destAmount: 'number', path: 'json' },
                 MANAGE_SELL_OFFER: { selling: 'string', buying: 'string', amount: 'number', price: 'string', offerID: 'number' },
                 CREATE_PASSIVE_SELL_OFFER: { selling: 'string', buying: 'string', amount: 'number', price: 'string' },

@@ -65,14 +65,19 @@ const addressToPublicKeyBytes = addressString => {
 
 const operationFieldProcessors = {
     account: a => ({ ed25519: addressToPublicKeyBytes(a)[0], type: 'KEY_TYPE_ED25519' }),
-    asset: a => {
+    asset: function (a) {
         const asset = { type: 'ASSET_TYPE_NATIVE' }
-        if (!a || (typeof a !== 'string')) return retval
-        if (a.length === 4 || a.length === 12) {
-            retval.type = `ASSET_TYPE_CREDIT_ALPHANUM${a.length}`
-            retval.alphaNum4 = { assetCode: assetCodeToBytes(a.assetCode), issuer: this.account(a.issuer) }
+        if (!a || (typeof a !== 'string')) return asset
+        const [assetCode, issuer] = a.split(':', 2)
+        if (!issuer) return asset
+        if (assetCode <= 4) {
+            asset.type = `ASSET_TYPE_CREDIT_ALPHANUM4`
+        } else if (assetCode <= 12) {
+            asset.type = `ASSET_TYPE_CREDIT_ALPHANUM12`
         }
-        return retval
+        console.log('line 78', this)
+        asset.alphaNum4 = { assetCode: assetCodeToBytes(assetCode), issuer: this.account(issuer) }
+        return asset
     },
     price: p => decimalToStellarPrice(p),
 
@@ -86,34 +91,31 @@ const operationFieldProcessorMap = {
         destAsset: operationFieldProcessors.asset
     },
     MANAGE_SELL_OFFER: { selling: operationFieldProcessors.asset, buying: operationFieldProcessors.asset, price: operationFieldProcessors.price },
-    CREATE_PASSIVE_SELL_OFFER: { selling: 'string', buying: 'string', amount: 'number', price: 'string' },
-    SET_OPTIONS: {
-        inflationDest: 'string', clearFlags: 'number', setFlags: 'number', masterWeight: 'number', lowThreshold: 'number',
-        medThreshold: 'number', highThreshold: 'number', homeDomain: 'string', signer: 'json'
-    },
-    CHANGE_TRUST: { line: 'string', limit: 'number' },
-    ALLOW_TRUST: { trustor: 'string', asset: 'string', authorize: 'number' },
-    ACCOUNT_MERGE: { destination: 'string' },
+    CREATE_PASSIVE_SELL_OFFER: { selling: operationFieldProcessors.asset, buying: operationFieldProcessors.asset, price: operationFieldProcessors.price },
+    SET_OPTIONS: { inflationDest: operationFieldProcessors.account },
+    CHANGE_TRUST: { line: operationFieldProcessors.asset },
+    ALLOW_TRUST: { trustor: operationFieldProcessors.account, asset: operationFieldProcessors.asset },
+    ACCOUNT_MERGE: { destination: operationFieldProcessors.account },
     INFLATION: {},
-    MANAGE_DATA: { dataName: 'string', dataValue: 'json' },
-    BUMP_SEQUENCE: { bumpTo: 'number' },
-    MANAGE_BUY_OFFER: { selling: 'string', buying: 'string', buyAmount: 'number', price: 'string', offerId: 'number' },
+    MANAGE_DATA: {},
+    BUMP_SEQUENCE: {},
+    MANAGE_BUY_OFFER: { selling: operationFieldProcessors.asset, buying: operationFieldProcessors.asset, price: operationFieldProcessors.price },
     PATH_PAYMENT_STRICT_SEND: {
         sendAsset: operationFieldProcessors.asset, destination: operationFieldProcessors.account,
         destAsset: operationFieldProcessors.asset
     },
-    CREATE_CLAIMABLE_BALANCE: { asset: 'string', amount: 'number', claimants: 'json' },
-    CLAIM_CLAIMABLE_BALANCE: { balanceID: 'string' },
-    BEGIN_SPONSORING_FUTURE_RESERVES: { sponsoredID: 'string' },
+    CREATE_CLAIMABLE_BALANCE: { asset: operationFieldProcessors.asset },
+    CLAIM_CLAIMABLE_BALANCE: {},
+    BEGIN_SPONSORING_FUTURE_RESERVES: { sponsoredID: operationFieldProcessors.account },
     END_SPONSORING_FUTURE_RESERVES: {},
-    REVOKE_SPONSORSHIP: { ledgerKey: 'json', signer: 'json' },
-    CLAWBACK: { asset: 'string', from: 'string', amount: 'number' },
-    CLAWBACK_CLAIMABLE_BALANCE: { balanceID: 'string' },
-    SET_TRUST_LINE_FLAGS: { trustor: 'string', asset: 'string', clearFlags: 'number', setFlags: 'number' },
-    LIQUIDITY_POOL_DEPOSIT: { liquidityPoolID: 'string', maxAmountA: 'number', maxAmountB: 'number', minPrice: 'string', maxPrice: 'string' },
-    LIQUIDITY_POOL_WITHDRAW: { liquidityPoolID: 'string', maxAmountA: 'number', maxAmountB: 'number', minPrice: 'string', maxPrice: 'number' },
-    INVOKE_HOST_FUNCTION: { contractAddress: 'string', functionName: 'string', args: 'json' },
-    EXTEND_FOOTPRINT_TTL: { extendTo: 'number' },
+    REVOKE_SPONSORSHIP: {},
+    CLAWBACK: { asset: operationFieldProcessors.asset, from: operationFieldProcessors.account },
+    CLAWBACK_CLAIMABLE_BALANCE: {},
+    SET_TRUST_LINE_FLAGS: { trustor: operationFieldProcessors.account, asset: operationFieldProcessors.asset },
+    LIQUIDITY_POOL_DEPOSIT: { minPrice: operationFieldProcessors.price, maxPrice: operationFieldProcessors.price },
+    LIQUIDITY_POOL_WITHDRAW: { minPrice: operationFieldProcessors.price, maxPrice: operationFieldProcessors.price },
+    INVOKE_HOST_FUNCTION: {},
+    EXTEND_FOOTPRINT_TTL: {},
     RESTORE_FOOTPRINT: {}
 }
 
@@ -208,7 +210,7 @@ export default {
         for (const operation of (transactionSimpleObject.operations ?? [])) {
             const { type, op } = operation, { sourceAccount } = op
             if (sourceAccount) delete op.sourceAccount
-            if (type in operationFieldProcessorMap) for (const p in op) if (p in operationFieldProcessorMap[type]) op[p] = operationFieldProcessorMap[type][p](op[p])
+            if (type in operationFieldProcessorMap) for (const p in op) if (p in operationFieldProcessorMap[type]) op[p] = operationFieldProcessorMap[type][p].bind(operationFieldProcessors)(op[p])
             const operationProperty = type.toLowerCase().split('_').map((v, i) => i ? `${v[0].toUpperCase()}${v.slice(1)}` : v).join('') + 'Op',
                 operationObject = { body: { type, [operationProperty]: { ...op } } }
             if (sourceAccount) operationObject.sourceAccount = operationFieldProcessors.account(sourceAccount)
