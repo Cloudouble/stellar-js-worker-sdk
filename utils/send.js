@@ -127,6 +127,32 @@ const operationFieldProcessorMap = {
 
 
 
+
+// const signingAlgorithm = { name: 'ECDSA', hash: 'SHA-256' }
+// const signingAlgorithm = { name: 'ECDSA', hash: {name: 'SHA-256'} }
+const signingAlgorithm = { name: 'ECDSA', namedCurve: 'P-256' }
+const signer = {
+    generate: async () => {
+        const keyPair = await crypto.subtle.generateKey(signingAlgorithm, true, ['sign', 'verify'])
+        const publicKey = await crypto.subtle.exportKey('raw', keyPair.publicKey)
+        return new Uint8Array(publicKey)
+    },
+    sign: async (data, secretKey) => {
+        if (typeof secretKey === 'string') secretKey = base32Decode(secretKey)
+        const key = await crypto.subtle.importKey('raw', secretKey, signingAlgorithm, false, ['sign'])
+        const signature = await crypto.subtle.sign(signingAlgorithm, key, data)
+        return new Uint8Array(signature)
+    },
+    verify: async (data, signature, publicKey) => {
+        const key = await crypto.subtle.importKey('raw', publicKey, signingAlgorithm, false, ['verify'])
+        const result = await crypto.subtle.verify(signingAlgorithm, key, signature, data)
+        return result
+    }
+}
+
+
+
+
 export default {
     base32Chars,
     algorithms: { PK: 0, Hash: 0 },
@@ -231,6 +257,15 @@ export default {
             networkId: await getSHA256HashBytes(network.passphrase),
             taggedTransaction: { type: 'ENVELOPE_TYPE_TX', tx }
         }
+    },
+    hashSignaturePayload: async (payloadInstance) => {
+        const hashBuffer = await crypto.subtle.digest('SHA-256', payloadInstance.bytes)
+        return new Uint8Array(hashBuffer)
+    },
+    signSignaturePayload: async (payloadHash, secretKey) => {
+        const signature = await signer.sign(payloadHash, secretKey)
+        return signature
     }
 
 }
+
