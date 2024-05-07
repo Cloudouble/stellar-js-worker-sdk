@@ -1,3 +1,26 @@
+const assetCodeToBytes = (assetCode) => {
+    let bytes = []
+    for (let i = 0; i < assetCode.length; i++) bytes.push(assetCode.charCodeAt(i))
+    const paddingLength = assetCode.length <= 4 ? 4 : 12;
+    while (bytes.length < paddingLength) bytes.push(0)
+    return bytes
+}
+
+const bytesToAssetCode = (bytes) => {
+    let assetCode = ''
+    for (let i = 0; i < bytes.length; i++) if (bytes[i] !== 0) assetCode += String.fromCharCode(bytes[i])
+    return assetCode
+}
+
+const decimalToStellarPrice = (decimalPrice) => {
+    const d = 10000000000, n = Math.round(decimalPrice * denominator)
+    return { n, d }
+}
+
+function stellarPriceToDecimal(stellarPrice) {
+    return stellarPrice.n / stellarPrice.d
+}
+
 const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
 
 const keyTypeMap = {
@@ -41,16 +64,28 @@ const addressToPublicKeyBytes = addressString => {
 }
 
 const operationFieldProcessors = {
-    sourceAccount: account => {
-        return { ed25519: addressToPublicKeyBytes(account)[0], type: 'KEY_TYPE_ED25519' }
-    }
+    account: a => ({ ed25519: addressToPublicKeyBytes(a)[0], type: 'KEY_TYPE_ED25519' }),
+    asset: a => {
+        const asset = { type: 'ASSET_TYPE_NATIVE' }
+        if (!a || (typeof a !== 'string')) return retval
+        if (a.length === 4 || a.length === 12) {
+            retval.type = `ASSET_TYPE_CREDIT_ALPHANUM${a.length}`
+            retval.alphaNum4 = { assetCode: assetCodeToBytes(a.assetCode), issuer: this.account(a.issuer) }
+        }
+        return retval
+    },
+    price: p => decimalToStellarPrice(p),
+
 }
 
 const operationFieldProcessorMap = {
-    CREATE_ACCOUNT: { destination: operationFieldProcessors.sourceAccount },
-    PAYMENT: { destination: 'string', asset: 'string', amount: 'number' },
-    PATH_PAYMENT_STRICT_RECEIVE: { sendAsset: 'string', sendMax: 'number', destination: 'string', destAsset: 'string', destAmount: 'number', path: 'json' },
-    MANAGE_SELL_OFFER: { selling: 'string', buying: 'string', amount: 'number', price: 'string', offerID: 'number' },
+    CREATE_ACCOUNT: { destination: operationFieldProcessors.account },
+    PAYMENT: { destination: operationFieldProcessors.account, asset: operationFieldProcessors.asset },
+    PATH_PAYMENT_STRICT_RECEIVE: {
+        sendAsset: operationFieldProcessors.asset, destination: operationFieldProcessors.account,
+        destAsset: operationFieldProcessors.asset
+    },
+    MANAGE_SELL_OFFER: { selling: operationFieldProcessors.asset, buying: operationFieldProcessors.asset, price: operationFieldProcessors.price },
     CREATE_PASSIVE_SELL_OFFER: { selling: 'string', buying: 'string', amount: 'number', price: 'string' },
     SET_OPTIONS: {
         inflationDest: 'string', clearFlags: 'number', setFlags: 'number', masterWeight: 'number', lowThreshold: 'number',
@@ -63,7 +98,10 @@ const operationFieldProcessorMap = {
     MANAGE_DATA: { dataName: 'string', dataValue: 'json' },
     BUMP_SEQUENCE: { bumpTo: 'number' },
     MANAGE_BUY_OFFER: { selling: 'string', buying: 'string', buyAmount: 'number', price: 'string', offerId: 'number' },
-    PATH_PAYMENT_STRICT_SEND: { sendAsset: 'string', sendAmount: 'number', destination: 'string', destAsset: 'string', destMin: 'number', path: 'json' },
+    PATH_PAYMENT_STRICT_SEND: {
+        sendAsset: operationFieldProcessors.asset, destination: operationFieldProcessors.account,
+        destAsset: operationFieldProcessors.asset
+    },
     CREATE_CLAIMABLE_BALANCE: { asset: 'string', amount: 'number', claimants: 'json' },
     CLAIM_CLAIMABLE_BALANCE: { balanceID: 'string' },
     BEGIN_SPONSORING_FUTURE_RESERVES: { sponsoredID: 'string' },
@@ -170,19 +208,10 @@ export default {
         for (const operation of (transactionSimpleObject.operations ?? [])) {
             const { type, op } = operation, { sourceAccount } = op
             if (sourceAccount) delete op.sourceAccount
-            if (type in operationFieldProcessorMap) {
-                for (const p in op) {
-                    if (p in operationFieldProcessorMap[type]) {
-                        op[p] = operationFieldProcessorMap[type][p](op[p])
-                    }
-                }
-            }
-            const operationProperty = type.toLowerCase().split('_').map((v, i) => i ? `${v[0].toUpperCase()}${v.slice(1)}` : v).join('') + 'Op'
-            const operationObject = { body: { type, [operationProperty]: { ...op } } }
-            if (sourceAccount) {
-                operationObject.sourceAccount = operationFieldProcessors.sourceAccount(sourceAccount)
-            }
-
+            if (type in operationFieldProcessorMap) for (const p in op) if (p in operationFieldProcessorMap[type]) op[p] = operationFieldProcessorMap[type][p](op[p])
+            const operationProperty = type.toLowerCase().split('_').map((v, i) => i ? `${v[0].toUpperCase()}${v.slice(1)}` : v).join('') + 'Op',
+                operationObject = { body: { type, [operationProperty]: { ...op } } }
+            if (sourceAccount) operationObject.sourceAccount = operationFieldProcessors.account(sourceAccount)
             transactionSourceObject.operations.push(operationObject)
         }
         if (transactionSimpleObject.sorobanData) transactionSourceObject.ext = { v: 1, sorobanData: transactionSimpleObject.sorobanData }
