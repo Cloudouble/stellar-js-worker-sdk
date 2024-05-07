@@ -75,12 +75,10 @@ const operationFieldProcessors = {
         } else if (assetCode <= 12) {
             asset.type = `ASSET_TYPE_CREDIT_ALPHANUM12`
         }
-        console.log('line 78', this)
         asset.alphaNum4 = { assetCode: assetCodeToBytes(assetCode), issuer: this.account(issuer) }
         return asset
     },
-    price: p => decimalToStellarPrice(p),
-
+    price: p => decimalToStellarPrice(p)
 }
 
 const operationFieldProcessorMap = {
