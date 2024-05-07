@@ -185,7 +185,8 @@ footer {
     }
 }
 
-#build {
+#build,
+#sign {
 
     &>form>label>input {
         display: inline-block;

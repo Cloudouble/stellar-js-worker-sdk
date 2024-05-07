@@ -63,6 +63,12 @@ const addressToPublicKeyBytes = addressString => {
     return [addressBytes, memoBytes, payloadBytes, keyType]
 }
 
+const getSHA256HashBytes = async (input) => {
+    const encoder = new TextEncoder(), inputBytes = encoder.encode(input),
+        hashBuffer = await crypto.subtle.digest('SHA-256', inputBytes)
+    return Array.from(new Uint8Array(hashBuffer))
+}
+
 const operationFieldProcessors = {
     account: a => ({ ed25519: addressToPublicKeyBytes(a)[0], type: 'KEY_TYPE_ED25519' }),
     asset: function (a) {
@@ -78,12 +84,14 @@ const operationFieldProcessors = {
         asset.alphaNum4 = { assetCode: assetCodeToBytes(assetCode), issuer: this.account(issuer) }
         return asset
     },
-    price: p => decimalToStellarPrice(p)
+    hyper: n => BigInt(n),
+    price: p => decimalToStellarPrice(p),
+    publicKey: a => ({ ed25519: addressToPublicKeyBytes(a)[0], type: 'PUBLIC_KEY_TYPE_ED25519' }),
 }
 
 const operationFieldProcessorMap = {
-    CREATE_ACCOUNT: { destination: operationFieldProcessors.account },
-    PAYMENT: { destination: operationFieldProcessors.account, asset: operationFieldProcessors.asset },
+    CREATE_ACCOUNT: { destination: operationFieldProcessors.publicKey, startingBalance: operationFieldProcessors.hyper },
+    PAYMENT: { destination: operationFieldProcessors.publicKey, asset: operationFieldProcessors.asset, amount: operationFieldProcessors.hyper },
     PATH_PAYMENT_STRICT_RECEIVE: {
         sendAsset: operationFieldProcessors.asset, destination: operationFieldProcessors.account,
         destAsset: operationFieldProcessors.asset
@@ -216,6 +224,13 @@ export default {
         }
         if (transactionSimpleObject.sorobanData) transactionSourceObject.ext = { v: 1, sorobanData: transactionSimpleObject.sorobanData }
         return transactionSourceObject
+    },
+    wrapAsSignaturePayload: async (tx, network) => {
+        tx.seqNum = BigInt(tx.seqNum)
+        return {
+            networkId: await getSHA256HashBytes(network.passphrase),
+            taggedTransaction: { type: 'ENVELOPE_TYPE_TX', tx }
+        }
     }
 
 }

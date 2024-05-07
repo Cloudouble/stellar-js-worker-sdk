@@ -189,7 +189,8 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
                     if (!scope || this._scopes[scope]) return
                     const url = (new URL((this._horizon?.options?.sources ?? {})[scope] ?? `./utils/${scope}.js`, import.meta.url)).href
                     if (namespace) this[namespace] ??= {}
-                    this._scopes[scope] = !!Object.assign(namespace ? this[namespace] : this, (await import(url)).default)
+                    const importedUtil = (await import(url)).default
+                    this._scopes[scope] = !!(namespace ? (this[namespace] = importedUtil) : Object.assign(this, importedUtil))
                     this._scope = scope
                 }
             },
