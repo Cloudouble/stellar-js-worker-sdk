@@ -16,6 +16,10 @@ const bytesToHex = (bytes) => {
     return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('')
 }
 
+function hexToBytes(hexString) {
+    return Uint8Array.from(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)))
+}
+
 const decimalToStellarPrice = (decimalPrice) => {
     const d = 10000000000, n = Math.round(decimalPrice * denominator)
     return { n, d }
@@ -156,7 +160,7 @@ const signer = {
 
 
 export default {
-    base32Chars, bytesToHex,
+    base32Chars, bytesToHex, hexToBytes,
     algorithms: { PK: 0, Hash: 0 },
     keyTypeMap,
     operationFieldProcessors,
@@ -269,13 +273,14 @@ export default {
         return Array.from(new Uint8Array(hashBuffer), byte => byte.toString(16).padStart(2, '0')).join('')
     },
     signSignaturePayload: async (payloadHash, secretKey) => {
+        const payloadHashBytes = typeof payloadHash === 'string' ? hexToBytes(payloadHash) : payloadHash
+        const secretKeyBytes = base32Decode(secretKey.slice(1)).slice(0, -2)
         let signature
         try {
-            signature = await signer.sign(payloadHash, secretKey)
+            signature = await signer.sign(payloadHashBytes, secretKeyBytes)
         } catch (e) {
             const ed = await import('https://cdn.jsdelivr.net/npm/@noble/ed25519@2.1.0/+esm')
-            secretKey = base32Decode(secretKey).slice(0, 32)
-            signature = await ed.signAsync(payloadHash, secretKey)
+            signature = await ed.signAsync(payloadHashBytes, secretKeyBytes)
         }
         return signature
     }

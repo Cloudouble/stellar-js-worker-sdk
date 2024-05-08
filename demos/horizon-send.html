@@ -259,7 +259,12 @@
                 envelopeJsonResult = envelopeJsonSection.querySelector('.result'),
                 envelopeXdrResult = envelopeXdrSection.querySelector('.result')
 
-            envelopeJsonResult.textContent = JSON.stringify(transactionEnvelopeInstance, null, 4)
+
+            const transactionEnvelopePlainObject = JSON.parse(JSON.stringify(transactionEnvelopeInstance))
+            transactionEnvelopePlainObject.v1.signatures[0].signature = btoa(String.fromCharCode.apply(null, transactionEnvelopePlainObject.v1.signatures[0].signature))
+
+            // envelopeJsonResult.textContent = JSON.stringify(transactionEnvelopeInstance, null, 4)
+            envelopeJsonResult.textContent = JSON.stringify(transactionEnvelopePlainObject, null, 4)
 
             envelopeXdrResult.textContent = transactionEnvelopeInstance.toString()
 
@@ -363,7 +368,7 @@
                     <fieldset name="preconditions">
                         <div name="timeBounds">
                             <strong>timeBounds</strong><input name="minTime" placeholder="minTime" value="1"><input
-                                name="maxTime" placeholder="maxTime" value="1715169336">
+                                name="maxTime" placeholder="maxTime" value="17151741120">
                         </div>
                         <div name="ledgerBounds">
                             <strong>ledgerBounds</strong><input name="minLedger" type="number"
