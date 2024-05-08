@@ -192,7 +192,7 @@
 
             const transactionSignaturePayloadInstance = new horizon.utils.xdr.types.stellar.TransactionSignaturePayload(signaturePayloadSource)
 
-            transactionObjects.instance = transactionSignaturePayloadInstance
+            transactionObjects.signaturePayloadInstance = transactionSignaturePayloadInstance
 
             signaturePayloadJsonResult.textContent = JSON.stringify(transactionSignaturePayloadInstance, null, 4)
 
@@ -204,20 +204,41 @@
             const privateKey = event.target.closest('form').querySelector('input').value
             if (!privateKey) return
 
-            const payloadHash = await horizon.utils.hashSignaturePayload(transactionObjects.instance)
+            const payloadHash = await horizon.utils.hashSignaturePayload(transactionObjects.signaturePayloadInstance)
 
-            console.log('line 209', privateKey, transactionObjects.instance)
+            console.log('line 209', privateKey, transactionObjects.signaturePayloadInstance)
             console.log('line 210', payloadHash)
 
-            const payloadSignature = await horizon.utils.signSignaturePayload(payloadHash, privateKey)
+            const signature = Array.from(await horizon.utils.signSignaturePayload(payloadHash, privateKey))
 
-            console.log('line 214', payloadSignature)
+            const signatureDecorated = { hint: transactionObjects.signaturePayloadInstance.value.taggedTransaction.tx.sourceAccount.ed25519.slice(-4), signature }
+
+            console.log('line 216', signatureDecorated)
+
+            const transactionEnvelope = { type: 'ENVELOPE_TYPE_TX', v1: { signatures: [signatureDecorated], tx: transactionObjects.signaturePayloadInstance.value.taggedTransaction.tx } }
+
+            await horizon.utils.xdr.factory('https://raw.githubusercontent.com/stellar/stellar-xdr/curr/Stellar-transaction.x', 'TransactionEnvelope', { namespace: 'stellar' })
+
+            const transactionEnvelopeInstance = new horizon.utils.xdr.types.stellar.TransactionEnvelope(transactionEnvelope)
+
+            console.log('line 224', transactionEnvelopeInstance)
+
+            const envelopeJsonSection = document.getElementById('envelope-json'),
+                envelopeXdrSection = document.getElementById('envelope-xdr'),
+                envelopeJsonResult = envelopeJsonSection.querySelector('.result'),
+                envelopeXdrResult = envelopeXdrSection.querySelector('.result')
+
+            envelopeJsonResult.textContent = JSON.stringify(transactionEnvelopeInstance, null, 4)
+
+            envelopeXdrResult.textContent = transactionEnvelopeInstance.toString()
+
+
 
         })
 
 
         window.horizon = horizon
-        console.log('line 205', horizon)
+        console.log('line 241', horizon)
         // test account on test netwwork: GA5VCCBNG4SIEST6HYIW2F3KKZRHA4UZZ2XFSMZ4VRQ4MCBRHSQRRIPE
 
     </script>
@@ -371,7 +392,7 @@
             <code class="example">Example Code</code>
             <pre class="result">Signed TransactionEnvelope as a JSON object</pre>
         </section>
-        <section id="envelope">
+        <section id="envelope-xdr">
             <h2>Transaction Envelope as an XDR string</h2>
             <p>View the signed transaction envelope in XDR format</p>
             <code class="example">Example Code</code>
