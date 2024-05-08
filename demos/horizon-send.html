@@ -227,22 +227,24 @@
 
             signaturePayloadHashResult.textContent = horizon.utils.bytesToHex(signaturePayloadHash)
 
+            transactionObjects.signaturePayloadHash = signaturePayloadHash
+
         })
 
         signButton.addEventListener('click', async event => {
             const privateKey = event.target.closest('form').querySelector('input').value
             if (!privateKey) return
 
-            const payloadHash = await horizon.utils.hashSignaturePayload(transactionObjects.signaturePayloadInstance)
+            const { signaturePayloadHash } = transactionObjects
 
-            console.log('line 209', privateKey, transactionObjects.signaturePayloadInstance)
-            console.log('line 210', payloadHash)
+            console.log('line 240', privateKey, transactionObjects.signaturePayloadInstance)
+            console.log('line 241', signaturePayloadHash)
 
-            const signature = Array.from(await horizon.utils.signSignaturePayload(payloadHash, privateKey))
+            const signature = Array.from(await horizon.utils.signSignaturePayload(signaturePayloadHash, privateKey))
 
             const signatureDecorated = { hint: transactionObjects.signaturePayloadInstance.value.taggedTransaction.tx.sourceAccount.ed25519.slice(-4), signature }
 
-            console.log('line 216', signatureDecorated)
+            console.log('line 247', signatureDecorated)
 
             const transactionEnvelope = { type: 'ENVELOPE_TYPE_TX', v1: { signatures: [signatureDecorated], tx: transactionObjects.signaturePayloadInstance.value.taggedTransaction.tx } }
 
@@ -250,7 +252,7 @@
 
             const transactionEnvelopeInstance = new horizon.utils.xdr.types.stellar.TransactionEnvelope(transactionEnvelope)
 
-            console.log('line 224', transactionEnvelopeInstance)
+            console.log('line 255', transactionEnvelopeInstance)
 
             const envelopeJsonSection = document.getElementById('envelope-json'),
                 envelopeXdrSection = document.getElementById('envelope-xdr'),
