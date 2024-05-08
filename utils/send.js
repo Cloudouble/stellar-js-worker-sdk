@@ -156,7 +156,7 @@ const signer = {
 
 
 export default {
-    base32Chars,
+    base32Chars, bytesToHex,
     algorithms: { PK: 0, Hash: 0 },
     keyTypeMap,
     operationFieldProcessors,
@@ -187,7 +187,7 @@ export default {
             fee: transactionSimpleObject.fee,
             memo: { type: 'MEMO_NONE' },
             cond: { type: 'PRECOND_NONE' },
-            seqNum: parseInt((await this._horizon.get.accounts(transactionSimpleObject.sourceAccount)).sequence) + 1,
+            seqNum: BigInt(parseInt((await this._horizon.get.accounts(transactionSimpleObject.sourceAccount)).sequence) + 1),
             operations: []
         }
         switch (transactionSimpleObject.memo?.type) {
@@ -254,7 +254,7 @@ export default {
         return transactionSourceObject
     },
     wrapAsSignaturePayload: async (tx, network) => {
-        tx.seqNum = BigInt(tx.seqNum)
+        // tx.seqNum = BigInt(tx.seqNum)
         return {
             networkId: await getSHA256HashBytes(network.passphrase),
             taggedTransaction: { type: 'ENVELOPE_TYPE_TX', tx }
@@ -263,6 +263,10 @@ export default {
     hashSignaturePayload: async (payloadInstance) => {
         const hashBuffer = await crypto.subtle.digest('SHA-256', payloadInstance.bytes)
         return new Uint8Array(hashBuffer)
+    },
+    hashTest: async (bytes) => {
+        const hashBuffer = await crypto.subtle.digest('SHA-256', bytes)
+        return Array.from(new Uint8Array(hashBuffer), byte => byte.toString(16).padStart(2, '0')).join('')
     },
     signSignaturePayload: async (payloadHash, secretKey) => {
         let signature

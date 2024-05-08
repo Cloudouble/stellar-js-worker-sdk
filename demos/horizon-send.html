@@ -182,8 +182,26 @@
 
             sourceTransactionResult.textContent = JSON.stringify(transactionInstance, null, 4)
 
-            await horizon.utils.xdr.factory('https://raw.githubusercontent.com/stellar/stellar-xdr/curr/Stellar-transaction.x', 'TransactionSignaturePayload', { namespace: 'stellar' })
 
+            const transactionEnvelopeXdrSection = document.getElementById('transaction-xdr'),
+                transactionEnvelopeXdrResult = transactionEnvelopeXdrSection.querySelector('.result')
+
+            await horizon.utils.xdr.factory('https://raw.githubusercontent.com/stellar/stellar-xdr/curr/Stellar-transaction.x', 'TransactionEnvelope', { namespace: 'stellar' })
+
+            const transactionEnvelopeInstance = new horizon.utils.xdr.types.stellar.TransactionEnvelope({
+                type: 'ENVELOPE_TYPE_TX',
+                v1: {
+                    signatures: [],
+                    tx: transactionObjects.source
+                }
+            })
+
+            console.log('line 199', transactionEnvelopeInstance)
+
+            transactionEnvelopeXdrResult.textContent = transactionEnvelopeInstance.toString()
+
+
+            await horizon.utils.xdr.factory('https://raw.githubusercontent.com/stellar/stellar-xdr/curr/Stellar-transaction.x', 'TransactionSignaturePayload', { namespace: 'stellar' })
 
             const signaturePayloadJsonSection = document.getElementById('signature-payload-json'),
                 signaturePayloadXdrSection = document.getElementById('signature-payload-xdr'),
@@ -199,6 +217,15 @@
             signaturePayloadJsonResult.textContent = JSON.stringify(transactionSignaturePayloadInstance, null, 4)
 
             signaturePayloadXdrResult.textContent = transactionSignaturePayloadInstance.toString()
+
+            const signaturePayloadHashSection = document.getElementById('signature-payload-hash'),
+                signaturePayloadHashResult = signaturePayloadHashSection.querySelector('.result')
+
+            const signaturePayloadHash = await horizon.utils.hashSignaturePayload(transactionSignaturePayloadInstance)
+
+            console.log('line 226', signaturePayloadHash)
+
+            signaturePayloadHashResult.textContent = horizon.utils.bytesToHex(signaturePayloadHash)
 
         })
 
@@ -333,8 +360,8 @@
                     <strong>Preconditions</strong>
                     <fieldset name="preconditions">
                         <div name="timeBounds">
-                            <strong>timeBounds</strong><input name="minTime" placeholder="minTime"><input name="maxTime"
-                                placeholder="maxTime">
+                            <strong>timeBounds</strong><input name="minTime" placeholder="minTime" value="1"><input
+                                name="maxTime" placeholder="maxTime" value="1715169336">
                         </div>
                         <div name="ledgerBounds">
                             <strong>ledgerBounds</strong><input name="minLedger" type="number"
@@ -374,6 +401,12 @@
             <code class="example">Example Code</code>
             <pre class="result">Transaction as a source object</pre>
         </section>
+        <section id="transaction-xdr">
+            <h2>Unsigned Transaction Envelope XDR</h2>
+            <p>View the unsigned transaction as an XDR string</p>
+            <code class="example">Example Code</code>
+            <pre class="result" style="height: 3em;">Unsigned Transaction as an XDR string</pre>
+        </section>
         <section id="signature-payload-json">
             <h2>Signature Payload JSON</h2>
             <p>View the TransactionSignaturePayload as a JSON object</p>
@@ -385,6 +418,12 @@
             <p>View the TransactionSignaturePayload as an XDR string</p>
             <code class="example">Example Code</code>
             <pre class="result" style="height: 3em;">TransactionSignaturePayload as an XDR string</pre>
+        </section>
+        <section id="signature-payload-hash">
+            <h2>Signature Payload Hash</h2>
+            <p>Hex format SHA-256 hash of the TransactionSignaturePayload bytes</p>
+            <code class="example">Example Code</code>
+            <pre class="result" style="height: 3em;">TransactionSignaturePayload hash as hex</pre>
         </section>
         <section id="sign">
             <h2>Sign</h2>
