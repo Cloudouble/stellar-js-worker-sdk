@@ -187,7 +187,7 @@ export default {
             fee: transactionSimpleObject.fee,
             memo: { type: 'MEMO_NONE' },
             cond: { type: 'PRECOND_NONE' },
-            seqNum: (await this._horizon.get.accounts(transactionSimpleObject.sourceAccount)).sequence,
+            seqNum: parseInt((await this._horizon.get.accounts(transactionSimpleObject.sourceAccount)).sequence) + 1,
             operations: []
         }
         switch (transactionSimpleObject.memo?.type) {

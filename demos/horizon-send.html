@@ -24,9 +24,11 @@
         const transactionObjects = {}
 
         const buildSection = document.getElementById('build'), signSection = document.getElementById('sign'),
+            submitSection = document.getElementById('submit'),
             operationsFieldset = buildSection.querySelector('fieldset[name="operations"]'),
             buildButton = buildSection.querySelector('button.get-result'),
             signButton = signSection.querySelector('button.get-result'),
+            submitButton = submitSection.querySelector('button.get-result'),
             addOperationButton = buildSection.querySelector('button[name="add-operation"]'),
             operationTypes = {
                 CREATE_ACCOUNT: { destination: 'string', startingBalance: 'number' },
@@ -64,7 +66,7 @@
                 .map(t => ('<option value="' + t + '">' + t + '</option>')).join('')}</select>`
         const sourceAccountField = buildSection.querySelector('[name="source_account"]'),
             sourceAccountSequenceField = buildSection.querySelector('[name="source_account_sequence"]'),
-            fetchSequenceNumber = async () => sourceAccountSequenceField.value = sourceAccountField.value ? (await horizon.get.accounts(sourceAccountField.value)).sequence : ''
+            fetchSequenceNumber = async () => sourceAccountSequenceField.value = sourceAccountField.value ? parseInt((await horizon.get.accounts(sourceAccountField.value)).sequence) + 1 : ''
         sourceAccountField.addEventListener('change', event => fetchSequenceNumber())
         if (sourceAccountField.value) fetchSequenceNumber()
 
@@ -232,13 +234,24 @@
 
             envelopeXdrResult.textContent = transactionEnvelopeInstance.toString()
 
+            transactionObjects.transactionEnvelope = transactionEnvelopeInstance
+
+        })
+
+        submitButton.addEventListener('click', async event => {
+            const { transactionEnvelope } = transactionObjects
+
+            const stellarResponse = await fetch(`${horizon.network.endpoint}/transactions?tx=${encodeURIComponent(transactionEnvelope.toString())}`, { method: 'POST', headers: { Accept: "application/json" } })
+
+            console.log('line 246', transactionEnvelope)
+
+            console.log('line 248', stellarResponse)
 
 
         })
 
-
         window.horizon = horizon
-        console.log('line 241', horizon)
+        console.log('line 254', horizon)
         // test account on test netwwork: GA5VCCBNG4SIEST6HYIW2F3KKZRHA4UZZ2XFSMZ4VRQ4MCBRHSQRRIPE
 
     </script>
