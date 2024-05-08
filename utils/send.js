@@ -95,7 +95,7 @@ const operationFieldProcessors = {
 
 const operationFieldProcessorMap = {
     CREATE_ACCOUNT: { destination: operationFieldProcessors.publicKey, startingBalance: operationFieldProcessors.hyper },
-    PAYMENT: { destination: operationFieldProcessors.publicKey, asset: operationFieldProcessors.asset, amount: operationFieldProcessors.hyper },
+    PAYMENT: { destination: operationFieldProcessors.account, asset: operationFieldProcessors.asset, amount: operationFieldProcessors.hyper },
     PATH_PAYMENT_STRICT_RECEIVE: {
         sendAsset: operationFieldProcessors.asset, destination: operationFieldProcessors.account,
         destAsset: operationFieldProcessors.asset
