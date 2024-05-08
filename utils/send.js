@@ -212,8 +212,8 @@ export default {
                     const { min, max } = transactionSimpleObject.cond[condType]
                     if (min || max) {
                         transactionSourceObject.cond[condType] = {}
-                        if (min) transactionSourceObject.cond[condType][condType === 'timeBounds' ? 'minTime' : 'minLedger'] = min
-                        if (max) transactionSourceObject.cond[condType][condType === 'timeBounds' ? 'maxTime' : 'maxLedger'] = max
+                        if (min) transactionSourceObject.cond[condType][condType === 'timeBounds' ? 'minTime' : 'minLedger'] = BigInt(min)
+                        if (max) transactionSourceObject.cond[condType][condType === 'timeBounds' ? 'maxTime' : 'maxLedger'] = BigInt(max)
                         transactionSourceObject.cond.type = condType === 'timeBounds' ? 'PRECOND_TIME' : 'PRECOND_V2'
                         if (condType === 'ledgerBounds') {
                             transactionSourceObject.cond.v2 ||= {}
@@ -231,7 +231,7 @@ export default {
                     delete transactionSourceObject.cond.timeBounds
                     switch (condType) {
                         case 'minSeqNum': case 'minSeqAge': case 'minSeqLedgerGap':
-                            transactionSourceObject.cond.v2[condType] = parseInt(transactionSimpleObject.cond[condType])
+                            transactionSourceObject.cond.v2[condType] = BigInt(parseInt(transactionSimpleObject.cond[condType]))
                             break
                         case 'extraSigners':
                             let extraSigners
