@@ -1,26 +1,4 @@
-const assetCodeToBytes = assetCode => {
-    let bytes = []
-    for (let i = 0; i < assetCode.length; i++) bytes.push(assetCode.charCodeAt(i))
-    const paddingLength = assetCode.length <= 4 ? 4 : 12;
-    while (bytes.length < paddingLength) bytes.push(0)
-    return bytes
-}
-
-
-const decimalToStellarPrice = (decimalPrice) => {
-    const d = 10000000000, n = Math.round(decimalPrice * d)
-    return { n, d }
-}
-
-const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
-
-const keyTypeMap = {
-    STRKEY_PUBKEY: [6 << 3, 'PK'], STRKEY_MUXED: [12 << 3, 'PK'], STRKEY_PRIVKEY: [18 << 3, 'PK'],
-    STRKEY_PRE_AUTH_TX: [19 << 3, 'Hash'], STRKEY_HASH_X: [23 << 3, 'Hash'],
-    STRKEY_SIGNED_PAYLOAD: [15 << 3, 'PK'], STRKEY_CONTRACT: [2 << 3, 'Hash']
-}
-
-const base32Decode = base32String => {
+const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567', base32Decode = base32String => {
     let [bytes, bits, value, index, i] = [[], 0, 0, 0, 0]
     for (; i < base32String.length; i++) {
         [value, bits] = [(value << 5) | (index = base32Chars.indexOf(base32String[i])), bits + 5]
@@ -32,9 +10,7 @@ const base32Decode = base32String => {
         }
     }
     return new Uint8Array(bytes)
-}
-
-const base32Encode = bytes => {
+}, base32Encode = bytes => {
     let [base32String, bits, value, index, i] = ['', 0, 0, 0, 0]
     for (; i < bytes.length; i++) {
         [value, bits] = [(value << 8) | bytes[i], bits + 8]
@@ -44,7 +20,11 @@ const base32Encode = bytes => {
     return base32String
 }
 
-const addressToKeyBytes = addressString => {
+const keyTypeMap = {
+    STRKEY_PUBKEY: [6 << 3, 'PK'], STRKEY_MUXED: [12 << 3, 'PK'], STRKEY_PRIVKEY: [18 << 3, 'PK'],
+    STRKEY_PRE_AUTH_TX: [19 << 3, 'Hash'], STRKEY_HASH_X: [23 << 3, 'Hash'],
+    STRKEY_SIGNED_PAYLOAD: [15 << 3, 'PK'], STRKEY_CONTRACT: [2 << 3, 'Hash']
+}, addressToKeyBytes = addressString => {
     let [bytes, addressBytes, memoBytes, payloadBytes] = [base32Decode(addressString)], keyType
     for (const k in keyTypeMap) if (base32Encode([keyTypeMap[k][0]])[0] === addressString[0]) { keyType = k; break }
     bytes = bytes.slice(1, -2)
@@ -63,15 +43,20 @@ const operationFieldProcessors = {
         if (!issuer) return asset
         asset.type = assetCode <= 4 ? 'ASSET_TYPE_CREDIT_ALPHANUM4' : (assetCode <= 12 ? 'ASSET_TYPE_CREDIT_ALPHANUM12' : 'ASSET_TYPE_NATIVE')
         if (asset.type === 'ASSET_TYPE_NATIVE') return asset
+        const assetCodeToBytes = assetCode => {
+            let bytes = []
+            for (let i = 0; i < assetCode.length; i++) bytes.push(assetCode.charCodeAt(i))
+            const paddingLength = assetCode.length <= 4 ? 4 : 12;
+            while (bytes.length < paddingLength) bytes.push(0)
+            return bytes
+        }
         asset[asset.type === 'ASSET_TYPE_CREDIT_ALPHANUM4' ? 'alphaNum4' : 'alphaNum12'] = { assetCode: assetCodeToBytes(assetCode), issuer: this.account(issuer) }
         return asset
     },
     hyper: n => BigInt(n),
-    price: p => decimalToStellarPrice(p),
+    price: (p, d = 10000000000) => ({ n: Math.round(p * d), d }),
     publicKey: a => ({ ed25519: addressToKeyBytes(a)[0], type: 'PUBLIC_KEY_TYPE_ED25519' }),
-}
-
-const operationFieldProcessorMap = {
+}, operationFieldProcessorMap = {
     CREATE_ACCOUNT: { destination: operationFieldProcessors.publicKey, startingBalance: operationFieldProcessors.hyper },
     PAYMENT: { destination: operationFieldProcessors.account, asset: operationFieldProcessors.asset, amount: operationFieldProcessors.hyper },
     PATH_PAYMENT_STRICT_RECEIVE: {
@@ -168,8 +153,8 @@ export default {
         return tx
     },
     signSignaturePayload: async (payloadHash, secretKey) => {
-        let bytes = typeof payloadHash === 'string' ? Uint8Array.from(payloadHash.match(/.{1,2}/g).map((byte) => parseInt(byte, 16))) : payloadHash
-        const secretKeyBytes = typeof secretKey === 'string' ? base32Decode(secretKey.slice(1)).slice(0, -2) : new Uint8Array(secretKey)
+        const bytes = typeof payloadHash === 'string' ? Uint8Array.from(payloadHash.match(/.{1,2}/g).map((byte) => parseInt(byte, 16))) : payloadHash,
+            secretKeyBytes = typeof secretKey === 'string' ? base32Decode(secretKey.slice(1)).slice(0, -2) : new Uint8Array(secretKey)
         try {
             const signingAlgorithm = { name: 'ECDSA', namedCurve: 'P-256', hash: 'SHA-256' },
                 key = await crypto.subtle.importKey('raw', secretKeyBytes, signingAlgorithm, false, ['sign'])
