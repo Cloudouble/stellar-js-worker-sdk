@@ -6,12 +6,6 @@ const assetCodeToBytes = (assetCode) => {
     return bytes
 }
 
-const bytesToAssetCode = (bytes) => {
-    let assetCode = ''
-    for (let i = 0; i < bytes.length; i++) if (bytes[i] !== 0) assetCode += String.fromCharCode(bytes[i])
-    return assetCode
-}
-
 const bytesToHex = (bytes) => {
     return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('')
 }
@@ -23,10 +17,6 @@ function hexToBytes(hexString) {
 const decimalToStellarPrice = (decimalPrice) => {
     const d = 10000000000, n = Math.round(decimalPrice * denominator)
     return { n, d }
-}
-
-function stellarPriceToDecimal(stellarPrice) {
-    return stellarPrice.n / stellarPrice.d
 }
 
 const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
@@ -132,33 +122,6 @@ const operationFieldProcessorMap = {
     EXTEND_FOOTPRINT_TTL: {},
     RESTORE_FOOTPRINT: {}
 }
-
-
-
-
-const signingAlgorithm = { name: 'ECDSA', namedCurve: 'P-256', hash: 'SHA-256' }
-const signer = {
-    generate: async () => {
-        const keyPair = await crypto.subtle.generateKey(signingAlgorithm, true, ['sign', 'verify'])
-        const publicKey = await crypto.subtle.exportKey('raw', keyPair.publicKey)
-        return new Uint8Array(publicKey)
-    },
-    sign: async (data, secretKey) => {
-        if (typeof secretKey === 'string') secretKey = base32Decode(secretKey)
-        console.log('line 148', { data, secretKey })
-        const key = await crypto.subtle.importKey('raw', secretKey, signingAlgorithm, false, ['sign'])
-        console.log('line 150', { key })
-        const signature = await crypto.subtle.sign(signingAlgorithm, key, data)
-        return new Uint8Array(signature)
-    },
-    verify: async (data, signature, publicKey) => {
-        const key = await crypto.subtle.importKey('raw', publicKey, signingAlgorithm, false, ['verify'])
-        const result = await crypto.subtle.verify(signingAlgorithm, key, signature, data)
-        return result
-    }
-}
-
-
 
 
 export default {
@@ -272,10 +235,11 @@ export default {
     signSignaturePayload: async (payloadHash, secretKey, publicKeyBytes) => {
         const payloadHashBytes = typeof payloadHash === 'string' ? hexToBytes(payloadHash) : payloadHash
         const secretKeyBytes = base32Decode(secretKey.slice(1)).slice(0, -2)
-
         let signature
         try {
-            signature = await signer.sign(payloadHashBytes, secretKeyBytes)
+            const signingAlgorithm = { name: 'ECDSA', namedCurve: 'P-256', hash: 'SHA-256' }
+            const key = await crypto.subtle.importKey('raw', secretKey, signingAlgorithm, false, ['sign'])
+            signature = new Uint8Array(await crypto.subtle.sign(signingAlgorithm, key, data))
         } catch (e) {
             const ed = await import('https://cdn.jsdelivr.net/npm/@noble/ed25519@2.1.0/+esm')
             signature = await ed.signAsync(payloadHashBytes, secretKeyBytes)
@@ -284,4 +248,3 @@ export default {
     }
 
 }
-
