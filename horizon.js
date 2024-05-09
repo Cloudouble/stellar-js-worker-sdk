@@ -165,7 +165,7 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
                     [secretKeyBytes] = typeof secretKey === 'string' ? this.utils.addressToKeyBytes(secretKey) : [secretKey]
                 signatures.push({
                     hint: publicKeyBytes.slice(-4),
-                    signature: Array.from(await this.utils.signSignaturePayload(hash, publicKeyBytes, secretKeyBytes))
+                    signature: Array.from(await this.utils.signSignaturePayload(hash, secretKeyBytes))
                 })
             }
 

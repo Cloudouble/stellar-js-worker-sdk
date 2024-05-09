@@ -1,4 +1,4 @@
-const assetCodeToBytes = (assetCode) => {
+const assetCodeToBytes = assetCode => {
     let bytes = []
     for (let i = 0; i < assetCode.length; i++) bytes.push(assetCode.charCodeAt(i))
     const paddingLength = assetCode.length <= 4 ? 4 : 12;
@@ -6,16 +6,9 @@ const assetCodeToBytes = (assetCode) => {
     return bytes
 }
 
-const bytesToHex = (bytes) => {
-    return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('')
-}
-
-function hexToBytes(hexString) {
-    return Uint8Array.from(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)))
-}
 
 const decimalToStellarPrice = (decimalPrice) => {
-    const d = 10000000000, n = Math.round(decimalPrice * denominator)
+    const d = 10000000000, n = Math.round(decimalPrice * d)
     return { n, d }
 }
 
@@ -61,11 +54,6 @@ const addressToKeyBytes = addressString => {
     return [addressBytes, memoBytes, payloadBytes, keyType]
 }
 
-const getSHA256HashBytes = async (input) => {
-    if (typeof input === 'string') input = (new TextEncoder()).encode(input)
-    return new Uint8Array(await crypto.subtle.digest('SHA-256', input))
-}
-
 const operationFieldProcessors = {
     account: a => ({ ed25519: addressToKeyBytes(a)[0], type: 'KEY_TYPE_ED25519' }),
     asset: function (a) {
@@ -73,12 +61,9 @@ const operationFieldProcessors = {
         if (!a || (typeof a !== 'string')) return asset
         const [assetCode, issuer] = a.split(':', 2)
         if (!issuer) return asset
-        if (assetCode <= 4) {
-            asset.type = `ASSET_TYPE_CREDIT_ALPHANUM4`
-        } else if (assetCode <= 12) {
-            asset.type = `ASSET_TYPE_CREDIT_ALPHANUM12`
-        }
-        asset.alphaNum4 = { assetCode: assetCodeToBytes(assetCode), issuer: this.account(issuer) }
+        asset.type = assetCode <= 4 ? 'ASSET_TYPE_CREDIT_ALPHANUM4' : (assetCode <= 12 ? 'ASSET_TYPE_CREDIT_ALPHANUM12' : 'ASSET_TYPE_NATIVE')
+        if (asset.type === 'ASSET_TYPE_NATIVE') return asset
+        asset[asset.type === 'ASSET_TYPE_CREDIT_ALPHANUM4' ? 'alphaNum4' : 'alphaNum12'] = { assetCode: assetCodeToBytes(assetCode), issuer: this.account(issuer) }
         return asset
     },
     hyper: n => BigInt(n),
@@ -122,103 +107,77 @@ const operationFieldProcessorMap = {
     RESTORE_FOOTPRINT: {}
 }
 
-
 export default {
-    base32Chars, bytesToHex, hexToBytes, getSHA256HashBytes,
-    keyTypeMap,
-    operationFieldProcessors,
-    base32Decode,
-    base32Encode,
     addressToKeyBytes,
-    createTransactionSourceObject: async function (transactionSimpleObject) {
-        const transactionSourceObject = {
-            sourceAccount: { ed25519: addressToKeyBytes(transactionSimpleObject.sourceAccount)[0], type: 'KEY_TYPE_ED25519' },
-            ext: { v: 0 },
-            fee: transactionSimpleObject.fee,
-            memo: { type: 'MEMO_NONE' },
-            cond: { type: 'PRECOND_NONE' },
-            seqNum: BigInt(parseInt((await this._horizon.get.accounts(transactionSimpleObject.sourceAccount)).sequence) + 1),
-            operations: []
-        }
-        switch (transactionSimpleObject.memo?.type) {
-            case 'MEMO_TEXT':
-                transactionSourceObject.memo = { type: 'MEMO_TEXT', text: transactionSimpleObject.memo.content }
-                break
-            case 'MEMO_ID':
-                transactionSourceObject.memo = { type: 'MEMO_ID', id: transactionSimpleObject.memo.content }
-                break
-            case 'MEMO_HASH':
-                transactionSourceObject.memo = { type: 'MEMO_HASH', hash: transactionSimpleObject.memo.content }
-                break
-            case 'MEMO_RETURN':
-                transactionSourceObject.memo = { type: 'MEMO_RETURN', retHash: transactionSimpleObject.memo.content }
-                break
-        }
+    getSHA256HashBytes: async (input) => new Uint8Array(await crypto.subtle.digest('SHA-256', (typeof input === 'string' ? (new TextEncoder()).encode(input) : input))),
+    createTransactionSourceObject: async function (transaction) {
+        const tx = {
+            sourceAccount: { ed25519: addressToKeyBytes(transaction.sourceAccount)[0], type: 'KEY_TYPE_ED25519' },
+            ext: { v: 0 }, fee: transaction.fee, memo: { type: 'MEMO_NONE' }, cond: { type: 'PRECOND_NONE' },
+            seqNum: BigInt(parseInt((await this._horizon.get.accounts(transaction.sourceAccount)).sequence) + 1), operations: []
+        }, contentFieldNameMap = { MEMO_TEXT: 'text', MEMO_ID: 'id', MEMO_HASH: 'hash', MEMO_RETURN: 'retHash' },
+            memoType = transaction.memo?.type ?? 'MEMO_NONE'
+        if (transaction.memo?.content && (memoType !== 'MEMO_NONE')) tx.memo = { type: memoType, [contentFieldNameMap[memoType]]: transaction.memo.content }
         for (const condType of ['timeBounds', 'ledgerBounds', 'minSeqNum', 'minSeqAge', 'minSeqLedgerGap', 'extraSigners']) {
-            if (!(transactionSimpleObject?.cond ?? {})[condType]) continue
-            delete transactionSourceObject.cond.type
+            if (!(transaction?.cond ?? {})[condType]) continue
+            delete tx.cond.type
             switch (condType) {
                 case 'timeBounds': case 'ledgerBounds':
-                    const { min, max } = transactionSimpleObject.cond[condType]
+                    const { min, max } = transaction.cond[condType]
                     if (min || max) {
-                        transactionSourceObject.cond[condType] = {}
-                        if (min) transactionSourceObject.cond[condType][condType === 'timeBounds' ? 'minTime' : 'minLedger'] = BigInt(min)
-                        if (max) transactionSourceObject.cond[condType][condType === 'timeBounds' ? 'maxTime' : 'maxLedger'] = BigInt(max)
-                        transactionSourceObject.cond.type = condType === 'timeBounds' ? 'PRECOND_TIME' : 'PRECOND_V2'
+                        tx.cond[condType] = {}
+                        if (min) tx.cond[condType][condType === 'timeBounds' ? 'minTime' : 'minLedger'] = BigInt(min)
+                        if (max) tx.cond[condType][condType === 'timeBounds' ? 'maxTime' : 'maxLedger'] = BigInt(max)
+                        tx.cond.type = condType === 'timeBounds' ? 'PRECOND_TIME' : 'PRECOND_V2'
                         if (condType === 'ledgerBounds') {
-                            transactionSourceObject.cond.v2 ||= {}
-                            if (transactionSourceObject.cond.timeBounds) transactionSourceObject.cond.v2.timeBounds = { ...transactionSourceObject.cond.timeBounds }
-                            if (transactionSourceObject.cond.ledgerBounds) transactionSourceObject.cond.v2.ledgerBounds = { ...transactionSourceObject.cond.ledgerBounds }
-                            delete transactionSourceObject.cond.timeBounds
-                            delete transactionSourceObject.cond.ledgerBounds
+                            tx.cond.v2 ||= {}
+                            if (tx.cond.timeBounds) tx.cond.v2.timeBounds = { ...tx.cond.timeBounds }
+                            if (tx.cond.ledgerBounds) tx.cond.v2.ledgerBounds = { ...tx.cond.ledgerBounds }
+                            delete tx.cond.timeBounds
+                            delete tx.cond.ledgerBounds
                         }
                     }
                     break
                 case 'minSeqNum': case 'minSeqAge': case 'minSeqLedgerGap': case 'extraSigners':
-                    transactionSourceObject.cond.type = 'PRECOND_V2'
-                    transactionSourceObject.cond.v2 ||= {}
-                    if (transactionSourceObject.cond.timeBounds) transactionSourceObject.cond.v2.timeBounds = { ...transactionSourceObject.cond.timeBounds }
-                    delete transactionSourceObject.cond.timeBounds
+                    tx.cond.type = 'PRECOND_V2'
+                    tx.cond.v2 ||= {}
+                    if (tx.cond.timeBounds) tx.cond.v2.timeBounds = { ...tx.cond.timeBounds }
+                    delete tx.cond.timeBounds
                     switch (condType) {
                         case 'minSeqNum': case 'minSeqAge': case 'minSeqLedgerGap':
-                            transactionSourceObject.cond.v2[condType] = BigInt(parseInt(transactionSimpleObject.cond[condType]))
+                            tx.cond.v2[condType] = BigInt(parseInt(transaction.cond[condType]))
                             break
                         case 'extraSigners':
                             let extraSigners
-                            try { extraSigners = JSON.parse(transactionSimpleObject.cond[condType]) } catch (e) { }
-                            if (extraSigners) transactionSourceObject.cond.v2[condType] = extraSigners
+                            try { extraSigners = JSON.parse(transaction.cond[condType]) } catch (e) { }
+                            if (extraSigners) tx.cond.v2[condType] = extraSigners
                     }
                     break
             }
         }
-        for (const operation of (transactionSimpleObject.operations ?? [])) {
+        for (const operation of (transaction.operations ?? [])) {
             const { type, op } = operation, { sourceAccount } = op
             if (sourceAccount) delete op.sourceAccount
             if (type in operationFieldProcessorMap) for (const p in op) if (p in operationFieldProcessorMap[type]) op[p] = operationFieldProcessorMap[type][p].bind(operationFieldProcessors)(op[p])
             const operationProperty = type.toLowerCase().split('_').map((v, i) => i ? `${v[0].toUpperCase()}${v.slice(1)}` : v).join('') + 'Op',
                 operationObject = { body: { type, [operationProperty]: { ...op } } }
             if (sourceAccount) operationObject.sourceAccount = operationFieldProcessors.account(sourceAccount)
-            transactionSourceObject.operations.push(operationObject)
+            tx.operations.push(operationObject)
         }
-        if (transactionSimpleObject.sorobanData) transactionSourceObject.ext = { v: 1, sorobanData: transactionSimpleObject.sorobanData }
-        return transactionSourceObject
+        if (transaction.sorobanData) tx.ext = { v: 1, sorobanData: transaction.sorobanData }
+        return tx
     },
-    signSignaturePayload: async (payloadHash, publicKey, secretKey) => {
-        const payloadHashBytes = typeof payloadHash === 'string' ? hexToBytes(payloadHash) : payloadHash
+    signSignaturePayload: async (payloadHash, secretKey) => {
+        let bytes = typeof payloadHash === 'string' ? Uint8Array.from(payloadHash.match(/.{1,2}/g).map((byte) => parseInt(byte, 16))) : payloadHash
         const secretKeyBytes = typeof secretKey === 'string' ? base32Decode(secretKey.slice(1)).slice(0, -2) : new Uint8Array(secretKey)
-
-        const publicKeyBytes = typeof publicKey === 'string' ? addressToKeyBytes(publicKey) : new Uint8Array(secretKey)
-
-        let signature
         try {
-            const signingAlgorithm = { name: 'ECDSA', namedCurve: 'P-256', hash: 'SHA-256' }
-            const key = await crypto.subtle.importKey('raw', secretKey, signingAlgorithm, false, ['sign'])
-            signature = new Uint8Array(await crypto.subtle.sign(signingAlgorithm, key, data))
+            const signingAlgorithm = { name: 'ECDSA', namedCurve: 'P-256', hash: 'SHA-256' },
+                key = await crypto.subtle.importKey('raw', secretKeyBytes, signingAlgorithm, false, ['sign'])
+            return new Uint8Array(await crypto.subtle.sign(signingAlgorithm, key, bytes))
         } catch (e) {
             const ed = await import('https://cdn.jsdelivr.net/npm/@noble/ed25519@2.1.0/+esm')
-            signature = await ed.signAsync(payloadHashBytes, secretKeyBytes)
+            return await ed.signAsync(bytes, secretKeyBytes)
         }
-        return signature
     }
 
 }
