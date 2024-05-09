@@ -125,29 +125,11 @@ const operationFieldProcessorMap = {
 
 export default {
     base32Chars, bytesToHex, hexToBytes, getSHA256HashBytes,
-    algorithms: { PK: 0, Hash: 0 },
     keyTypeMap,
     operationFieldProcessors,
-    crc16: function (bytes) {
-        let [crc, i, j] = [0x0000, 0, 0]
-        for (; i < bytes.length; i++) for ((crc ^= bytes[i] << 8, j = 0); j < 8; j++) crc = ((crc & 0x8000) !== 0)
-            ? (((crc << 1) & 0xFFFF) ^ 0x1021) : ((crc << 1) & 0xFFFF)
-        return new Uint8Array([crc & 0xFF, crc >> 8])
-    },
     base32Decode,
     base32Encode,
     addressToKeyBytes,
-    bytesPublicKeyToAddress: function (addressBytes, memoBytes = [], payloadBytes = [], keyType = 'STRKEY_PUBKEY') {
-        const bytes = [keyTypeMap[keyType][0] | this.algorithms[keyTypeMap[keyType][1]], ...addressBytes]
-        if ((keyType === 'STRKEY_MUXED') && memoBytes && memoBytes.length) bytes.push(...memoBytes)
-        if ((keyType === 'STRKEY_SIGNED_PAYLOAD') && payloadBytes && payloadBytes.length) {
-            const payloadLengthView = new DataView(new ArrayBuffer(4))
-            payloadLengthView.setUint32(0, payloadBytes.length, false)
-            bytes.push(...(new Uint8Array(payloadLengthView.buffer)), ...payloadBytes, ...(new Uint8Array(4 - payloadBytes.length % 4)).fill(0))
-        }
-        bytes.push(...this.crc16(bytes))
-        return base32Encode(new Uint8Array(bytes))
-    },
     createTransactionSourceObject: async function (transactionSimpleObject) {
         const transactionSourceObject = {
             sourceAccount: { ed25519: addressToKeyBytes(transactionSimpleObject.sourceAccount)[0], type: 'KEY_TYPE_ED25519' },
@@ -220,12 +202,6 @@ export default {
         }
         if (transactionSimpleObject.sorobanData) transactionSourceObject.ext = { v: 1, sorobanData: transactionSimpleObject.sorobanData }
         return transactionSourceObject
-    },
-    wrapAsSignaturePayload: async (tx, network) => {
-        return {
-            networkId: await getSHA256HashBytes(network.passphrase),
-            taggedTransaction: { type: 'ENVELOPE_TYPE_TX', tx }
-        }
     },
     signSignaturePayload: async (payloadHash, publicKey, secretKey) => {
         const payloadHashBytes = typeof payloadHash === 'string' ? hexToBytes(payloadHash) : payloadHash
