@@ -62,9 +62,8 @@ const addressToKeyBytes = addressString => {
 }
 
 const getSHA256HashBytes = async (input) => {
-    const encoder = new TextEncoder(), inputBytes = encoder.encode(input),
-        hashBuffer = await crypto.subtle.digest('SHA-256', inputBytes)
-    return Array.from(new Uint8Array(hashBuffer))
+    if (typeof input === 'string') input = (new TextEncoder()).encode(input)
+    return new Uint8Array(await crypto.subtle.digest('SHA-256', input))
 }
 
 const operationFieldProcessors = {
@@ -227,10 +226,6 @@ export default {
             networkId: await getSHA256HashBytes(network.passphrase),
             taggedTransaction: { type: 'ENVELOPE_TYPE_TX', tx }
         }
-    },
-    hashSignaturePayload: async (payloadInstance) => {
-        const hashBuffer = await crypto.subtle.digest('SHA-256', payloadInstance.bytes)
-        return new Uint8Array(hashBuffer)
     },
     signSignaturePayload: async (payloadHash, publicKey, secretKey) => {
         const payloadHashBytes = typeof payloadHash === 'string' ? hexToBytes(payloadHash) : payloadHash

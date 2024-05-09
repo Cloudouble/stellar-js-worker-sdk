@@ -140,43 +140,40 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
     submit: {
         enumerable: true,
         value: async function (transaction = {}, keyPairs = {}) {
+            // don't forget ENVELOPE_TYPE_TX_FEE_BUMP transaction type
             await this.utils._install('send')
             await this.utils._install('xdr', 'xdr')
+            await this.utils.xdr.factory('https://raw.githubusercontent.com/stellar/stellar-xdr/curr/Stellar-transaction.x', 'TransactionEnvelope', { namespace: 'stellar' })
+            await this.utils.xdr.factory('https://raw.githubusercontent.com/stellar/stellar-xdr/curr/Stellar-transaction.x', 'TransactionSignaturePayload', { namespace: 'stellar' })
 
             if (typeof keyPairs === 'string' && transaction.sourceAccount) keyPairs = { [transaction.sourceAccount]: keyPairs }
             const keyPairsEntries = Array.isArray(keyPairs) ? keyPairs : Object.entries(keyPairs)
-
             let sourceAccount = transaction.sourceAccount
             if (!sourceAccount && keyPairsEntries.length === 1) sourceAccount = keyPairsEntries[0][0]
             transaction.sourceAccount ??= sourceAccount
 
-            const transactionSourceObject = await this.utils.createTransactionSourceObject(transaction)
-
-            // don't forget ENVELOPE_TYPE_TX_FEE_BUMP transaction type
-
-            const signaturePayloadSource = {
-                networkId: await this.utils.getSHA256HashBytes(this.network.passphrase),
-                taggedTransaction: { type: 'ENVELOPE_TYPE_TX', tx: transactionSourceObject }
-            }
-            const transactionSignaturePayloadXdr = new this.utils.xdr.types.stellar.TransactionSignaturePayload(signaturePayloadSource)
-            const signaturePayloadHash = await this.utils.hashSignaturePayload(transactionSignaturePayloadXdr)
-
+            const tx = await this.utils.createTransactionSourceObject(transaction)
+            const transactionSignaturePayloadXdr = new this.utils.xdr.types.stellar.TransactionSignaturePayload({
+                networkId: Array.from(await this.utils.getSHA256HashBytes(this.network.passphrase)),
+                taggedTransaction: { type: 'ENVELOPE_TYPE_TX', tx }
+            })
+            const hash = await this.utils.getSHA256HashBytes(transactionSignaturePayloadXdr.bytes)
 
             const signatures = []
             for (const [publicKey, secretKey] of keyPairsEntries) {
                 const [publicKeyBytes] = typeof publicKey === 'string' ? this.utils.addressToKeyBytes(publicKey) : [publicKey],
                     [secretKeyBytes] = typeof secretKey === 'string' ? this.utils.addressToKeyBytes(secretKey) : [secretKey]
-                const signature = Array.from(await this.utils.signSignaturePayload(signaturePayloadHash, publicKeyBytes, secretKeyBytes))
-                const signatureDecorated = { hint: publicKeyBytes.slice(-4), signature }
-                signatures.push(signatureDecorated)
+                signatures.push({
+                    hint: publicKeyBytes.slice(-4),
+                    signature: Array.from(await this.utils.signSignaturePayload(hash, publicKeyBytes, secretKeyBytes))
+                })
             }
 
-            const signedTransactionEnvelopePlain = { type: 'ENVELOPE_TYPE_TX', v1: { signatures, tx: transactionSourceObject } }
+            const signedTransactionEnvelopeXdr = new this.utils.xdr.types.stellar.TransactionEnvelope({ type: 'ENVELOPE_TYPE_TX', v1: { signatures, tx } })
 
-            const signedTransactionEnvelopeXdr = new this.utils.xdr.types.stellar.TransactionEnvelope(signedTransactionEnvelopePlain)
+            const response = await fetch(`${this.network.endpoint}/transactions?tx=${encodeURIComponent(signedTransactionEnvelopeXdr.toString())}`, { method: 'POST', headers: { Accept: "application/json" } })
 
-            const stellarResponse = await fetch(`${this.network.endpoint}/transactions?tx=${encodeURIComponent(signedTransactionEnvelopeXdr.toString())}`, { method: 'POST', headers: { Accept: "application/json" } })
-
+            return { response, tx, hash, signatures }
         }
     },
     utils: {
