@@ -145,7 +145,9 @@ const signer = {
     },
     sign: async (data, secretKey) => {
         if (typeof secretKey === 'string') secretKey = base32Decode(secretKey)
+        console.log('line 148', { data, secretKey })
         const key = await crypto.subtle.importKey('raw', secretKey, signingAlgorithm, false, ['sign'])
+        console.log('line 150', { key })
         const signature = await crypto.subtle.sign(signingAlgorithm, key, data)
         return new Uint8Array(signature)
     },
@@ -258,7 +260,6 @@ export default {
         return transactionSourceObject
     },
     wrapAsSignaturePayload: async (tx, network) => {
-        // tx.seqNum = BigInt(tx.seqNum)
         return {
             networkId: await getSHA256HashBytes(network.passphrase),
             taggedTransaction: { type: 'ENVELOPE_TYPE_TX', tx }
@@ -268,13 +269,10 @@ export default {
         const hashBuffer = await crypto.subtle.digest('SHA-256', payloadInstance.bytes)
         return new Uint8Array(hashBuffer)
     },
-    hashTest: async (bytes) => {
-        const hashBuffer = await crypto.subtle.digest('SHA-256', bytes)
-        return Array.from(new Uint8Array(hashBuffer), byte => byte.toString(16).padStart(2, '0')).join('')
-    },
-    signSignaturePayload: async (payloadHash, secretKey) => {
+    signSignaturePayload: async (payloadHash, secretKey, publicKeyBytes) => {
         const payloadHashBytes = typeof payloadHash === 'string' ? hexToBytes(payloadHash) : payloadHash
         const secretKeyBytes = base32Decode(secretKey.slice(1)).slice(0, -2)
+
         let signature
         try {
             signature = await signer.sign(payloadHashBytes, secretKeyBytes)
