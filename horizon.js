@@ -137,47 +137,46 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
             return result
         }
     },
-    send: {
+    submit: {
         enumerable: true,
-        value: async function (transaction, keys, type) {
+        value: async function (transaction = {}, keyPairs = {}) {
             await this.utils._install('send')
             await this.utils._install('xdr', 'xdr')
-            if (!this.utils.xdr?.types?.stellar) await this.utils.xdr.load(this.options.sources.types)
-            if (typeof type === 'string') if (this.utils.xdr?.types?.stellar[type]) type = this.utils.xdr.types.stellar[type]
-            if (type.prototype instanceof this.utils.xdr.types.stellar.typedef) { }
 
-            console.log('line 149', transaction)
+            if (typeof keyPairs === 'string' && transaction.sourceAccount) keyPairs = { [transaction.sourceAccount]: keyPairs }
+            const keyPairsEntries = Array.isArray(keyPairs) ? keyPairs : Object.entries(keyPairs)
 
-            switch (transaction?.constructor) {
-                case Array:
-                    transaction = new Uint8Array(transaction)
-                case Uint8Array: case String:
-                    transaction = new type(transaction)
-                    break
-                default:
-                    transaction = type ? new type(transaction) : this.utils.send.buildTransaction(transaction)
+            let sourceAccount = transaction.sourceAccount
+            if (!sourceAccount && keyPairsEntries.length === 1) sourceAccount = keyPairsEntries[0][0]
+            transaction.sourceAccount ??= sourceAccount
+
+            const transactionSourceObject = await this.utils.createTransactionSourceObject(transaction)
+
+            // don't forget ENVELOPE_TYPE_TX_FEE_BUMP transaction type
+
+            const signaturePayloadSource = {
+                networkId: await this.utils.getSHA256HashBytes(this.network.passphrase),
+                taggedTransaction: { type: 'ENVELOPE_TYPE_TX', tx: transactionSourceObject }
             }
-            if (!(transaction instanceof this.utils.xdr.types.stellar.Transaction)
-                && !(transaction instanceof this.utils.xdr.types.stellar.FeeBumpTransaction)) throw new Error('not valid transaction input')
-            const envelopeType = transaction instanceof this.utils.xdr.types.stellar.Transaction ? 'ENVELOPE_TYPE_TX' : 'ENVELOPE_TYPE_TX_FEE_BUMP',
-                transactionSignaturePayload = new this.utils.xdr.types.stellar.TransactionSignaturePayload({
-                    networkID: this.network.networkId,
-                    taggedTransaction: {
-                        type: envelopeType,
-                        [envelopeType === 'ENVELOPE_TYPE_TX_FEE_BUMP' ? 'feeBump' : 'tx']: transaction.value
-                    }
-                }), transactionSignaturePayloadBytes = transactionSignaturePayload.bytes,
-                transactionSignaturePayloadHash = sha256(transactionSignaturePayloadBytes), signatures = []
-            for (const key of keys) signatures.push(sign(transactionSignaturePayloadHash, key))
+            const transactionSignaturePayloadXdr = new this.utils.xdr.types.stellar.TransactionSignaturePayload(signaturePayloadSource)
+            const signaturePayloadHash = await this.utils.hashSignaturePayload(transactionSignaturePayloadXdr)
 
-            const transactionEnvelope = new this.utils.xdr.types.stellar.TransactionEnvelope({
-                type: envelopeType,
-                [envelopeType === 'ENVELOPE_TYPE_TX_FEE_BUMP' ? 'feeBump' : 'tx']: {
-                    tx: transaction.value,
-                    signatures: signatures
-                }
-            })
-            return fetch(`${this.network.endpoint}/transactions?tx=${transactionEnvelope}`, { method: 'POST', headers: { Accept: "application/json" } })
+
+            const signatures = []
+            for (const [publicKey, secretKey] of keyPairsEntries) {
+                const [publicKeyBytes] = typeof publicKey === 'string' ? this.utils.addressToKeyBytes(publicKey) : [publicKey],
+                    [secretKeyBytes] = typeof secretKey === 'string' ? this.utils.addressToKeyBytes(secretKey) : [secretKey]
+                const signature = Array.from(await this.utils.signSignaturePayload(signaturePayloadHash, publicKeyBytes, secretKeyBytes))
+                const signatureDecorated = { hint: publicKeyBytes.slice(-4), signature }
+                signatures.push(signatureDecorated)
+            }
+
+            const signedTransactionEnvelopePlain = { type: 'ENVELOPE_TYPE_TX', v1: { signatures, tx: transactionSourceObject } }
+
+            const signedTransactionEnvelopeXdr = new this.utils.xdr.types.stellar.TransactionEnvelope(signedTransactionEnvelopePlain)
+
+            const stellarResponse = await fetch(`${this.network.endpoint}/transactions?tx=${encodeURIComponent(signedTransactionEnvelopeXdr.toString())}`, { method: 'POST', headers: { Accept: "application/json" } })
+
         }
     },
     utils: {

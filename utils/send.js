@@ -51,7 +51,7 @@ const base32Encode = bytes => {
     return base32String
 }
 
-const addressToPublicKeyBytes = addressString => {
+const addressToKeyBytes = addressString => {
     let [bytes, addressBytes, memoBytes, payloadBytes] = [base32Decode(addressString)], keyType
     for (const k in keyTypeMap) if (base32Encode([keyTypeMap[k][0]])[0] === addressString[0]) { keyType = k; break }
     bytes = bytes.slice(1, -2)
@@ -68,7 +68,7 @@ const getSHA256HashBytes = async (input) => {
 }
 
 const operationFieldProcessors = {
-    account: a => ({ ed25519: addressToPublicKeyBytes(a)[0], type: 'KEY_TYPE_ED25519' }),
+    account: a => ({ ed25519: addressToKeyBytes(a)[0], type: 'KEY_TYPE_ED25519' }),
     asset: function (a) {
         const asset = { type: 'ASSET_TYPE_NATIVE' }
         if (!a || (typeof a !== 'string')) return asset
@@ -84,7 +84,7 @@ const operationFieldProcessors = {
     },
     hyper: n => BigInt(n),
     price: p => decimalToStellarPrice(p),
-    publicKey: a => ({ ed25519: addressToPublicKeyBytes(a)[0], type: 'PUBLIC_KEY_TYPE_ED25519' }),
+    publicKey: a => ({ ed25519: addressToKeyBytes(a)[0], type: 'PUBLIC_KEY_TYPE_ED25519' }),
 }
 
 const operationFieldProcessorMap = {
@@ -125,7 +125,7 @@ const operationFieldProcessorMap = {
 
 
 export default {
-    base32Chars, bytesToHex, hexToBytes,
+    base32Chars, bytesToHex, hexToBytes, getSHA256HashBytes,
     algorithms: { PK: 0, Hash: 0 },
     keyTypeMap,
     operationFieldProcessors,
@@ -137,7 +137,7 @@ export default {
     },
     base32Decode,
     base32Encode,
-    addressToPublicKeyBytes,
+    addressToKeyBytes,
     bytesPublicKeyToAddress: function (addressBytes, memoBytes = [], payloadBytes = [], keyType = 'STRKEY_PUBKEY') {
         const bytes = [keyTypeMap[keyType][0] | this.algorithms[keyTypeMap[keyType][1]], ...addressBytes]
         if ((keyType === 'STRKEY_MUXED') && memoBytes && memoBytes.length) bytes.push(...memoBytes)
@@ -151,7 +151,7 @@ export default {
     },
     createTransactionSourceObject: async function (transactionSimpleObject) {
         const transactionSourceObject = {
-            sourceAccount: { ed25519: addressToPublicKeyBytes(transactionSimpleObject.sourceAccount)[0], type: 'KEY_TYPE_ED25519' },
+            sourceAccount: { ed25519: addressToKeyBytes(transactionSimpleObject.sourceAccount)[0], type: 'KEY_TYPE_ED25519' },
             ext: { v: 0 },
             fee: transactionSimpleObject.fee,
             memo: { type: 'MEMO_NONE' },
@@ -232,9 +232,12 @@ export default {
         const hashBuffer = await crypto.subtle.digest('SHA-256', payloadInstance.bytes)
         return new Uint8Array(hashBuffer)
     },
-    signSignaturePayload: async (payloadHash, secretKey, publicKeyBytes) => {
+    signSignaturePayload: async (payloadHash, publicKey, secretKey) => {
         const payloadHashBytes = typeof payloadHash === 'string' ? hexToBytes(payloadHash) : payloadHash
-        const secretKeyBytes = base32Decode(secretKey.slice(1)).slice(0, -2)
+        const secretKeyBytes = typeof secretKey === 'string' ? base32Decode(secretKey.slice(1)).slice(0, -2) : new Uint8Array(secretKey)
+
+        const publicKeyBytes = typeof publicKey === 'string' ? addressToKeyBytes(publicKey) : new Uint8Array(secretKey)
+
         let signature
         try {
             const signingAlgorithm = { name: 'ECDSA', namedCurve: 'P-256', hash: 'SHA-256' }
