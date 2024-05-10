@@ -1,0 +1,4279 @@
+{
+    "library": {
+        "enums": [
+            {
+                "key": "SCErrorCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "SCEC_ARITH_DOMAIN"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "SCEC_INDEX_BOUNDS"
+                    },
+                    {
+                        "value": 2,
+                        "identifier": "SCEC_INVALID_INPUT"
+                    },
+                    {
+                        "value": 3,
+                        "identifier": "SCEC_MISSING_VALUE"
+                    },
+                    {
+                        "value": 4,
+                        "identifier": "SCEC_EXISTING_VALUE"
+                    },
+                    {
+                        "value": 5,
+                        "identifier": "SCEC_EXCEEDED_LIMIT"
+                    },
+                    {
+                        "value": 6,
+                        "identifier": "SCEC_INVALID_ACTION"
+                    },
+                    {
+                        "value": 7,
+                        "identifier": "SCEC_INTERNAL_ERROR"
+                    },
+                    {
+                        "value": 8,
+                        "identifier": "SCEC_UNEXPECTED_TYPE"
+                    },
+                    {
+                        "value": 9,
+                        "identifier": "SCEC_UNEXPECTED_SIZE"
+                    }
+                ]
+            },
+            {
+                "key": "ContractDataDurability",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "TEMPORARY"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "PERSISTENT"
+                    }
+                ]
+            },
+            {
+                "key": "ConfigSettingID",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "CONFIG_SETTING_CONTRACT_COMPUTE_V0"
+                    },
+                    {
+                        "value": 2,
+                        "identifier": "CONFIG_SETTING_CONTRACT_LEDGER_COST_V0"
+                    },
+                    {
+                        "value": 3,
+                        "identifier": "CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0"
+                    },
+                    {
+                        "value": 4,
+                        "identifier": "CONFIG_SETTING_CONTRACT_EVENTS_V0"
+                    },
+                    {
+                        "value": 5,
+                        "identifier": "CONFIG_SETTING_CONTRACT_BANDWIDTH_V0"
+                    },
+                    {
+                        "value": 6,
+                        "identifier": "CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS"
+                    },
+                    {
+                        "value": 7,
+                        "identifier": "CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES"
+                    },
+                    {
+                        "value": 8,
+                        "identifier": "CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES"
+                    },
+                    {
+                        "value": 9,
+                        "identifier": "CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES"
+                    },
+                    {
+                        "value": 10,
+                        "identifier": "CONFIG_SETTING_STATE_ARCHIVAL"
+                    },
+                    {
+                        "value": 11,
+                        "identifier": "CONFIG_SETTING_CONTRACT_EXECUTION_LANES"
+                    },
+                    {
+                        "value": 12,
+                        "identifier": "CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW"
+                    },
+                    {
+                        "value": 13,
+                        "identifier": "CONFIG_SETTING_EVICTION_ITERATOR"
+                    }
+                ]
+            },
+            {
+                "key": "LedgerEntryType",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "ACCOUNT"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "TRUSTLINE"
+                    },
+                    {
+                        "value": 2,
+                        "identifier": "OFFER"
+                    },
+                    {
+                        "value": 3,
+                        "identifier": "DATA"
+                    },
+                    {
+                        "value": 4,
+                        "identifier": "CLAIMABLE_BALANCE"
+                    },
+                    {
+                        "value": 5,
+                        "identifier": "LIQUIDITY_POOL"
+                    },
+                    {
+                        "value": 6,
+                        "identifier": "CONTRACT_DATA"
+                    },
+                    {
+                        "value": 7,
+                        "identifier": "CONTRACT_CODE"
+                    },
+                    {
+                        "value": 8,
+                        "identifier": "CONFIG_SETTING"
+                    },
+                    {
+                        "value": 9,
+                        "identifier": "TTL"
+                    }
+                ]
+            },
+            {
+                "key": "OperationType",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "CREATE_ACCOUNT"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "PAYMENT"
+                    },
+                    {
+                        "value": 2,
+                        "identifier": "PATH_PAYMENT_STRICT_RECEIVE"
+                    },
+                    {
+                        "value": 3,
+                        "identifier": "MANAGE_SELL_OFFER"
+                    },
+                    {
+                        "value": 4,
+                        "identifier": "CREATE_PASSIVE_SELL_OFFER"
+                    },
+                    {
+                        "value": 5,
+                        "identifier": "SET_OPTIONS"
+                    },
+                    {
+                        "value": 6,
+                        "identifier": "CHANGE_TRUST"
+                    },
+                    {
+                        "value": 7,
+                        "identifier": "ALLOW_TRUST"
+                    },
+                    {
+                        "value": 8,
+                        "identifier": "ACCOUNT_MERGE"
+                    },
+                    {
+                        "value": 9,
+                        "identifier": "INFLATION"
+                    },
+                    {
+                        "value": 10,
+                        "identifier": "MANAGE_DATA"
+                    },
+                    {
+                        "value": 11,
+                        "identifier": "BUMP_SEQUENCE"
+                    },
+                    {
+                        "value": 12,
+                        "identifier": "MANAGE_BUY_OFFER"
+                    },
+                    {
+                        "value": 13,
+                        "identifier": "PATH_PAYMENT_STRICT_SEND"
+                    },
+                    {
+                        "value": 14,
+                        "identifier": "CREATE_CLAIMABLE_BALANCE"
+                    },
+                    {
+                        "value": 15,
+                        "identifier": "CLAIM_CLAIMABLE_BALANCE"
+                    },
+                    {
+                        "value": 16,
+                        "identifier": "BEGIN_SPONSORING_FUTURE_RESERVES"
+                    },
+                    {
+                        "value": 17,
+                        "identifier": "END_SPONSORING_FUTURE_RESERVES"
+                    },
+                    {
+                        "value": 18,
+                        "identifier": "REVOKE_SPONSORSHIP"
+                    },
+                    {
+                        "value": 19,
+                        "identifier": "CLAWBACK"
+                    },
+                    {
+                        "value": 20,
+                        "identifier": "CLAWBACK_CLAIMABLE_BALANCE"
+                    },
+                    {
+                        "value": 21,
+                        "identifier": "SET_TRUST_LINE_FLAGS"
+                    },
+                    {
+                        "value": 22,
+                        "identifier": "LIQUIDITY_POOL_DEPOSIT"
+                    },
+                    {
+                        "value": 23,
+                        "identifier": "LIQUIDITY_POOL_WITHDRAW"
+                    },
+                    {
+                        "value": 24,
+                        "identifier": "INVOKE_HOST_FUNCTION"
+                    },
+                    {
+                        "value": 25,
+                        "identifier": "EXTEND_FOOTPRINT_TTL"
+                    },
+                    {
+                        "value": 26,
+                        "identifier": "RESTORE_FOOTPRINT"
+                    }
+                ]
+            },
+            {
+                "key": "EnvelopeType",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "ENVELOPE_TYPE_TX_V0"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "ENVELOPE_TYPE_SCP"
+                    },
+                    {
+                        "value": 2,
+                        "identifier": "ENVELOPE_TYPE_TX"
+                    },
+                    {
+                        "value": 3,
+                        "identifier": "ENVELOPE_TYPE_AUTH"
+                    },
+                    {
+                        "value": 4,
+                        "identifier": "ENVELOPE_TYPE_SCPVALUE"
+                    },
+                    {
+                        "value": 5,
+                        "identifier": "ENVELOPE_TYPE_TX_FEE_BUMP"
+                    },
+                    {
+                        "value": 6,
+                        "identifier": "ENVELOPE_TYPE_OP_ID"
+                    },
+                    {
+                        "value": 7,
+                        "identifier": "ENVELOPE_TYPE_POOL_REVOKE_OP_ID"
+                    },
+                    {
+                        "value": 8,
+                        "identifier": "ENVELOPE_TYPE_CONTRACT_ID"
+                    },
+                    {
+                        "value": 9,
+                        "identifier": "ENVELOPE_TYPE_SOROBAN_AUTHORIZATION"
+                    }
+                ]
+            },
+            {
+                "key": "ManageOfferEffect",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "MANAGE_OFFER_CREATED"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "MANAGE_OFFER_UPDATED"
+                    },
+                    {
+                        "value": 2,
+                        "identifier": "MANAGE_OFFER_DELETED"
+                    }
+                ]
+            },
+            {
+                "key": "TransactionResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "txSUCCESS"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "txFEE_BUMP_INNER_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "LiquidityPoolType",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "LIQUIDITY_POOL_CONSTANT_PRODUCT"
+                    }
+                ]
+            },
+            {
+                "key": "SCErrorType",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "SCE_CONTRACT"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "SCE_WASM_VM"
+                    },
+                    {
+                        "value": 2,
+                        "identifier": "SCE_CONTEXT"
+                    },
+                    {
+                        "value": 3,
+                        "identifier": "SCE_STORAGE"
+                    },
+                    {
+                        "value": 4,
+                        "identifier": "SCE_OBJECT"
+                    },
+                    {
+                        "value": 5,
+                        "identifier": "SCE_CRYPTO"
+                    },
+                    {
+                        "value": 6,
+                        "identifier": "SCE_EVENTS"
+                    },
+                    {
+                        "value": 7,
+                        "identifier": "SCE_BUDGET"
+                    },
+                    {
+                        "value": 8,
+                        "identifier": "SCE_VALUE"
+                    },
+                    {
+                        "value": 9,
+                        "identifier": "SCE_AUTH"
+                    }
+                ]
+            },
+            {
+                "key": "ContractExecutableType",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "CONTRACT_EXECUTABLE_WASM"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "CONTRACT_EXECUTABLE_STELLAR_ASSET"
+                    }
+                ]
+            },
+            {
+                "key": "SCAddressType",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "SC_ADDRESS_TYPE_ACCOUNT"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "SC_ADDRESS_TYPE_CONTRACT"
+                    }
+                ]
+            },
+            {
+                "key": "SCValType",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "SCV_BOOL"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "SCV_VOID"
+                    },
+                    {
+                        "value": 2,
+                        "identifier": "SCV_ERROR"
+                    },
+                    {
+                        "value": 3,
+                        "identifier": "SCV_U32"
+                    },
+                    {
+                        "value": 4,
+                        "identifier": "SCV_I32"
+                    },
+                    {
+                        "value": 5,
+                        "identifier": "SCV_U64"
+                    },
+                    {
+                        "value": 6,
+                        "identifier": "SCV_I64"
+                    },
+                    {
+                        "value": 7,
+                        "identifier": "SCV_TIMEPOINT"
+                    },
+                    {
+                        "value": 8,
+                        "identifier": "SCV_DURATION"
+                    },
+                    {
+                        "value": 9,
+                        "identifier": "SCV_U128"
+                    },
+                    {
+                        "value": 10,
+                        "identifier": "SCV_I128"
+                    },
+                    {
+                        "value": 11,
+                        "identifier": "SCV_U256"
+                    },
+                    {
+                        "value": 12,
+                        "identifier": "SCV_I256"
+                    },
+                    {
+                        "value": 13,
+                        "identifier": "SCV_BYTES"
+                    },
+                    {
+                        "value": 14,
+                        "identifier": "SCV_STRING"
+                    },
+                    {
+                        "value": 15,
+                        "identifier": "SCV_SYMBOL"
+                    },
+                    {
+                        "value": 16,
+                        "identifier": "SCV_VEC"
+                    },
+                    {
+                        "value": 17,
+                        "identifier": "SCV_MAP"
+                    },
+                    {
+                        "value": 18,
+                        "identifier": "SCV_ADDRESS"
+                    },
+                    {
+                        "value": 19,
+                        "identifier": "SCV_CONTRACT_INSTANCE"
+                    },
+                    {
+                        "value": 20,
+                        "identifier": "SCV_LEDGER_KEY_CONTRACT_INSTANCE"
+                    },
+                    {
+                        "value": 21,
+                        "identifier": "SCV_LEDGER_KEY_NONCE"
+                    }
+                ]
+            },
+            {
+                "key": "PublicKeyType",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "PUBLIC_KEY_TYPE_ED25519"
+                    }
+                ]
+            },
+            {
+                "key": "SignerKeyType",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "SIGNER_KEY_TYPE_ED25519"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "SIGNER_KEY_TYPE_PRE_AUTH_TX"
+                    },
+                    {
+                        "value": 2,
+                        "identifier": "SIGNER_KEY_TYPE_HASH_X"
+                    },
+                    {
+                        "value": 3,
+                        "identifier": "SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD"
+                    }
+                ]
+            },
+            {
+                "key": "AssetType",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "ASSET_TYPE_NATIVE"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "ASSET_TYPE_CREDIT_ALPHANUM4"
+                    },
+                    {
+                        "value": 2,
+                        "identifier": "ASSET_TYPE_CREDIT_ALPHANUM12"
+                    },
+                    {
+                        "value": 3,
+                        "identifier": "ASSET_TYPE_POOL_SHARE"
+                    }
+                ]
+            },
+            {
+                "key": "ClaimPredicateType",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "CLAIM_PREDICATE_UNCONDITIONAL"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "CLAIM_PREDICATE_AND"
+                    },
+                    {
+                        "value": 2,
+                        "identifier": "CLAIM_PREDICATE_OR"
+                    },
+                    {
+                        "value": 3,
+                        "identifier": "CLAIM_PREDICATE_NOT"
+                    },
+                    {
+                        "value": 4,
+                        "identifier": "CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME"
+                    },
+                    {
+                        "value": 5,
+                        "identifier": "CLAIM_PREDICATE_BEFORE_RELATIVE_TIME"
+                    }
+                ]
+            },
+            {
+                "key": "ClaimantType",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "CLAIMANT_TYPE_V0"
+                    }
+                ]
+            },
+            {
+                "key": "ClaimableBalanceIDType",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "CLAIMABLE_BALANCE_ID_TYPE_V0"
+                    }
+                ]
+            },
+            {
+                "key": "CryptoKeyType",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "KEY_TYPE_ED25519"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "KEY_TYPE_PRE_AUTH_TX"
+                    },
+                    {
+                        "value": 2,
+                        "identifier": "KEY_TYPE_HASH_X"
+                    },
+                    {
+                        "value": 3,
+                        "identifier": "KEY_TYPE_ED25519_SIGNED_PAYLOAD"
+                    },
+                    {
+                        "value": 256,
+                        "identifier": "KEY_TYPE_MUXED_ED25519"
+                    }
+                ]
+            },
+            {
+                "key": "RevokeSponsorshipType",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "REVOKE_SPONSORSHIP_LEDGER_ENTRY"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "REVOKE_SPONSORSHIP_SIGNER"
+                    }
+                ]
+            },
+            {
+                "key": "ContractIDPreimageType",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "CONTRACT_ID_PREIMAGE_FROM_ADDRESS"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "CONTRACT_ID_PREIMAGE_FROM_ASSET"
+                    }
+                ]
+            },
+            {
+                "key": "HostFunctionType",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "HOST_FUNCTION_TYPE_INVOKE_CONTRACT"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "HOST_FUNCTION_TYPE_CREATE_CONTRACT"
+                    },
+                    {
+                        "value": 2,
+                        "identifier": "HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM"
+                    }
+                ]
+            },
+            {
+                "key": "SorobanAuthorizedFunctionType",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN"
+                    }
+                ]
+            },
+            {
+                "key": "SorobanCredentialsType",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "SOROBAN_CREDENTIALS_SOURCE_ACCOUNT"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "SOROBAN_CREDENTIALS_ADDRESS"
+                    }
+                ]
+            },
+            {
+                "key": "MemoType",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "MEMO_NONE"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "MEMO_TEXT"
+                    },
+                    {
+                        "value": 2,
+                        "identifier": "MEMO_ID"
+                    },
+                    {
+                        "value": 3,
+                        "identifier": "MEMO_HASH"
+                    },
+                    {
+                        "value": 4,
+                        "identifier": "MEMO_RETURN"
+                    }
+                ]
+            },
+            {
+                "key": "PreconditionType",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "PRECOND_NONE"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "PRECOND_TIME"
+                    },
+                    {
+                        "value": 2,
+                        "identifier": "PRECOND_V2"
+                    }
+                ]
+            },
+            {
+                "key": "ClaimAtomType",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "CLAIM_ATOM_TYPE_V0"
+                    },
+                    {
+                        "value": 1,
+                        "identifier": "CLAIM_ATOM_TYPE_ORDER_BOOK"
+                    },
+                    {
+                        "value": 2,
+                        "identifier": "CLAIM_ATOM_TYPE_LIQUIDITY_POOL"
+                    }
+                ]
+            },
+            {
+                "key": "CreateAccountResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "CREATE_ACCOUNT_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "PaymentResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "PAYMENT_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "PathPaymentStrictReceiveResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "PATH_PAYMENT_STRICT_RECEIVE_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "PathPaymentStrictSendResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "PATH_PAYMENT_STRICT_SEND_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "ManageSellOfferResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "MANAGE_SELL_OFFER_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "ManageBuyOfferResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "MANAGE_BUY_OFFER_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "SetOptionsResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "SET_OPTIONS_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "ChangeTrustResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "CHANGE_TRUST_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "AllowTrustResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "ALLOW_TRUST_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "AccountMergeResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "ACCOUNT_MERGE_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "InflationResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "INFLATION_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "ManageDataResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "MANAGE_DATA_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "BumpSequenceResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "BUMP_SEQUENCE_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "CreateClaimableBalanceResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "CREATE_CLAIMABLE_BALANCE_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "ClaimClaimableBalanceResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "CLAIM_CLAIMABLE_BALANCE_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "BeginSponsoringFutureReservesResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "EndSponsoringFutureReservesResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "END_SPONSORING_FUTURE_RESERVES_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "RevokeSponsorshipResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "REVOKE_SPONSORSHIP_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "ClawbackResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "CLAWBACK_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "ClawbackClaimableBalanceResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "CLAWBACK_CLAIMABLE_BALANCE_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "SetTrustLineFlagsResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "SET_TRUST_LINE_FLAGS_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "LiquidityPoolDepositResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "LIQUIDITY_POOL_DEPOSIT_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "LiquidityPoolWithdrawResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "LIQUIDITY_POOL_WITHDRAW_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "InvokeHostFunctionResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "INVOKE_HOST_FUNCTION_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "ExtendFootprintTTLResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "EXTEND_FOOTPRINT_TTL_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "RestoreFootprintResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "RESTORE_FOOTPRINT_SUCCESS"
+                    }
+                ]
+            },
+            {
+                "key": "OperationResultCode",
+                "body": [
+                    {
+                        "value": 0,
+                        "identifier": "opINNER"
+                    }
+                ]
+            }
+        ],
+        "structs": [
+            {
+                "key": "TransactionSignaturePayload",
+                "properties": [
+                    {
+                        "type": "Hash",
+                        "identifier": "networkId"
+                    },
+                    {
+                        "type": "aUnioncabfbe8758c9444691bff18bb5ded30a",
+                        "identifier": "taggedTransaction"
+                    }
+                ]
+            },
+            {
+                "key": "Transaction",
+                "properties": [
+                    {
+                        "type": "MuxedAccount",
+                        "identifier": "sourceAccount"
+                    },
+                    {
+                        "type": "uint32",
+                        "identifier": "fee"
+                    },
+                    {
+                        "type": "SequenceNumber",
+                        "identifier": "seqNum"
+                    },
+                    {
+                        "type": "Preconditions",
+                        "identifier": "cond"
+                    },
+                    {
+                        "type": "Memo",
+                        "identifier": "memo"
+                    },
+                    {
+                        "type": "Operation",
+                        "parameters": {
+                            "length": 100,
+                            "mode": "variable",
+                            "optional": false,
+                            "unsigned": false
+                        },
+                        "identifier": "operations"
+                    },
+                    {
+                        "type": "aUnionb3cfbdb681334ef4b02e15463079837c",
+                        "identifier": "ext"
+                    }
+                ]
+            },
+            {
+                "key": "aStruct53193cc48efb47099d2f33c11a0c68cd",
+                "properties": [
+                    {
+                        "type": "uint64",
+                        "identifier": "id"
+                    },
+                    {
+                        "type": "uint256",
+                        "identifier": "ed25519"
+                    }
+                ]
+            },
+            {
+                "key": "TimeBounds",
+                "properties": [
+                    {
+                        "type": "TimePoint",
+                        "identifier": "minTime"
+                    },
+                    {
+                        "type": "TimePoint",
+                        "identifier": "maxTime"
+                    }
+                ]
+            },
+            {
+                "key": "PreconditionsV2",
+                "properties": [
+                    {
+                        "type": "TimeBounds",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "fixed",
+                            "optional": true,
+                            "unsigned": false
+                        },
+                        "identifier": "timeBounds"
+                    },
+                    {
+                        "type": "LedgerBounds",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "fixed",
+                            "optional": true,
+                            "unsigned": false
+                        },
+                        "identifier": "ledgerBounds"
+                    },
+                    {
+                        "type": "SequenceNumber",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "fixed",
+                            "optional": true,
+                            "unsigned": false
+                        },
+                        "identifier": "minSeqNum"
+                    },
+                    {
+                        "type": "Duration",
+                        "identifier": "minSeqAge"
+                    },
+                    {
+                        "type": "uint32",
+                        "identifier": "minSeqLedgerGap"
+                    },
+                    {
+                        "type": "SignerKey",
+                        "parameters": {
+                            "length": 2,
+                            "mode": "variable",
+                            "optional": false,
+                            "unsigned": false
+                        },
+                        "identifier": "extraSigners"
+                    }
+                ]
+            },
+            {
+                "key": "LedgerBounds",
+                "properties": [
+                    {
+                        "type": "uint32",
+                        "identifier": "minLedger"
+                    },
+                    {
+                        "type": "uint32",
+                        "identifier": "maxLedger"
+                    }
+                ]
+            },
+            {
+                "key": "aStruct0afc0397e89d447bb803b18653a7c7d6",
+                "properties": [
+                    {
+                        "type": "uint256",
+                        "identifier": "ed25519"
+                    },
+                    {
+                        "type": "opaque",
+                        "parameters": {
+                            "length": 64,
+                            "mode": "variable",
+                            "optional": false,
+                            "unsigned": false
+                        },
+                        "identifier": "payload"
+                    }
+                ]
+            },
+            {
+                "key": "Operation",
+                "properties": [
+                    {
+                        "type": "MuxedAccount",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "fixed",
+                            "optional": true,
+                            "unsigned": false
+                        },
+                        "identifier": "sourceAccount"
+                    },
+                    {
+                        "type": "aUnion525c8fa287384dd8879b1917bfb533c0",
+                        "identifier": "body"
+                    }
+                ]
+            },
+            {
+                "key": "CreateAccountOp",
+                "properties": [
+                    {
+                        "type": "AccountID",
+                        "identifier": "destination"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "startingBalance"
+                    }
+                ]
+            },
+            {
+                "key": "PaymentOp",
+                "properties": [
+                    {
+                        "type": "MuxedAccount",
+                        "identifier": "destination"
+                    },
+                    {
+                        "type": "Asset",
+                        "identifier": "asset"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "amount"
+                    }
+                ]
+            },
+            {
+                "key": "AlphaNum4",
+                "properties": [
+                    {
+                        "type": "AssetCode4",
+                        "identifier": "assetCode"
+                    },
+                    {
+                        "type": "AccountID",
+                        "identifier": "issuer"
+                    }
+                ]
+            },
+            {
+                "key": "AlphaNum12",
+                "properties": [
+                    {
+                        "type": "AssetCode12",
+                        "identifier": "assetCode"
+                    },
+                    {
+                        "type": "AccountID",
+                        "identifier": "issuer"
+                    }
+                ]
+            },
+            {
+                "key": "PathPaymentStrictReceiveOp",
+                "properties": [
+                    {
+                        "type": "Asset",
+                        "identifier": "sendAsset"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "sendMax"
+                    },
+                    {
+                        "type": "MuxedAccount",
+                        "identifier": "destination"
+                    },
+                    {
+                        "type": "Asset",
+                        "identifier": "destAsset"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "destAmount"
+                    },
+                    {
+                        "type": "Asset",
+                        "parameters": {
+                            "length": 5,
+                            "mode": "variable",
+                            "optional": false,
+                            "unsigned": false
+                        },
+                        "identifier": "path"
+                    }
+                ]
+            },
+            {
+                "key": "ManageSellOfferOp",
+                "properties": [
+                    {
+                        "type": "Asset",
+                        "identifier": "selling"
+                    },
+                    {
+                        "type": "Asset",
+                        "identifier": "buying"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "amount"
+                    },
+                    {
+                        "type": "Price",
+                        "identifier": "price"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "offerID"
+                    }
+                ]
+            },
+            {
+                "key": "Price",
+                "properties": [
+                    {
+                        "type": "int32",
+                        "identifier": "n"
+                    },
+                    {
+                        "type": "int32",
+                        "identifier": "d"
+                    }
+                ]
+            },
+            {
+                "key": "CreatePassiveSellOfferOp",
+                "properties": [
+                    {
+                        "type": "Asset",
+                        "identifier": "selling"
+                    },
+                    {
+                        "type": "Asset",
+                        "identifier": "buying"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "amount"
+                    },
+                    {
+                        "type": "Price",
+                        "identifier": "price"
+                    }
+                ]
+            },
+            {
+                "key": "SetOptionsOp",
+                "properties": [
+                    {
+                        "type": "AccountID",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "fixed",
+                            "optional": true,
+                            "unsigned": false
+                        },
+                        "identifier": "inflationDest"
+                    },
+                    {
+                        "type": "uint32",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "fixed",
+                            "optional": true,
+                            "unsigned": false
+                        },
+                        "identifier": "clearFlags"
+                    },
+                    {
+                        "type": "uint32",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "fixed",
+                            "optional": true,
+                            "unsigned": false
+                        },
+                        "identifier": "setFlags"
+                    },
+                    {
+                        "type": "uint32",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "fixed",
+                            "optional": true,
+                            "unsigned": false
+                        },
+                        "identifier": "masterWeight"
+                    },
+                    {
+                        "type": "uint32",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "fixed",
+                            "optional": true,
+                            "unsigned": false
+                        },
+                        "identifier": "lowThreshold"
+                    },
+                    {
+                        "type": "uint32",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "fixed",
+                            "optional": true,
+                            "unsigned": false
+                        },
+                        "identifier": "medThreshold"
+                    },
+                    {
+                        "type": "uint32",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "fixed",
+                            "optional": true,
+                            "unsigned": false
+                        },
+                        "identifier": "highThreshold"
+                    },
+                    {
+                        "type": "string32",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "fixed",
+                            "optional": true,
+                            "unsigned": false
+                        },
+                        "identifier": "homeDomain"
+                    },
+                    {
+                        "type": "Signer",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "fixed",
+                            "optional": true,
+                            "unsigned": false
+                        },
+                        "identifier": "signer"
+                    }
+                ]
+            },
+            {
+                "key": "Signer",
+                "properties": [
+                    {
+                        "type": "SignerKey",
+                        "identifier": "key"
+                    },
+                    {
+                        "type": "uint32",
+                        "identifier": "weight"
+                    }
+                ]
+            },
+            {
+                "key": "ChangeTrustOp",
+                "properties": [
+                    {
+                        "type": "ChangeTrustAsset",
+                        "identifier": "line"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "limit"
+                    }
+                ]
+            },
+            {
+                "key": "LiquidityPoolConstantProductParameters",
+                "properties": [
+                    {
+                        "type": "Asset",
+                        "identifier": "assetA"
+                    },
+                    {
+                        "type": "Asset",
+                        "identifier": "assetB"
+                    },
+                    {
+                        "type": "int32",
+                        "identifier": "fee"
+                    }
+                ]
+            },
+            {
+                "key": "AllowTrustOp",
+                "properties": [
+                    {
+                        "type": "AccountID",
+                        "identifier": "trustor"
+                    },
+                    {
+                        "type": "AssetCode",
+                        "identifier": "asset"
+                    },
+                    {
+                        "type": "uint32",
+                        "identifier": "authorize"
+                    }
+                ]
+            },
+            {
+                "key": "ManageDataOp",
+                "properties": [
+                    {
+                        "type": "string64",
+                        "identifier": "dataName"
+                    },
+                    {
+                        "type": "DataValue",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "fixed",
+                            "optional": true,
+                            "unsigned": false
+                        },
+                        "identifier": "dataValue"
+                    }
+                ]
+            },
+            {
+                "key": "BumpSequenceOp",
+                "properties": [
+                    {
+                        "type": "SequenceNumber",
+                        "identifier": "bumpTo"
+                    }
+                ]
+            },
+            {
+                "key": "ManageBuyOfferOp",
+                "properties": [
+                    {
+                        "type": "Asset",
+                        "identifier": "selling"
+                    },
+                    {
+                        "type": "Asset",
+                        "identifier": "buying"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "buyAmount"
+                    },
+                    {
+                        "type": "Price",
+                        "identifier": "price"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "offerID"
+                    }
+                ]
+            },
+            {
+                "key": "PathPaymentStrictSendOp",
+                "properties": [
+                    {
+                        "type": "Asset",
+                        "identifier": "sendAsset"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "sendAmount"
+                    },
+                    {
+                        "type": "MuxedAccount",
+                        "identifier": "destination"
+                    },
+                    {
+                        "type": "Asset",
+                        "identifier": "destAsset"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "destMin"
+                    },
+                    {
+                        "type": "Asset",
+                        "parameters": {
+                            "length": 5,
+                            "mode": "variable",
+                            "optional": false,
+                            "unsigned": false
+                        },
+                        "identifier": "path"
+                    }
+                ]
+            },
+            {
+                "key": "CreateClaimableBalanceOp",
+                "properties": [
+                    {
+                        "type": "Asset",
+                        "identifier": "asset"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "amount"
+                    },
+                    {
+                        "type": "Claimant",
+                        "parameters": {
+                            "length": 10,
+                            "mode": "variable",
+                            "optional": false,
+                            "unsigned": false
+                        },
+                        "identifier": "claimants"
+                    }
+                ]
+            },
+            {
+                "key": "aStructe020a07b642c4f53b0e2c9d0e655a3b2",
+                "properties": [
+                    {
+                        "type": "AccountID",
+                        "identifier": "destination"
+                    },
+                    {
+                        "type": "ClaimPredicate",
+                        "identifier": "predicate"
+                    }
+                ]
+            },
+            {
+                "key": "ClaimClaimableBalanceOp",
+                "properties": [
+                    {
+                        "type": "ClaimableBalanceID",
+                        "identifier": "balanceID"
+                    }
+                ]
+            },
+            {
+                "key": "BeginSponsoringFutureReservesOp",
+                "properties": [
+                    {
+                        "type": "AccountID",
+                        "identifier": "sponsoredID"
+                    }
+                ]
+            },
+            {
+                "key": "aStructbc4d1282998a473d958507c4b98ab679",
+                "properties": [
+                    {
+                        "type": "AccountID",
+                        "identifier": "accountID"
+                    }
+                ]
+            },
+            {
+                "key": "aStructff071f76f163495aa9952590f0af27dd",
+                "properties": [
+                    {
+                        "type": "AccountID",
+                        "identifier": "accountID"
+                    },
+                    {
+                        "type": "TrustLineAsset",
+                        "identifier": "asset"
+                    }
+                ]
+            },
+            {
+                "key": "aStructa5552807cf2342bb9f6f2c0915f317b4",
+                "properties": [
+                    {
+                        "type": "AccountID",
+                        "identifier": "sellerID"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "offerID"
+                    }
+                ]
+            },
+            {
+                "key": "aStruct7789916d919e4ca2bbc3a09368e60eee",
+                "properties": [
+                    {
+                        "type": "AccountID",
+                        "identifier": "accountID"
+                    },
+                    {
+                        "type": "string64",
+                        "identifier": "dataName"
+                    }
+                ]
+            },
+            {
+                "key": "aStruct194b3d07ef0e4e1685297815171f474e",
+                "properties": [
+                    {
+                        "type": "ClaimableBalanceID",
+                        "identifier": "balanceID"
+                    }
+                ]
+            },
+            {
+                "key": "aStructef5982ec1c9e400cbad6ec8fb536b04f",
+                "properties": [
+                    {
+                        "type": "PoolID",
+                        "identifier": "liquidityPoolID"
+                    }
+                ]
+            },
+            {
+                "key": "aStructe7e1307ebcba4a8082fa9e40799dd7b3",
+                "properties": [
+                    {
+                        "type": "SCAddress",
+                        "identifier": "contract"
+                    },
+                    {
+                        "type": "SCVal",
+                        "identifier": "key"
+                    },
+                    {
+                        "type": "ContractDataDurability",
+                        "identifier": "durability"
+                    }
+                ]
+            },
+            {
+                "key": "UInt128Parts",
+                "properties": [
+                    {
+                        "type": "uint64",
+                        "identifier": "hi"
+                    },
+                    {
+                        "type": "uint64",
+                        "identifier": "lo"
+                    }
+                ]
+            },
+            {
+                "key": "Int128Parts",
+                "properties": [
+                    {
+                        "type": "int64",
+                        "identifier": "hi"
+                    },
+                    {
+                        "type": "uint64",
+                        "identifier": "lo"
+                    }
+                ]
+            },
+            {
+                "key": "UInt256Parts",
+                "properties": [
+                    {
+                        "type": "uint64",
+                        "identifier": "hi_hi"
+                    },
+                    {
+                        "type": "uint64",
+                        "identifier": "hi_lo"
+                    },
+                    {
+                        "type": "uint64",
+                        "identifier": "lo_hi"
+                    },
+                    {
+                        "type": "uint64",
+                        "identifier": "lo_lo"
+                    }
+                ]
+            },
+            {
+                "key": "Int256Parts",
+                "properties": [
+                    {
+                        "type": "int64",
+                        "identifier": "hi_hi"
+                    },
+                    {
+                        "type": "uint64",
+                        "identifier": "hi_lo"
+                    },
+                    {
+                        "type": "uint64",
+                        "identifier": "lo_hi"
+                    },
+                    {
+                        "type": "uint64",
+                        "identifier": "lo_lo"
+                    }
+                ]
+            },
+            {
+                "key": "SCMapEntry",
+                "properties": [
+                    {
+                        "type": "SCVal",
+                        "identifier": "key"
+                    },
+                    {
+                        "type": "SCVal",
+                        "identifier": "val"
+                    }
+                ]
+            },
+            {
+                "key": "SCNonceKey",
+                "properties": [
+                    {
+                        "type": "int64",
+                        "identifier": "nonce"
+                    }
+                ]
+            },
+            {
+                "key": "SCContractInstance",
+                "properties": [
+                    {
+                        "type": "ContractExecutable",
+                        "identifier": "executable"
+                    },
+                    {
+                        "type": "SCMap",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "fixed",
+                            "optional": true,
+                            "unsigned": false
+                        },
+                        "identifier": "storage"
+                    }
+                ]
+            },
+            {
+                "key": "aStruct81e894d3dd824ed49143dc7cf4db40da",
+                "properties": [
+                    {
+                        "type": "Hash",
+                        "identifier": "hash"
+                    }
+                ]
+            },
+            {
+                "key": "aStruct95272ab2aae84f1394646d0afc3273a7",
+                "properties": [
+                    {
+                        "type": "ConfigSettingID",
+                        "identifier": "configSettingID"
+                    }
+                ]
+            },
+            {
+                "key": "aStruct7c9f3f33a3474c92a27fddd1a5a35cc7",
+                "properties": [
+                    {
+                        "type": "Hash",
+                        "identifier": "keyHash"
+                    }
+                ]
+            },
+            {
+                "key": "aStruct57b511b4c5784036a044721f2cc982df",
+                "properties": [
+                    {
+                        "type": "AccountID",
+                        "identifier": "accountID"
+                    },
+                    {
+                        "type": "SignerKey",
+                        "identifier": "signerKey"
+                    }
+                ]
+            },
+            {
+                "key": "ClawbackOp",
+                "properties": [
+                    {
+                        "type": "Asset",
+                        "identifier": "asset"
+                    },
+                    {
+                        "type": "MuxedAccount",
+                        "identifier": "from"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "amount"
+                    }
+                ]
+            },
+            {
+                "key": "ClawbackClaimableBalanceOp",
+                "properties": [
+                    {
+                        "type": "ClaimableBalanceID",
+                        "identifier": "balanceID"
+                    }
+                ]
+            },
+            {
+                "key": "SetTrustLineFlagsOp",
+                "properties": [
+                    {
+                        "type": "AccountID",
+                        "identifier": "trustor"
+                    },
+                    {
+                        "type": "Asset",
+                        "identifier": "asset"
+                    },
+                    {
+                        "type": "uint32",
+                        "identifier": "clearFlags"
+                    },
+                    {
+                        "type": "uint32",
+                        "identifier": "setFlags"
+                    }
+                ]
+            },
+            {
+                "key": "LiquidityPoolDepositOp",
+                "properties": [
+                    {
+                        "type": "PoolID",
+                        "identifier": "liquidityPoolID"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "maxAmountA"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "maxAmountB"
+                    },
+                    {
+                        "type": "Price",
+                        "identifier": "minPrice"
+                    },
+                    {
+                        "type": "Price",
+                        "identifier": "maxPrice"
+                    }
+                ]
+            },
+            {
+                "key": "LiquidityPoolWithdrawOp",
+                "properties": [
+                    {
+                        "type": "PoolID",
+                        "identifier": "liquidityPoolID"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "amount"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "minAmountA"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "minAmountB"
+                    }
+                ]
+            },
+            {
+                "key": "InvokeHostFunctionOp",
+                "properties": [
+                    {
+                        "type": "HostFunction",
+                        "identifier": "hostFunction"
+                    },
+                    {
+                        "type": "SorobanAuthorizationEntry",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "variable",
+                            "optional": false,
+                            "unsigned": false
+                        },
+                        "identifier": "auth"
+                    }
+                ]
+            },
+            {
+                "key": "InvokeContractArgs",
+                "properties": [
+                    {
+                        "type": "SCAddress",
+                        "identifier": "contractAddress"
+                    },
+                    {
+                        "type": "SCSymbol",
+                        "identifier": "functionName"
+                    },
+                    {
+                        "type": "SCVal",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "variable",
+                            "optional": false,
+                            "unsigned": false
+                        },
+                        "identifier": "args"
+                    }
+                ]
+            },
+            {
+                "key": "CreateContractArgs",
+                "properties": [
+                    {
+                        "type": "ContractIDPreimage",
+                        "identifier": "contractIDPreimage"
+                    },
+                    {
+                        "type": "ContractExecutable",
+                        "identifier": "executable"
+                    }
+                ]
+            },
+            {
+                "key": "aStruct29cc9aee661e4987b0c91711adba4a16",
+                "properties": [
+                    {
+                        "type": "SCAddress",
+                        "identifier": "address"
+                    },
+                    {
+                        "type": "uint256",
+                        "identifier": "salt"
+                    }
+                ]
+            },
+            {
+                "key": "SorobanAuthorizationEntry",
+                "properties": [
+                    {
+                        "type": "SorobanCredentials",
+                        "identifier": "credentials"
+                    },
+                    {
+                        "type": "SorobanAuthorizedInvocation",
+                        "identifier": "rootInvocation"
+                    }
+                ]
+            },
+            {
+                "key": "SorobanAddressCredentials",
+                "properties": [
+                    {
+                        "type": "SCAddress",
+                        "identifier": "address"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "nonce"
+                    },
+                    {
+                        "type": "uint32",
+                        "identifier": "signatureExpirationLedger"
+                    },
+                    {
+                        "type": "SCVal",
+                        "identifier": "signature"
+                    }
+                ]
+            },
+            {
+                "key": "SorobanAuthorizedInvocation",
+                "properties": [
+                    {
+                        "type": "SorobanAuthorizedFunction",
+                        "identifier": "function"
+                    },
+                    {
+                        "type": "SorobanAuthorizedInvocation",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "variable",
+                            "optional": false,
+                            "unsigned": false
+                        },
+                        "identifier": "subInvocations"
+                    }
+                ]
+            },
+            {
+                "key": "ExtendFootprintTTLOp",
+                "properties": [
+                    {
+                        "type": "ExtensionPoint",
+                        "identifier": "ext"
+                    },
+                    {
+                        "type": "uint32",
+                        "identifier": "extendTo"
+                    }
+                ]
+            },
+            {
+                "key": "RestoreFootprintOp",
+                "properties": [
+                    {
+                        "type": "ExtensionPoint",
+                        "identifier": "ext"
+                    }
+                ]
+            },
+            {
+                "key": "SorobanTransactionData",
+                "properties": [
+                    {
+                        "type": "ExtensionPoint",
+                        "identifier": "ext"
+                    },
+                    {
+                        "type": "SorobanResources",
+                        "identifier": "resources"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "resourceFee"
+                    }
+                ]
+            },
+            {
+                "key": "SorobanResources",
+                "properties": [
+                    {
+                        "type": "LedgerFootprint",
+                        "identifier": "footprint"
+                    },
+                    {
+                        "type": "uint32",
+                        "identifier": "instructions"
+                    },
+                    {
+                        "type": "uint32",
+                        "identifier": "readBytes"
+                    },
+                    {
+                        "type": "uint32",
+                        "identifier": "writeBytes"
+                    }
+                ]
+            },
+            {
+                "key": "LedgerFootprint",
+                "properties": [
+                    {
+                        "type": "LedgerKey",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "variable",
+                            "optional": false,
+                            "unsigned": false
+                        },
+                        "identifier": "readOnly"
+                    },
+                    {
+                        "type": "LedgerKey",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "variable",
+                            "optional": false,
+                            "unsigned": false
+                        },
+                        "identifier": "readWrite"
+                    }
+                ]
+            },
+            {
+                "key": "FeeBumpTransaction",
+                "properties": [
+                    {
+                        "type": "MuxedAccount",
+                        "identifier": "feeSource"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "fee"
+                    },
+                    {
+                        "type": "aUnionf1b782e23afb45fdb9d6f42e94e51c24",
+                        "identifier": "innerTx"
+                    },
+                    {
+                        "type": "aUnionaed08215ddf94a2bbb2179388a6b5282",
+                        "identifier": "ext"
+                    }
+                ]
+            },
+            {
+                "key": "TransactionV1Envelope",
+                "properties": [
+                    {
+                        "type": "Transaction",
+                        "identifier": "tx"
+                    },
+                    {
+                        "type": "DecoratedSignature",
+                        "parameters": {
+                            "length": 20,
+                            "mode": "variable",
+                            "optional": false,
+                            "unsigned": false
+                        },
+                        "identifier": "signatures"
+                    }
+                ]
+            },
+            {
+                "key": "DecoratedSignature",
+                "properties": [
+                    {
+                        "type": "SignatureHint",
+                        "identifier": "hint"
+                    },
+                    {
+                        "type": "Signature",
+                        "identifier": "signature"
+                    }
+                ]
+            },
+            {
+                "key": "TransactionV0Envelope",
+                "properties": [
+                    {
+                        "type": "TransactionV0",
+                        "identifier": "tx"
+                    },
+                    {
+                        "type": "DecoratedSignature",
+                        "parameters": {
+                            "length": 20,
+                            "mode": "variable",
+                            "optional": false,
+                            "unsigned": false
+                        },
+                        "identifier": "signatures"
+                    }
+                ]
+            },
+            {
+                "key": "TransactionV0",
+                "properties": [
+                    {
+                        "type": "uint256",
+                        "identifier": "sourceAccountEd25519"
+                    },
+                    {
+                        "type": "uint32",
+                        "identifier": "fee"
+                    },
+                    {
+                        "type": "SequenceNumber",
+                        "identifier": "seqNum"
+                    },
+                    {
+                        "type": "TimeBounds",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "fixed",
+                            "optional": true,
+                            "unsigned": false
+                        },
+                        "identifier": "timeBounds"
+                    },
+                    {
+                        "type": "Memo",
+                        "identifier": "memo"
+                    },
+                    {
+                        "type": "Operation",
+                        "parameters": {
+                            "length": 100,
+                            "mode": "variable",
+                            "optional": false,
+                            "unsigned": false
+                        },
+                        "identifier": "operations"
+                    },
+                    {
+                        "type": "aUnion90dff1a7b5494aada587c872db19931f",
+                        "identifier": "ext"
+                    }
+                ]
+            },
+            {
+                "key": "aStructc767ffaca07541eebb0f413ba9cd0303",
+                "properties": [
+                    {
+                        "type": "uint64",
+                        "identifier": "id"
+                    },
+                    {
+                        "type": "uint256",
+                        "identifier": "ed25519"
+                    }
+                ]
+            },
+            {
+                "key": "aStruct8c6ea7f20abc443d99d6740ebe330204",
+                "properties": [
+                    {
+                        "type": "uint256",
+                        "identifier": "ed25519"
+                    },
+                    {
+                        "type": "opaque",
+                        "parameters": {
+                            "length": 64,
+                            "mode": "variable",
+                            "optional": false,
+                            "unsigned": false
+                        },
+                        "identifier": "payload"
+                    }
+                ]
+            },
+            {
+                "key": "aStructfde4b262e3a140429e6573afbc003a4f",
+                "properties": [
+                    {
+                        "type": "AccountID",
+                        "identifier": "destination"
+                    },
+                    {
+                        "type": "ClaimPredicate",
+                        "identifier": "predicate"
+                    }
+                ]
+            },
+            {
+                "key": "aStructc257cc189f4946b49d77033211d7ef8d",
+                "properties": [
+                    {
+                        "type": "AccountID",
+                        "identifier": "accountID"
+                    }
+                ]
+            },
+            {
+                "key": "aStructc563c41979864921998510298144a8d8",
+                "properties": [
+                    {
+                        "type": "AccountID",
+                        "identifier": "accountID"
+                    },
+                    {
+                        "type": "TrustLineAsset",
+                        "identifier": "asset"
+                    }
+                ]
+            },
+            {
+                "key": "aStruct87d05454bac644c6adca8390fe8b8586",
+                "properties": [
+                    {
+                        "type": "AccountID",
+                        "identifier": "sellerID"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "offerID"
+                    }
+                ]
+            },
+            {
+                "key": "aStruct007d9f882c0c4b93b4a8e5e8db33e8a8",
+                "properties": [
+                    {
+                        "type": "AccountID",
+                        "identifier": "accountID"
+                    },
+                    {
+                        "type": "string64",
+                        "identifier": "dataName"
+                    }
+                ]
+            },
+            {
+                "key": "aStruct6a5f53a1e05641b3916f3c9bdd4e22fb",
+                "properties": [
+                    {
+                        "type": "ClaimableBalanceID",
+                        "identifier": "balanceID"
+                    }
+                ]
+            },
+            {
+                "key": "aStructd75d26302493421595435b0757cdbb26",
+                "properties": [
+                    {
+                        "type": "PoolID",
+                        "identifier": "liquidityPoolID"
+                    }
+                ]
+            },
+            {
+                "key": "aStructd7ed88b493ca4055b766a99b43ce2fa0",
+                "properties": [
+                    {
+                        "type": "SCAddress",
+                        "identifier": "contract"
+                    },
+                    {
+                        "type": "SCVal",
+                        "identifier": "key"
+                    },
+                    {
+                        "type": "ContractDataDurability",
+                        "identifier": "durability"
+                    }
+                ]
+            },
+            {
+                "key": "aStructc89114e3b826492098661738924bf267",
+                "properties": [
+                    {
+                        "type": "Hash",
+                        "identifier": "hash"
+                    }
+                ]
+            },
+            {
+                "key": "aStruct41bc7b0f37f44541b22f6f6799bd768a",
+                "properties": [
+                    {
+                        "type": "ConfigSettingID",
+                        "identifier": "configSettingID"
+                    }
+                ]
+            },
+            {
+                "key": "aStruct4457b9fa839a4a6dbc5b5f6c58d00c32",
+                "properties": [
+                    {
+                        "type": "Hash",
+                        "identifier": "keyHash"
+                    }
+                ]
+            },
+            {
+                "key": "aStructa25de64fe6f54047955a25b6c1b24495",
+                "properties": [
+                    {
+                        "type": "AccountID",
+                        "identifier": "accountID"
+                    },
+                    {
+                        "type": "SignerKey",
+                        "identifier": "signerKey"
+                    }
+                ]
+            },
+            {
+                "key": "aStruct38a81ef588234a4dbf30613c121b398b",
+                "properties": [
+                    {
+                        "type": "SCAddress",
+                        "identifier": "address"
+                    },
+                    {
+                        "type": "uint256",
+                        "identifier": "salt"
+                    }
+                ]
+            },
+            {
+                "key": "FeeBumpTransactionEnvelope",
+                "properties": [
+                    {
+                        "type": "FeeBumpTransaction",
+                        "identifier": "tx"
+                    },
+                    {
+                        "type": "DecoratedSignature",
+                        "parameters": {
+                            "length": 20,
+                            "mode": "variable",
+                            "optional": false,
+                            "unsigned": false
+                        },
+                        "identifier": "signatures"
+                    }
+                ]
+            }
+        ],
+        "typedefs": [
+            {
+                "key": "Hash",
+                "declaration": {
+                    "type": "opaque",
+                    "parameters": {
+                        "length": 32,
+                        "mode": "fixed",
+                        "optional": false,
+                        "unsigned": false
+                    }
+                }
+            },
+            {
+                "key": "uint256",
+                "declaration": {
+                    "type": "opaque",
+                    "parameters": {
+                        "length": 32,
+                        "mode": "fixed",
+                        "optional": false,
+                        "unsigned": false
+                    }
+                }
+            },
+            {
+                "key": "uint64",
+                "declaration": {
+                    "type": "hyper",
+                    "parameters": {
+                        "length": 0,
+                        "mode": "fixed",
+                        "optional": false,
+                        "unsigned": true
+                    }
+                }
+            },
+            {
+                "key": "uint32",
+                "declaration": {
+                    "type": "int",
+                    "parameters": {
+                        "length": 0,
+                        "mode": "fixed",
+                        "optional": false,
+                        "unsigned": true
+                    }
+                }
+            },
+            {
+                "key": "SequenceNumber",
+                "declaration": {
+                    "type": "int64"
+                }
+            },
+            {
+                "key": "int64",
+                "declaration": {
+                    "type": "hyper"
+                }
+            },
+            {
+                "key": "TimePoint",
+                "declaration": {
+                    "type": "uint64"
+                }
+            },
+            {
+                "key": "Duration",
+                "declaration": {
+                    "type": "uint64"
+                }
+            },
+            {
+                "key": "AccountID",
+                "declaration": {
+                    "type": "PublicKey"
+                }
+            },
+            {
+                "key": "AssetCode4",
+                "declaration": {
+                    "type": "opaque",
+                    "parameters": {
+                        "length": 4,
+                        "mode": "fixed",
+                        "optional": false,
+                        "unsigned": false
+                    }
+                }
+            },
+            {
+                "key": "AssetCode12",
+                "declaration": {
+                    "type": "opaque",
+                    "parameters": {
+                        "length": 12,
+                        "mode": "fixed",
+                        "optional": false,
+                        "unsigned": false
+                    }
+                }
+            },
+            {
+                "key": "int32",
+                "declaration": {
+                    "type": "int"
+                }
+            },
+            {
+                "key": "string32",
+                "declaration": {
+                    "type": "string",
+                    "parameters": {
+                        "length": 32,
+                        "mode": "variable",
+                        "optional": false,
+                        "unsigned": false
+                    }
+                }
+            },
+            {
+                "key": "string64",
+                "declaration": {
+                    "type": "string",
+                    "parameters": {
+                        "length": 64,
+                        "mode": "variable",
+                        "optional": false,
+                        "unsigned": false
+                    }
+                }
+            },
+            {
+                "key": "DataValue",
+                "declaration": {
+                    "type": "opaque",
+                    "parameters": {
+                        "length": 64,
+                        "mode": "variable",
+                        "optional": false,
+                        "unsigned": false
+                    }
+                }
+            },
+            {
+                "key": "PoolID",
+                "declaration": {
+                    "type": "Hash"
+                }
+            },
+            {
+                "key": "SCBytes",
+                "declaration": {
+                    "type": "opaque",
+                    "parameters": {
+                        "length": 0,
+                        "mode": "variable",
+                        "optional": false,
+                        "unsigned": false
+                    }
+                }
+            },
+            {
+                "key": "SCString",
+                "declaration": {
+                    "type": "string",
+                    "parameters": {
+                        "length": 0,
+                        "mode": "variable",
+                        "optional": false,
+                        "unsigned": false
+                    }
+                }
+            },
+            {
+                "key": "SCSymbol",
+                "declaration": {
+                    "type": "string",
+                    "parameters": {
+                        "length": 32,
+                        "mode": "variable",
+                        "optional": false,
+                        "unsigned": false
+                    }
+                }
+            },
+            {
+                "key": "SCVec",
+                "declaration": {
+                    "type": "SCVal",
+                    "parameters": {
+                        "length": 0,
+                        "mode": "variable",
+                        "optional": false,
+                        "unsigned": false
+                    }
+                }
+            },
+            {
+                "key": "SCMap",
+                "declaration": {
+                    "type": "SCMapEntry",
+                    "parameters": {
+                        "length": 0,
+                        "mode": "variable",
+                        "optional": false,
+                        "unsigned": false
+                    }
+                }
+            },
+            {
+                "key": "SignatureHint",
+                "declaration": {
+                    "type": "opaque",
+                    "parameters": {
+                        "length": 4,
+                        "mode": "fixed",
+                        "optional": false,
+                        "unsigned": false
+                    }
+                }
+            },
+            {
+                "key": "Signature",
+                "declaration": {
+                    "type": "opaque",
+                    "parameters": {
+                        "length": 64,
+                        "mode": "variable",
+                        "optional": false,
+                        "unsigned": false
+                    }
+                }
+            }
+        ],
+        "unions": [
+            {
+                "key": "aUnioncabfbe8758c9444691bff18bb5ded30a",
+                "discriminant": {
+                    "type": "EnvelopeType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "Transaction",
+                        "identifier": "tx",
+                        "arm": "ENVELOPE_TYPE_TX"
+                    },
+                    {
+                        "type": "FeeBumpTransaction",
+                        "identifier": "feeBump",
+                        "arm": "ENVELOPE_TYPE_TX_FEE_BUMP"
+                    }
+                ]
+            },
+            {
+                "key": "MuxedAccount",
+                "discriminant": {
+                    "type": "CryptoKeyType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "uint256",
+                        "identifier": "ed25519",
+                        "arm": "KEY_TYPE_ED25519"
+                    },
+                    {
+                        "type": "aStruct53193cc48efb47099d2f33c11a0c68cd",
+                        "identifier": "med25519",
+                        "arm": "KEY_TYPE_MUXED_ED25519"
+                    }
+                ]
+            },
+            {
+                "key": "Preconditions",
+                "discriminant": {
+                    "type": "PreconditionType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "void",
+                        "arm": "PRECOND_NONE"
+                    },
+                    {
+                        "type": "TimeBounds",
+                        "identifier": "timeBounds",
+                        "arm": "PRECOND_TIME"
+                    },
+                    {
+                        "type": "PreconditionsV2",
+                        "identifier": "v2",
+                        "arm": "PRECOND_V2"
+                    }
+                ]
+            },
+            {
+                "key": "SignerKey",
+                "discriminant": {
+                    "type": "SignerKeyType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "uint256",
+                        "identifier": "ed25519",
+                        "arm": "SIGNER_KEY_TYPE_ED25519"
+                    },
+                    {
+                        "type": "uint256",
+                        "identifier": "preAuthTx",
+                        "arm": "SIGNER_KEY_TYPE_PRE_AUTH_TX"
+                    },
+                    {
+                        "type": "uint256",
+                        "identifier": "hashX",
+                        "arm": "SIGNER_KEY_TYPE_HASH_X"
+                    },
+                    {
+                        "type": "aStruct0afc0397e89d447bb803b18653a7c7d6",
+                        "identifier": "ed25519SignedPayload",
+                        "arm": "SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD"
+                    }
+                ]
+            },
+            {
+                "key": "Memo",
+                "discriminant": {
+                    "type": "MemoType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "void",
+                        "arm": "MEMO_NONE"
+                    },
+                    {
+                        "type": "string",
+                        "identifier": "text",
+                        "parameters": {
+                            "length": 28,
+                            "mode": "variable",
+                            "optional": false,
+                            "unsigned": false
+                        },
+                        "arm": "MEMO_TEXT"
+                    },
+                    {
+                        "type": "uint64",
+                        "identifier": "id",
+                        "arm": "MEMO_ID"
+                    },
+                    {
+                        "type": "Hash",
+                        "identifier": "hash",
+                        "arm": "MEMO_HASH"
+                    },
+                    {
+                        "type": "Hash",
+                        "identifier": "retHash",
+                        "arm": "MEMO_RETURN"
+                    }
+                ]
+            },
+            {
+                "key": "aUnion525c8fa287384dd8879b1917bfb533c0",
+                "discriminant": {
+                    "type": "OperationType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "CreateAccountOp",
+                        "identifier": "createAccountOp",
+                        "arm": "CREATE_ACCOUNT"
+                    },
+                    {
+                        "type": "PaymentOp",
+                        "identifier": "paymentOp",
+                        "arm": "PAYMENT"
+                    },
+                    {
+                        "type": "PathPaymentStrictReceiveOp",
+                        "identifier": "pathPaymentStrictReceiveOp",
+                        "arm": "PATH_PAYMENT_STRICT_RECEIVE"
+                    },
+                    {
+                        "type": "ManageSellOfferOp",
+                        "identifier": "manageSellOfferOp",
+                        "arm": "MANAGE_SELL_OFFER"
+                    },
+                    {
+                        "type": "CreatePassiveSellOfferOp",
+                        "identifier": "createPassiveSellOfferOp",
+                        "arm": "CREATE_PASSIVE_SELL_OFFER"
+                    },
+                    {
+                        "type": "SetOptionsOp",
+                        "identifier": "setOptionsOp",
+                        "arm": "SET_OPTIONS"
+                    },
+                    {
+                        "type": "ChangeTrustOp",
+                        "identifier": "changeTrustOp",
+                        "arm": "CHANGE_TRUST"
+                    },
+                    {
+                        "type": "AllowTrustOp",
+                        "identifier": "allowTrustOp",
+                        "arm": "ALLOW_TRUST"
+                    },
+                    {
+                        "type": "MuxedAccount",
+                        "identifier": "destination",
+                        "arm": "ACCOUNT_MERGE"
+                    },
+                    {
+                        "type": "void",
+                        "arm": "INFLATION"
+                    },
+                    {
+                        "type": "ManageDataOp",
+                        "identifier": "manageDataOp",
+                        "arm": "MANAGE_DATA"
+                    },
+                    {
+                        "type": "BumpSequenceOp",
+                        "identifier": "bumpSequenceOp",
+                        "arm": "BUMP_SEQUENCE"
+                    },
+                    {
+                        "type": "ManageBuyOfferOp",
+                        "identifier": "manageBuyOfferOp",
+                        "arm": "MANAGE_BUY_OFFER"
+                    },
+                    {
+                        "type": "PathPaymentStrictSendOp",
+                        "identifier": "pathPaymentStrictSendOp",
+                        "arm": "PATH_PAYMENT_STRICT_SEND"
+                    },
+                    {
+                        "type": "CreateClaimableBalanceOp",
+                        "identifier": "createClaimableBalanceOp",
+                        "arm": "CREATE_CLAIMABLE_BALANCE"
+                    },
+                    {
+                        "type": "ClaimClaimableBalanceOp",
+                        "identifier": "claimClaimableBalanceOp",
+                        "arm": "CLAIM_CLAIMABLE_BALANCE"
+                    },
+                    {
+                        "type": "BeginSponsoringFutureReservesOp",
+                        "identifier": "beginSponsoringFutureReservesOp",
+                        "arm": "BEGIN_SPONSORING_FUTURE_RESERVES"
+                    },
+                    {
+                        "type": "void",
+                        "arm": "END_SPONSORING_FUTURE_RESERVES"
+                    },
+                    {
+                        "type": "RevokeSponsorshipOp",
+                        "identifier": "revokeSponsorshipOp",
+                        "arm": "REVOKE_SPONSORSHIP"
+                    },
+                    {
+                        "type": "ClawbackOp",
+                        "identifier": "clawbackOp",
+                        "arm": "CLAWBACK"
+                    },
+                    {
+                        "type": "ClawbackClaimableBalanceOp",
+                        "identifier": "clawbackClaimableBalanceOp",
+                        "arm": "CLAWBACK_CLAIMABLE_BALANCE"
+                    },
+                    {
+                        "type": "SetTrustLineFlagsOp",
+                        "identifier": "setTrustLineFlagsOp",
+                        "arm": "SET_TRUST_LINE_FLAGS"
+                    },
+                    {
+                        "type": "LiquidityPoolDepositOp",
+                        "identifier": "liquidityPoolDepositOp",
+                        "arm": "LIQUIDITY_POOL_DEPOSIT"
+                    },
+                    {
+                        "type": "LiquidityPoolWithdrawOp",
+                        "identifier": "liquidityPoolWithdrawOp",
+                        "arm": "LIQUIDITY_POOL_WITHDRAW"
+                    },
+                    {
+                        "type": "InvokeHostFunctionOp",
+                        "identifier": "invokeHostFunctionOp",
+                        "arm": "INVOKE_HOST_FUNCTION"
+                    },
+                    {
+                        "type": "ExtendFootprintTTLOp",
+                        "identifier": "extendFootprintTTLOp",
+                        "arm": "EXTEND_FOOTPRINT_TTL"
+                    },
+                    {
+                        "type": "RestoreFootprintOp",
+                        "identifier": "restoreFootprintOp",
+                        "arm": "RESTORE_FOOTPRINT"
+                    }
+                ]
+            },
+            {
+                "key": "PublicKey",
+                "discriminant": {
+                    "type": "PublicKeyType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "uint256",
+                        "identifier": "ed25519",
+                        "arm": "PUBLIC_KEY_TYPE_ED25519"
+                    }
+                ]
+            },
+            {
+                "key": "Asset",
+                "discriminant": {
+                    "type": "AssetType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "void",
+                        "arm": "ASSET_TYPE_NATIVE"
+                    },
+                    {
+                        "type": "AlphaNum4",
+                        "identifier": "alphaNum4",
+                        "arm": "ASSET_TYPE_CREDIT_ALPHANUM4"
+                    },
+                    {
+                        "type": "AlphaNum12",
+                        "identifier": "alphaNum12",
+                        "arm": "ASSET_TYPE_CREDIT_ALPHANUM12"
+                    }
+                ]
+            },
+            {
+                "key": "ChangeTrustAsset",
+                "discriminant": {
+                    "type": "AssetType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "void",
+                        "arm": "ASSET_TYPE_NATIVE"
+                    },
+                    {
+                        "type": "AlphaNum4",
+                        "identifier": "alphaNum4",
+                        "arm": "ASSET_TYPE_CREDIT_ALPHANUM4"
+                    },
+                    {
+                        "type": "AlphaNum12",
+                        "identifier": "alphaNum12",
+                        "arm": "ASSET_TYPE_CREDIT_ALPHANUM12"
+                    },
+                    {
+                        "type": "LiquidityPoolParameters",
+                        "identifier": "liquidityPool",
+                        "arm": "ASSET_TYPE_POOL_SHARE"
+                    }
+                ]
+            },
+            {
+                "key": "LiquidityPoolParameters",
+                "discriminant": {
+                    "type": "LiquidityPoolType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "LiquidityPoolConstantProductParameters",
+                        "identifier": "constantProduct",
+                        "arm": "LIQUIDITY_POOL_CONSTANT_PRODUCT"
+                    }
+                ]
+            },
+            {
+                "key": "AssetCode",
+                "discriminant": {
+                    "type": "AssetType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "AssetCode4",
+                        "identifier": "assetCode4",
+                        "arm": "ASSET_TYPE_CREDIT_ALPHANUM4"
+                    },
+                    {
+                        "type": "AssetCode12",
+                        "identifier": "assetCode12",
+                        "arm": "ASSET_TYPE_CREDIT_ALPHANUM12"
+                    }
+                ]
+            },
+            {
+                "key": "Claimant",
+                "discriminant": {
+                    "type": "ClaimantType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "aStructe020a07b642c4f53b0e2c9d0e655a3b2",
+                        "identifier": "v0",
+                        "arm": "CLAIMANT_TYPE_V0"
+                    }
+                ]
+            },
+            {
+                "key": "ClaimPredicate",
+                "discriminant": {
+                    "type": "ClaimPredicateType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "void",
+                        "arm": "CLAIM_PREDICATE_UNCONDITIONAL"
+                    },
+                    {
+                        "type": "ClaimPredicate",
+                        "identifier": "andPredicates",
+                        "parameters": {
+                            "length": 2,
+                            "mode": "variable",
+                            "optional": false,
+                            "unsigned": false
+                        },
+                        "arm": "CLAIM_PREDICATE_AND"
+                    },
+                    {
+                        "type": "ClaimPredicate",
+                        "identifier": "orPredicates",
+                        "parameters": {
+                            "length": 2,
+                            "mode": "variable",
+                            "optional": false,
+                            "unsigned": false
+                        },
+                        "arm": "CLAIM_PREDICATE_OR"
+                    },
+                    {
+                        "type": "ClaimPredicate",
+                        "identifier": "notPredicate",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "fixed",
+                            "optional": true,
+                            "unsigned": false
+                        },
+                        "arm": "CLAIM_PREDICATE_NOT"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "absBefore",
+                        "arm": "CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "relBefore",
+                        "arm": "CLAIM_PREDICATE_BEFORE_RELATIVE_TIME"
+                    }
+                ]
+            },
+            {
+                "key": "ClaimableBalanceID",
+                "discriminant": {
+                    "type": "ClaimableBalanceIDType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "Hash",
+                        "identifier": "v0",
+                        "arm": "CLAIMABLE_BALANCE_ID_TYPE_V0"
+                    }
+                ]
+            },
+            {
+                "key": "RevokeSponsorshipOp",
+                "discriminant": {
+                    "type": "RevokeSponsorshipType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "LedgerKey",
+                        "identifier": "ledgerKey",
+                        "arm": "REVOKE_SPONSORSHIP_LEDGER_ENTRY"
+                    },
+                    {
+                        "type": "aStruct57b511b4c5784036a044721f2cc982df",
+                        "identifier": "signer",
+                        "arm": "REVOKE_SPONSORSHIP_SIGNER"
+                    }
+                ]
+            },
+            {
+                "key": "LedgerKey",
+                "discriminant": {
+                    "type": "LedgerEntryType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "aStructbc4d1282998a473d958507c4b98ab679",
+                        "identifier": "account",
+                        "arm": "ACCOUNT"
+                    },
+                    {
+                        "type": "aStructff071f76f163495aa9952590f0af27dd",
+                        "identifier": "trustLine",
+                        "arm": "TRUSTLINE"
+                    },
+                    {
+                        "type": "aStructa5552807cf2342bb9f6f2c0915f317b4",
+                        "identifier": "offer",
+                        "arm": "OFFER"
+                    },
+                    {
+                        "type": "aStruct7789916d919e4ca2bbc3a09368e60eee",
+                        "identifier": "data",
+                        "arm": "DATA"
+                    },
+                    {
+                        "type": "aStruct194b3d07ef0e4e1685297815171f474e",
+                        "identifier": "claimableBalance",
+                        "arm": "CLAIMABLE_BALANCE"
+                    },
+                    {
+                        "type": "aStructef5982ec1c9e400cbad6ec8fb536b04f",
+                        "identifier": "liquidityPool",
+                        "arm": "LIQUIDITY_POOL"
+                    },
+                    {
+                        "type": "aStructe7e1307ebcba4a8082fa9e40799dd7b3",
+                        "identifier": "contractData",
+                        "arm": "CONTRACT_DATA"
+                    },
+                    {
+                        "type": "aStruct81e894d3dd824ed49143dc7cf4db40da",
+                        "identifier": "contractCode",
+                        "arm": "CONTRACT_CODE"
+                    },
+                    {
+                        "type": "aStruct95272ab2aae84f1394646d0afc3273a7",
+                        "identifier": "configSetting",
+                        "arm": "CONFIG_SETTING"
+                    },
+                    {
+                        "type": "aStruct7c9f3f33a3474c92a27fddd1a5a35cc7",
+                        "identifier": "ttl",
+                        "arm": "TTL"
+                    }
+                ]
+            },
+            {
+                "key": "TrustLineAsset",
+                "discriminant": {
+                    "type": "AssetType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "void",
+                        "arm": "ASSET_TYPE_NATIVE"
+                    },
+                    {
+                        "type": "AlphaNum4",
+                        "identifier": "alphaNum4",
+                        "arm": "ASSET_TYPE_CREDIT_ALPHANUM4"
+                    },
+                    {
+                        "type": "AlphaNum12",
+                        "identifier": "alphaNum12",
+                        "arm": "ASSET_TYPE_CREDIT_ALPHANUM12"
+                    },
+                    {
+                        "type": "PoolID",
+                        "identifier": "liquidityPoolID",
+                        "arm": "ASSET_TYPE_POOL_SHARE"
+                    }
+                ]
+            },
+            {
+                "key": "SCAddress",
+                "discriminant": {
+                    "type": "SCAddressType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "AccountID",
+                        "identifier": "accountId",
+                        "arm": "SC_ADDRESS_TYPE_ACCOUNT"
+                    },
+                    {
+                        "type": "Hash",
+                        "identifier": "contractId",
+                        "arm": "SC_ADDRESS_TYPE_CONTRACT"
+                    }
+                ]
+            },
+            {
+                "key": "SCVal",
+                "discriminant": {
+                    "type": "SCValType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "bool",
+                        "identifier": "b",
+                        "arm": "SCV_BOOL"
+                    },
+                    {
+                        "type": "void",
+                        "arm": "SCV_VOID"
+                    },
+                    {
+                        "type": "SCError",
+                        "identifier": "error",
+                        "arm": "SCV_ERROR"
+                    },
+                    {
+                        "type": "uint32",
+                        "identifier": "u32",
+                        "arm": "SCV_U32"
+                    },
+                    {
+                        "type": "int32",
+                        "identifier": "i32",
+                        "arm": "SCV_I32"
+                    },
+                    {
+                        "type": "uint64",
+                        "identifier": "u64",
+                        "arm": "SCV_U64"
+                    },
+                    {
+                        "type": "int64",
+                        "identifier": "i64",
+                        "arm": "SCV_I64"
+                    },
+                    {
+                        "type": "TimePoint",
+                        "identifier": "timepoint",
+                        "arm": "SCV_TIMEPOINT"
+                    },
+                    {
+                        "type": "Duration",
+                        "identifier": "duration",
+                        "arm": "SCV_DURATION"
+                    },
+                    {
+                        "type": "UInt128Parts",
+                        "identifier": "u128",
+                        "arm": "SCV_U128"
+                    },
+                    {
+                        "type": "Int128Parts",
+                        "identifier": "i128",
+                        "arm": "SCV_I128"
+                    },
+                    {
+                        "type": "UInt256Parts",
+                        "identifier": "u256",
+                        "arm": "SCV_U256"
+                    },
+                    {
+                        "type": "Int256Parts",
+                        "identifier": "i256",
+                        "arm": "SCV_I256"
+                    },
+                    {
+                        "type": "SCBytes",
+                        "identifier": "bytes",
+                        "arm": "SCV_BYTES"
+                    },
+                    {
+                        "type": "SCString",
+                        "identifier": "str",
+                        "arm": "SCV_STRING"
+                    },
+                    {
+                        "type": "SCSymbol",
+                        "identifier": "sym",
+                        "arm": "SCV_SYMBOL"
+                    },
+                    {
+                        "type": "SCVec",
+                        "identifier": "vec",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "fixed",
+                            "optional": true,
+                            "unsigned": false
+                        },
+                        "arm": "SCV_VEC"
+                    },
+                    {
+                        "type": "SCMap",
+                        "identifier": "map",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "fixed",
+                            "optional": true,
+                            "unsigned": false
+                        },
+                        "arm": "SCV_MAP"
+                    },
+                    {
+                        "type": "SCAddress",
+                        "identifier": "address",
+                        "arm": "SCV_ADDRESS"
+                    },
+                    {
+                        "type": "void",
+                        "arm": "SCV_LEDGER_KEY_CONTRACT_INSTANCE"
+                    },
+                    {
+                        "type": "SCNonceKey",
+                        "identifier": "nonce_key",
+                        "arm": "SCV_LEDGER_KEY_NONCE"
+                    },
+                    {
+                        "type": "SCContractInstance",
+                        "identifier": "instance",
+                        "arm": "SCV_CONTRACT_INSTANCE"
+                    }
+                ]
+            },
+            {
+                "key": "SCError",
+                "discriminant": {
+                    "type": "SCErrorType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "uint32",
+                        "identifier": "contractCode",
+                        "arm": "SCE_CONTRACT"
+                    },
+                    {
+                        "type": "SCErrorCode",
+                        "identifier": "code",
+                        "arm": "SCE_AUTH"
+                    },
+                    {
+                        "type": "SCErrorCode",
+                        "identifier": "code",
+                        "arm": "SCE_AUTH"
+                    },
+                    {
+                        "type": "SCErrorCode",
+                        "identifier": "code",
+                        "arm": "SCE_AUTH"
+                    },
+                    {
+                        "type": "SCErrorCode",
+                        "identifier": "code",
+                        "arm": "SCE_AUTH"
+                    },
+                    {
+                        "type": "SCErrorCode",
+                        "identifier": "code",
+                        "arm": "SCE_AUTH"
+                    },
+                    {
+                        "type": "SCErrorCode",
+                        "identifier": "code",
+                        "arm": "SCE_AUTH"
+                    },
+                    {
+                        "type": "SCErrorCode",
+                        "identifier": "code",
+                        "arm": "SCE_AUTH"
+                    },
+                    {
+                        "type": "SCErrorCode",
+                        "identifier": "code",
+                        "arm": "SCE_AUTH"
+                    },
+                    {
+                        "type": "SCErrorCode",
+                        "identifier": "code",
+                        "arm": "SCE_AUTH"
+                    }
+                ]
+            },
+            {
+                "key": "ContractExecutable",
+                "discriminant": {
+                    "type": "ContractExecutableType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "Hash",
+                        "identifier": "wasm_hash",
+                        "arm": "CONTRACT_EXECUTABLE_WASM"
+                    },
+                    {
+                        "type": "void",
+                        "arm": "CONTRACT_EXECUTABLE_STELLAR_ASSET"
+                    }
+                ]
+            },
+            {
+                "key": "HostFunction",
+                "discriminant": {
+                    "type": "HostFunctionType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "InvokeContractArgs",
+                        "identifier": "invokeContract",
+                        "arm": "HOST_FUNCTION_TYPE_INVOKE_CONTRACT"
+                    },
+                    {
+                        "type": "CreateContractArgs",
+                        "identifier": "createContract",
+                        "arm": "HOST_FUNCTION_TYPE_CREATE_CONTRACT"
+                    },
+                    {
+                        "type": "opaque",
+                        "identifier": "wasm",
+                        "parameters": {
+                            "length": 0,
+                            "mode": "variable",
+                            "optional": false,
+                            "unsigned": false
+                        },
+                        "arm": "HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM"
+                    }
+                ]
+            },
+            {
+                "key": "ContractIDPreimage",
+                "discriminant": {
+                    "type": "ContractIDPreimageType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "aStruct29cc9aee661e4987b0c91711adba4a16",
+                        "identifier": "fromAddress",
+                        "arm": "CONTRACT_ID_PREIMAGE_FROM_ADDRESS"
+                    },
+                    {
+                        "type": "Asset",
+                        "identifier": "fromAsset",
+                        "arm": "CONTRACT_ID_PREIMAGE_FROM_ASSET"
+                    }
+                ]
+            },
+            {
+                "key": "SorobanCredentials",
+                "discriminant": {
+                    "type": "SorobanCredentialsType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "void",
+                        "arm": "SOROBAN_CREDENTIALS_SOURCE_ACCOUNT"
+                    },
+                    {
+                        "type": "SorobanAddressCredentials",
+                        "identifier": "address",
+                        "arm": "SOROBAN_CREDENTIALS_ADDRESS"
+                    }
+                ]
+            },
+            {
+                "key": "SorobanAuthorizedFunction",
+                "discriminant": {
+                    "type": "SorobanAuthorizedFunctionType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "InvokeContractArgs",
+                        "identifier": "contractFn",
+                        "arm": "SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN"
+                    },
+                    {
+                        "type": "CreateContractArgs",
+                        "identifier": "createContractHostFn",
+                        "arm": "SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN"
+                    }
+                ]
+            },
+            {
+                "key": "ExtensionPoint",
+                "discriminant": {
+                    "type": "int",
+                    "identifier": "v"
+                },
+                "arms": [
+                    {
+                        "type": "void",
+                        "arm": "0"
+                    }
+                ]
+            },
+            {
+                "key": "aUnionb3cfbdb681334ef4b02e15463079837c",
+                "discriminant": {
+                    "type": "int",
+                    "identifier": "v"
+                },
+                "arms": [
+                    {
+                        "type": "void",
+                        "arm": "0"
+                    },
+                    {
+                        "type": "SorobanTransactionData",
+                        "identifier": "sorobanData",
+                        "arm": "1"
+                    }
+                ]
+            },
+            {
+                "key": "aUnionf1b782e23afb45fdb9d6f42e94e51c24",
+                "discriminant": {
+                    "type": "EnvelopeType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "TransactionV1Envelope",
+                        "identifier": "v1",
+                        "arm": "ENVELOPE_TYPE_TX"
+                    }
+                ]
+            },
+            {
+                "key": "aUnionaed08215ddf94a2bbb2179388a6b5282",
+                "discriminant": {
+                    "type": "int",
+                    "identifier": "v"
+                },
+                "arms": [
+                    {
+                        "type": "void",
+                        "arm": "0"
+                    }
+                ]
+            },
+            {
+                "key": "TransactionEnvelope",
+                "discriminant": {
+                    "type": "EnvelopeType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "TransactionV0Envelope",
+                        "identifier": "v0",
+                        "arm": "ENVELOPE_TYPE_TX_V0"
+                    },
+                    {
+                        "type": "TransactionV1Envelope",
+                        "identifier": "v1",
+                        "arm": "ENVELOPE_TYPE_TX"
+                    },
+                    {
+                        "type": "FeeBumpTransactionEnvelope",
+                        "identifier": "feeBump",
+                        "arm": "ENVELOPE_TYPE_TX_FEE_BUMP"
+                    }
+                ]
+            },
+            {
+                "key": "aUnionc65c2d12a5a54b4eb2753f08ccbb62eb",
+                "discriminant": {
+                    "type": "OperationType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "CreateAccountOp",
+                        "identifier": "createAccountOp",
+                        "arm": "CREATE_ACCOUNT"
+                    },
+                    {
+                        "type": "PaymentOp",
+                        "identifier": "paymentOp",
+                        "arm": "PAYMENT"
+                    },
+                    {
+                        "type": "PathPaymentStrictReceiveOp",
+                        "identifier": "pathPaymentStrictReceiveOp",
+                        "arm": "PATH_PAYMENT_STRICT_RECEIVE"
+                    },
+                    {
+                        "type": "ManageSellOfferOp",
+                        "identifier": "manageSellOfferOp",
+                        "arm": "MANAGE_SELL_OFFER"
+                    },
+                    {
+                        "type": "CreatePassiveSellOfferOp",
+                        "identifier": "createPassiveSellOfferOp",
+                        "arm": "CREATE_PASSIVE_SELL_OFFER"
+                    },
+                    {
+                        "type": "SetOptionsOp",
+                        "identifier": "setOptionsOp",
+                        "arm": "SET_OPTIONS"
+                    },
+                    {
+                        "type": "ChangeTrustOp",
+                        "identifier": "changeTrustOp",
+                        "arm": "CHANGE_TRUST"
+                    },
+                    {
+                        "type": "AllowTrustOp",
+                        "identifier": "allowTrustOp",
+                        "arm": "ALLOW_TRUST"
+                    },
+                    {
+                        "type": "MuxedAccount",
+                        "identifier": "destination",
+                        "arm": "ACCOUNT_MERGE"
+                    },
+                    {
+                        "type": "void",
+                        "arm": "INFLATION"
+                    },
+                    {
+                        "type": "ManageDataOp",
+                        "identifier": "manageDataOp",
+                        "arm": "MANAGE_DATA"
+                    },
+                    {
+                        "type": "BumpSequenceOp",
+                        "identifier": "bumpSequenceOp",
+                        "arm": "BUMP_SEQUENCE"
+                    },
+                    {
+                        "type": "ManageBuyOfferOp",
+                        "identifier": "manageBuyOfferOp",
+                        "arm": "MANAGE_BUY_OFFER"
+                    },
+                    {
+                        "type": "PathPaymentStrictSendOp",
+                        "identifier": "pathPaymentStrictSendOp",
+                        "arm": "PATH_PAYMENT_STRICT_SEND"
+                    },
+                    {
+                        "type": "CreateClaimableBalanceOp",
+                        "identifier": "createClaimableBalanceOp",
+                        "arm": "CREATE_CLAIMABLE_BALANCE"
+                    },
+                    {
+                        "type": "ClaimClaimableBalanceOp",
+                        "identifier": "claimClaimableBalanceOp",
+                        "arm": "CLAIM_CLAIMABLE_BALANCE"
+                    },
+                    {
+                        "type": "BeginSponsoringFutureReservesOp",
+                        "identifier": "beginSponsoringFutureReservesOp",
+                        "arm": "BEGIN_SPONSORING_FUTURE_RESERVES"
+                    },
+                    {
+                        "type": "void",
+                        "arm": "END_SPONSORING_FUTURE_RESERVES"
+                    },
+                    {
+                        "type": "RevokeSponsorshipOp",
+                        "identifier": "revokeSponsorshipOp",
+                        "arm": "REVOKE_SPONSORSHIP"
+                    },
+                    {
+                        "type": "ClawbackOp",
+                        "identifier": "clawbackOp",
+                        "arm": "CLAWBACK"
+                    },
+                    {
+                        "type": "ClawbackClaimableBalanceOp",
+                        "identifier": "clawbackClaimableBalanceOp",
+                        "arm": "CLAWBACK_CLAIMABLE_BALANCE"
+                    },
+                    {
+                        "type": "SetTrustLineFlagsOp",
+                        "identifier": "setTrustLineFlagsOp",
+                        "arm": "SET_TRUST_LINE_FLAGS"
+                    },
+                    {
+                        "type": "LiquidityPoolDepositOp",
+                        "identifier": "liquidityPoolDepositOp",
+                        "arm": "LIQUIDITY_POOL_DEPOSIT"
+                    },
+                    {
+                        "type": "LiquidityPoolWithdrawOp",
+                        "identifier": "liquidityPoolWithdrawOp",
+                        "arm": "LIQUIDITY_POOL_WITHDRAW"
+                    },
+                    {
+                        "type": "InvokeHostFunctionOp",
+                        "identifier": "invokeHostFunctionOp",
+                        "arm": "INVOKE_HOST_FUNCTION"
+                    },
+                    {
+                        "type": "ExtendFootprintTTLOp",
+                        "identifier": "extendFootprintTTLOp",
+                        "arm": "EXTEND_FOOTPRINT_TTL"
+                    },
+                    {
+                        "type": "RestoreFootprintOp",
+                        "identifier": "restoreFootprintOp",
+                        "arm": "RESTORE_FOOTPRINT"
+                    }
+                ]
+            },
+            {
+                "key": "aUnion90dff1a7b5494aada587c872db19931f",
+                "discriminant": {
+                    "type": "int",
+                    "identifier": "v"
+                },
+                "arms": [
+                    {
+                        "type": "void",
+                        "arm": "0"
+                    }
+                ]
+            },
+            {
+                "key": "aUnionadef355d3d144a2c854ce9e3e6ff1326",
+                "discriminant": {
+                    "type": "int",
+                    "identifier": "v"
+                },
+                "arms": [
+                    {
+                        "type": "void",
+                        "arm": "0"
+                    },
+                    {
+                        "type": "SorobanTransactionData",
+                        "identifier": "sorobanData",
+                        "arm": "1"
+                    }
+                ]
+            },
+            {
+                "key": "aUnion5d45eb66f62342c0b0efd783ad8710d8",
+                "discriminant": {
+                    "type": "EnvelopeType",
+                    "identifier": "type"
+                },
+                "arms": [
+                    {
+                        "type": "TransactionV1Envelope",
+                        "identifier": "v1",
+                        "arm": "ENVELOPE_TYPE_TX"
+                    }
+                ]
+            },
+            {
+                "key": "aUnion8003eefc431d4560bfc534a76f03b227",
+                "discriminant": {
+                    "type": "int",
+                    "identifier": "v"
+                },
+                "arms": [
+                    {
+                        "type": "void",
+                        "arm": "0"
+                    }
+                ]
+            }
+        ]
+    },
+    "types": [
+        {
+            "key": "TransactionSignaturePayload",
+            "manifest": {
+                "entry": "TransactionSignaturePayload",
+                "name": "TransactionSignaturePayload",
+                "namespace": "stellar",
+                "structs": [
+                    "TransactionSignaturePayload",
+                    "Transaction",
+                    "aStruct53193cc48efb47099d2f33c11a0c68cd",
+                    "TimeBounds",
+                    "PreconditionsV2",
+                    "LedgerBounds",
+                    "aStruct0afc0397e89d447bb803b18653a7c7d6",
+                    "Operation",
+                    "CreateAccountOp",
+                    "PaymentOp",
+                    "AlphaNum4",
+                    "AlphaNum12",
+                    "PathPaymentStrictReceiveOp",
+                    "ManageSellOfferOp",
+                    "Price",
+                    "CreatePassiveSellOfferOp",
+                    "SetOptionsOp",
+                    "Signer",
+                    "ChangeTrustOp",
+                    "LiquidityPoolConstantProductParameters",
+                    "AllowTrustOp",
+                    "ManageDataOp",
+                    "BumpSequenceOp",
+                    "ManageBuyOfferOp",
+                    "PathPaymentStrictSendOp",
+                    "CreateClaimableBalanceOp",
+                    "aStructe020a07b642c4f53b0e2c9d0e655a3b2",
+                    "ClaimClaimableBalanceOp",
+                    "BeginSponsoringFutureReservesOp",
+                    "aStructbc4d1282998a473d958507c4b98ab679",
+                    "aStructff071f76f163495aa9952590f0af27dd",
+                    "aStructa5552807cf2342bb9f6f2c0915f317b4",
+                    "aStruct7789916d919e4ca2bbc3a09368e60eee",
+                    "aStruct194b3d07ef0e4e1685297815171f474e",
+                    "aStructef5982ec1c9e400cbad6ec8fb536b04f",
+                    "aStructe7e1307ebcba4a8082fa9e40799dd7b3",
+                    "UInt128Parts",
+                    "Int128Parts",
+                    "UInt256Parts",
+                    "Int256Parts",
+                    "SCMapEntry",
+                    "SCNonceKey",
+                    "SCContractInstance",
+                    "aStruct81e894d3dd824ed49143dc7cf4db40da",
+                    "aStruct95272ab2aae84f1394646d0afc3273a7",
+                    "aStruct7c9f3f33a3474c92a27fddd1a5a35cc7",
+                    "aStruct57b511b4c5784036a044721f2cc982df",
+                    "ClawbackOp",
+                    "ClawbackClaimableBalanceOp",
+                    "SetTrustLineFlagsOp",
+                    "LiquidityPoolDepositOp",
+                    "LiquidityPoolWithdrawOp",
+                    "InvokeHostFunctionOp",
+                    "InvokeContractArgs",
+                    "CreateContractArgs",
+                    "aStruct29cc9aee661e4987b0c91711adba4a16",
+                    "SorobanAuthorizationEntry",
+                    "SorobanAddressCredentials",
+                    "SorobanAuthorizedInvocation",
+                    "ExtendFootprintTTLOp",
+                    "RestoreFootprintOp",
+                    "SorobanTransactionData",
+                    "SorobanResources",
+                    "LedgerFootprint",
+                    "FeeBumpTransaction",
+                    "TransactionV1Envelope",
+                    "DecoratedSignature"
+                ],
+                "unions": [
+                    "aUnioncabfbe8758c9444691bff18bb5ded30a",
+                    "MuxedAccount",
+                    "Preconditions",
+                    "SignerKey",
+                    "Memo",
+                    "aUnion525c8fa287384dd8879b1917bfb533c0",
+                    "PublicKey",
+                    "Asset",
+                    "ChangeTrustAsset",
+                    "LiquidityPoolParameters",
+                    "AssetCode",
+                    "Claimant",
+                    "ClaimPredicate",
+                    "ClaimableBalanceID",
+                    "RevokeSponsorshipOp",
+                    "LedgerKey",
+                    "TrustLineAsset",
+                    "SCAddress",
+                    "SCVal",
+                    "SCError",
+                    "ContractExecutable",
+                    "HostFunction",
+                    "ContractIDPreimage",
+                    "SorobanCredentials",
+                    "SorobanAuthorizedFunction",
+                    "ExtensionPoint",
+                    "aUnionb3cfbdb681334ef4b02e15463079837c",
+                    "aUnionf1b782e23afb45fdb9d6f42e94e51c24",
+                    "aUnionaed08215ddf94a2bbb2179388a6b5282"
+                ],
+                "typedefs": [
+                    "Hash",
+                    "uint256",
+                    "uint64",
+                    "uint32",
+                    "SequenceNumber",
+                    "int64",
+                    "TimePoint",
+                    "Duration",
+                    "AccountID",
+                    "AssetCode4",
+                    "AssetCode12",
+                    "int32",
+                    "string32",
+                    "string64",
+                    "DataValue",
+                    "PoolID",
+                    "SCBytes",
+                    "SCString",
+                    "SCSymbol",
+                    "SCVec",
+                    "SCMap",
+                    "SignatureHint",
+                    "Signature"
+                ],
+                "enums": [
+                    "SCErrorCode",
+                    "ContractDataDurability",
+                    "ConfigSettingID",
+                    "LedgerEntryType",
+                    "OperationType",
+                    "EnvelopeType",
+                    "ManageOfferEffect",
+                    "TransactionResultCode",
+                    "LiquidityPoolType",
+                    "SCErrorType",
+                    "ContractExecutableType",
+                    "SCAddressType",
+                    "SCValType",
+                    "PublicKeyType",
+                    "SignerKeyType",
+                    "AssetType",
+                    "ClaimPredicateType",
+                    "ClaimantType",
+                    "ClaimableBalanceIDType",
+                    "CryptoKeyType",
+                    "RevokeSponsorshipType",
+                    "ContractIDPreimageType",
+                    "HostFunctionType",
+                    "SorobanAuthorizedFunctionType",
+                    "SorobanCredentialsType",
+                    "MemoType",
+                    "PreconditionType",
+                    "ClaimAtomType",
+                    "CreateAccountResultCode",
+                    "PaymentResultCode",
+                    "PathPaymentStrictReceiveResultCode",
+                    "PathPaymentStrictSendResultCode",
+                    "ManageSellOfferResultCode",
+                    "ManageBuyOfferResultCode",
+                    "SetOptionsResultCode",
+                    "ChangeTrustResultCode",
+                    "AllowTrustResultCode",
+                    "AccountMergeResultCode",
+                    "InflationResultCode",
+                    "ManageDataResultCode",
+                    "BumpSequenceResultCode",
+                    "CreateClaimableBalanceResultCode",
+                    "ClaimClaimableBalanceResultCode",
+                    "BeginSponsoringFutureReservesResultCode",
+                    "EndSponsoringFutureReservesResultCode",
+                    "RevokeSponsorshipResultCode",
+                    "ClawbackResultCode",
+                    "ClawbackClaimableBalanceResultCode",
+                    "SetTrustLineFlagsResultCode",
+                    "LiquidityPoolDepositResultCode",
+                    "LiquidityPoolWithdrawResultCode",
+                    "InvokeHostFunctionResultCode",
+                    "ExtendFootprintTTLResultCode",
+                    "RestoreFootprintResultCode",
+                    "OperationResultCode"
+                ]
+            }
+        },
+        {
+            "key": "TransactionEnvelope",
+            "manifest": {
+                "entry": "TransactionEnvelope",
+                "name": "TransactionEnvelope",
+                "namespace": "stellar",
+                "structs": [
+                    "TransactionV0Envelope",
+                    "TransactionV0",
+                    "TimeBounds",
+                    "Operation",
+                    "aStructc767ffaca07541eebb0f413ba9cd0303",
+                    "CreateAccountOp",
+                    "PaymentOp",
+                    "AlphaNum4",
+                    "AlphaNum12",
+                    "PathPaymentStrictReceiveOp",
+                    "ManageSellOfferOp",
+                    "Price",
+                    "CreatePassiveSellOfferOp",
+                    "SetOptionsOp",
+                    "Signer",
+                    "aStruct8c6ea7f20abc443d99d6740ebe330204",
+                    "ChangeTrustOp",
+                    "LiquidityPoolConstantProductParameters",
+                    "AllowTrustOp",
+                    "ManageDataOp",
+                    "BumpSequenceOp",
+                    "ManageBuyOfferOp",
+                    "PathPaymentStrictSendOp",
+                    "CreateClaimableBalanceOp",
+                    "aStructfde4b262e3a140429e6573afbc003a4f",
+                    "ClaimClaimableBalanceOp",
+                    "BeginSponsoringFutureReservesOp",
+                    "aStructc257cc189f4946b49d77033211d7ef8d",
+                    "aStructc563c41979864921998510298144a8d8",
+                    "aStruct87d05454bac644c6adca8390fe8b8586",
+                    "aStruct007d9f882c0c4b93b4a8e5e8db33e8a8",
+                    "aStruct6a5f53a1e05641b3916f3c9bdd4e22fb",
+                    "aStructd75d26302493421595435b0757cdbb26",
+                    "aStructd7ed88b493ca4055b766a99b43ce2fa0",
+                    "UInt128Parts",
+                    "Int128Parts",
+                    "UInt256Parts",
+                    "Int256Parts",
+                    "SCMapEntry",
+                    "SCNonceKey",
+                    "SCContractInstance",
+                    "aStructc89114e3b826492098661738924bf267",
+                    "aStruct41bc7b0f37f44541b22f6f6799bd768a",
+                    "aStruct4457b9fa839a4a6dbc5b5f6c58d00c32",
+                    "aStructa25de64fe6f54047955a25b6c1b24495",
+                    "ClawbackOp",
+                    "ClawbackClaimableBalanceOp",
+                    "SetTrustLineFlagsOp",
+                    "LiquidityPoolDepositOp",
+                    "LiquidityPoolWithdrawOp",
+                    "InvokeHostFunctionOp",
+                    "InvokeContractArgs",
+                    "CreateContractArgs",
+                    "aStruct38a81ef588234a4dbf30613c121b398b",
+                    "SorobanAuthorizationEntry",
+                    "SorobanAddressCredentials",
+                    "SorobanAuthorizedInvocation",
+                    "ExtendFootprintTTLOp",
+                    "RestoreFootprintOp",
+                    "DecoratedSignature",
+                    "TransactionV1Envelope",
+                    "Transaction",
+                    "PreconditionsV2",
+                    "LedgerBounds",
+                    "SorobanTransactionData",
+                    "SorobanResources",
+                    "LedgerFootprint",
+                    "FeeBumpTransactionEnvelope",
+                    "FeeBumpTransaction"
+                ],
+                "unions": [
+                    "TransactionEnvelope",
+                    "Memo",
+                    "MuxedAccount",
+                    "aUnionc65c2d12a5a54b4eb2753f08ccbb62eb",
+                    "PublicKey",
+                    "Asset",
+                    "SignerKey",
+                    "ChangeTrustAsset",
+                    "LiquidityPoolParameters",
+                    "AssetCode",
+                    "Claimant",
+                    "ClaimPredicate",
+                    "ClaimableBalanceID",
+                    "RevokeSponsorshipOp",
+                    "LedgerKey",
+                    "TrustLineAsset",
+                    "SCAddress",
+                    "SCVal",
+                    "SCError",
+                    "ContractExecutable",
+                    "HostFunction",
+                    "ContractIDPreimage",
+                    "SorobanCredentials",
+                    "SorobanAuthorizedFunction",
+                    "ExtensionPoint",
+                    "aUnion90dff1a7b5494aada587c872db19931f",
+                    "Preconditions",
+                    "aUnionadef355d3d144a2c854ce9e3e6ff1326",
+                    "aUnion5d45eb66f62342c0b0efd783ad8710d8",
+                    "aUnion8003eefc431d4560bfc534a76f03b227"
+                ],
+                "typedefs": [
+                    "uint256",
+                    "uint32",
+                    "SequenceNumber",
+                    "int64",
+                    "TimePoint",
+                    "uint64",
+                    "Hash",
+                    "AccountID",
+                    "AssetCode4",
+                    "AssetCode12",
+                    "int32",
+                    "string32",
+                    "string64",
+                    "DataValue",
+                    "PoolID",
+                    "Duration",
+                    "SCBytes",
+                    "SCString",
+                    "SCSymbol",
+                    "SCVec",
+                    "SCMap",
+                    "SignatureHint",
+                    "Signature"
+                ],
+                "enums": [
+                    "SCErrorCode",
+                    "ContractDataDurability",
+                    "ConfigSettingID",
+                    "LedgerEntryType",
+                    "OperationType",
+                    "EnvelopeType",
+                    "ManageOfferEffect",
+                    "TransactionResultCode",
+                    "LiquidityPoolType",
+                    "SCErrorType",
+                    "ContractExecutableType",
+                    "SCAddressType",
+                    "SCValType",
+                    "PublicKeyType",
+                    "SignerKeyType",
+                    "AssetType",
+                    "ClaimPredicateType",
+                    "ClaimantType",
+                    "ClaimableBalanceIDType",
+                    "CryptoKeyType",
+                    "RevokeSponsorshipType",
+                    "ContractIDPreimageType",
+                    "HostFunctionType",
+                    "SorobanAuthorizedFunctionType",
+                    "SorobanCredentialsType",
+                    "MemoType",
+                    "PreconditionType",
+                    "ClaimAtomType",
+                    "CreateAccountResultCode",
+                    "PaymentResultCode",
+                    "PathPaymentStrictReceiveResultCode",
+                    "PathPaymentStrictSendResultCode",
+                    "ManageSellOfferResultCode",
+                    "ManageBuyOfferResultCode",
+                    "SetOptionsResultCode",
+                    "ChangeTrustResultCode",
+                    "AllowTrustResultCode",
+                    "AccountMergeResultCode",
+                    "InflationResultCode",
+                    "ManageDataResultCode",
+                    "BumpSequenceResultCode",
+                    "CreateClaimableBalanceResultCode",
+                    "ClaimClaimableBalanceResultCode",
+                    "BeginSponsoringFutureReservesResultCode",
+                    "EndSponsoringFutureReservesResultCode",
+                    "RevokeSponsorshipResultCode",
+                    "ClawbackResultCode",
+                    "ClawbackClaimableBalanceResultCode",
+                    "SetTrustLineFlagsResultCode",
+                    "LiquidityPoolDepositResultCode",
+                    "LiquidityPoolWithdrawResultCode",
+                    "InvokeHostFunctionResultCode",
+                    "ExtendFootprintTTLResultCode",
+                    "RestoreFootprintResultCode",
+                    "OperationResultCode"
+                ]
+            }
+        }
+    ]
+}

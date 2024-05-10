@@ -7,7 +7,8 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
     options: {
         enumerable: true, value: {
             sources: {
-                xdr: 'https://cdn.jsdelivr.net/gh/cloudouble/simple-xdr@1.2.1/xdr.min.js'
+                // xdr: 'https://cdn.jsdelivr.net/gh/cloudouble/simple-xdr@1.2.1/xdr.min.js'
+                xdr: 'https://localhost:4433/Cloudouble/simple-xdr/xdr.js'
             }
         }
     },
