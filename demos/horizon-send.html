@@ -166,7 +166,7 @@
 
             const bytesToHex = bytes => Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('')
             for await (const emitted of horizon.submit(transactionInputObject, { [sourceAccountField.value]: secretKeyField.value })) {
-                console.log('line 168', emitted)
+                console.log('line 169', emitted)
                 for (const id in emitted) {
                     const section = document.getElementById(id), v = emitted[id]
                     let result
@@ -204,10 +204,8 @@
 
         })
 
-        //     transactionEnvelopePlainObject.v1.signatures[0].signature = btoa(String.fromCharCode.apply(null, transactionEnvelopePlainObject.v1.signatures[0].signature))
-
         window.horizon = horizon
-        console.log('line 204', horizon)
+        console.log('line 208', horizon)
         // test account on test netwwork: GA5VCCBNG4SIEST6HYIW2F3KKZRHA4UZZ2XFSMZ4VRQ4MCBRHSQRRIPE
 
     </script>
