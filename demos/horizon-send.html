@@ -98,28 +98,6 @@
             })
         })
 
-        const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567', base32Decode = base32String => {
-            let [bytes, bits, value, index, i] = [[], 0, 0, 0, 0]
-            for (; i < base32String.length; i++) {
-                [value, bits] = [(value << 5) | (index = base32Chars.indexOf(base32String[i])), bits + 5]
-                if (index === -1) throw new Error('Invalid base-32 character')
-                while (bits >= 8) {
-                    bytes.push(value >>> (bits - 8) & 0xFF)
-                    bits -= 8
-                    value &= (1 << bits) - 1
-                }
-            }
-            return new Uint8Array(bytes)
-        }, base32Encode = bytes => {
-            let [base32String, bits, value, index, i] = ['', 0, 0, 0, 0]
-            for (; i < bytes.length; i++) {
-                [value, bits] = [(value << 8) | bytes[i], bits + 8]
-                while (bits >= 5) [base32String, bits] = [base32String + base32Chars[index = (value >>> (bits - 5)) & 31], bits - 5]
-            }
-            if (bits > 0) [index, base32String] = [(value << (5 - bits)) & 31, base32String + base32Chars[index]]
-            return base32String
-        }
-
         buildButton.addEventListener('click', async event => {
             const transactionInputObject = {
                 sourceAccount: sourceAccountField.value,
@@ -201,8 +179,8 @@
                             await horizon.utils.xdr.factory('https://raw.githubusercontent.com/stellar/stellar-xdr/curr/Stellar-transaction.x', 'Transaction', { namespace: 'demo' })
                             const txXdr = new horizon.utils.xdr.types.demo.Transaction(v)
                             result = JSON.parse(JSON.stringify(txXdr))
-                            result.sourceAccount.ed25519 = base32Encode(Object.values(result.sourceAccount.ed25519))
-                            for (const op of result.operations) if (op.sourceAccount?.ed25519) op.sourceAccount.ed25519 = base32Encode(Object.values(op.sourceAccount.ed25519))
+                            result.sourceAccount.ed25519 = Object.values(result.sourceAccount.ed25519)
+                            for (const op of result.operations) if (op.sourceAccount?.ed25519) op.sourceAccount.ed25519 = Object.values(op.sourceAccount.ed25519)
                             break
                         case 'hash':
                             result = bytesToHex(v)
