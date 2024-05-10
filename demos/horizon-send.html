@@ -64,7 +64,7 @@
             },
             operationTypeSelect = `<select name="type"><option value="">Select Operation Type</option>${Object.keys(operationTypes)
                 .map(t => ('<option value="' + t + '">' + t + '</option>')).join('')}</select>`
-        const sourceAccountField = buildSection.querySelector('[name="source_account"]'),
+        const sourceAccountField = buildSection.querySelector('[name="source_account"]'), secretKeyField = buildSection.querySelector('[name="secret_key"]'),
             sourceAccountSequenceField = buildSection.querySelector('[name="source_account_sequence"]'),
             fetchSequenceNumber = async () => sourceAccountSequenceField.value = sourceAccountField.value ? parseInt((await horizon.get.accounts(sourceAccountField.value)).sequence) + 1 : ''
         sourceAccountField.addEventListener('change', event => fetchSequenceNumber())
@@ -171,124 +171,19 @@
             }
             simpleTransactionResult.textContent = JSON.stringify(transactionObjects.simple, null, 4)
 
-            const { response, tx, hash, signatures } = await horizon.submit(transactionObjects.simple, { [sourceAccountField.value]: secretField.value })
+            // const { response, tx, hash, signatures } = await horizon.submit(transactionObjects.simple, { [sourceAccountField.value]: secretKeyField.value })
 
-            console.log('line 176', { response, tx, hash, signatures })
+            for await (const emitted of horizon.submit(transactionObjects.simple, { [sourceAccountField.value]: secretKeyField.value })) {
+                console.log('line 179', emitted)
+            }
 
-
-
-            // transactionObjects.source = await horizon.utils.createTransactionSourceObject(transactionObjects.simple)
-
-            // await horizon.utils._install('xdr', 'xdr')
-            // await horizon.utils.xdr.factory('https://raw.githubusercontent.com/stellar/stellar-xdr/curr/Stellar-transaction.x', 'Transaction', { namespace: 'stellar' })
-
-            // const transactionInstance = new horizon.utils.xdr.types.stellar.Transaction(transactionObjects.source)
-
-            // sourceTransactionResult.textContent = JSON.stringify(transactionInstance, null, 4)
-
-
-            // const transactionEnvelopeXdrSection = document.getElementById('transaction-xdr'),
-            //     transactionEnvelopeXdrResult = transactionEnvelopeXdrSection.querySelector('.result')
-
-            // await horizon.utils.xdr.factory('https://raw.githubusercontent.com/stellar/stellar-xdr/curr/Stellar-transaction.x', 'TransactionEnvelope', { namespace: 'stellar' })
-
-            // const transactionEnvelopeInstance = new horizon.utils.xdr.types.stellar.TransactionEnvelope({
-            //     type: 'ENVELOPE_TYPE_TX',
-            //     v1: {
-            //         signatures: [],
-            //         tx: transactionObjects.source
-            //     }
-            // })
-
-            // console.log('line 199', transactionEnvelopeInstance)
-
-            // transactionEnvelopeXdrResult.textContent = transactionEnvelopeInstance.toString()
-
-
-            // await horizon.utils.xdr.factory('https://raw.githubusercontent.com/stellar/stellar-xdr/curr/Stellar-transaction.x', 'TransactionSignaturePayload', { namespace: 'stellar' })
-
-            // const signaturePayloadJsonSection = document.getElementById('signature-payload-json'),
-            //     signaturePayloadXdrSection = document.getElementById('signature-payload-xdr'),
-            //     signaturePayloadJsonResult = signaturePayloadJsonSection.querySelector('.result'),
-            //     signaturePayloadXdrResult = signaturePayloadXdrSection.querySelector('.result')
-
-            // const signaturePayloadSource = await horizon.utils.wrapAsSignaturePayload(transactionInstance.value, horizon.network)
-
-            // const transactionSignaturePayloadInstance = new horizon.utils.xdr.types.stellar.TransactionSignaturePayload(signaturePayloadSource)
-
-            // transactionObjects.signaturePayloadInstance = transactionSignaturePayloadInstance
-
-            // signaturePayloadJsonResult.textContent = JSON.stringify(transactionSignaturePayloadInstance, null, 4)
-
-            // signaturePayloadXdrResult.textContent = transactionSignaturePayloadInstance.toString()
-
-            // const signaturePayloadHashSection = document.getElementById('signature-payload-hash'),
-            //     signaturePayloadHashResult = signaturePayloadHashSection.querySelector('.result')
-
-            // const signaturePayloadHash = await horizon.utils.hashSignaturePayload(transactionSignaturePayloadInstance)
-
-            // console.log('line 226', signaturePayloadHash)
-
-            // signaturePayloadHashResult.textContent = horizon.utils.bytesToHex(signaturePayloadHash)
-
-            // transactionObjects.signaturePayloadHash = signaturePayloadHash
 
         })
 
-        // signButton.addEventListener('click', async event => {
-        //     const privateKey = event.target.closest('form').querySelector('input').value
-        //     if (!privateKey) return
-
-        //     const { signaturePayloadHash } = transactionObjects
-
-        //     console.log('line 240', privateKey, transactionObjects.signaturePayloadInstance)
-        //     console.log('line 241', signaturePayloadHash)
-
-        //     const signature = Array.from(await horizon.utils.signSignaturePayload(signaturePayloadHash, privateKey))
-
-        //     const signatureDecorated = { hint: transactionObjects.signaturePayloadInstance.value.taggedTransaction.tx.sourceAccount.ed25519.slice(-4), signature }
-
-        //     console.log('line 247', signatureDecorated)
-
-        //     const transactionEnvelope = { type: 'ENVELOPE_TYPE_TX', v1: { signatures: [signatureDecorated], tx: transactionObjects.signaturePayloadInstance.value.taggedTransaction.tx } }
-
-        //     await horizon.utils.xdr.factory('https://raw.githubusercontent.com/stellar/stellar-xdr/curr/Stellar-transaction.x', 'TransactionEnvelope', { namespace: 'stellar' })
-
-        //     const transactionEnvelopeInstance = new horizon.utils.xdr.types.stellar.TransactionEnvelope(transactionEnvelope)
-
-        //     console.log('line 255', transactionEnvelopeInstance)
-
-        //     const envelopeJsonSection = document.getElementById('envelope-json'),
-        //         envelopeXdrSection = document.getElementById('envelope-xdr'),
-        //         envelopeJsonResult = envelopeJsonSection.querySelector('.result'),
-        //         envelopeXdrResult = envelopeXdrSection.querySelector('.result')
-
-
-        //     const transactionEnvelopePlainObject = JSON.parse(JSON.stringify(transactionEnvelopeInstance))
         //     transactionEnvelopePlainObject.v1.signatures[0].signature = btoa(String.fromCharCode.apply(null, transactionEnvelopePlainObject.v1.signatures[0].signature))
 
-        //     // envelopeJsonResult.textContent = JSON.stringify(transactionEnvelopeInstance, null, 4)
-        //     envelopeJsonResult.textContent = JSON.stringify(transactionEnvelopePlainObject, null, 4)
-
-        //     envelopeXdrResult.textContent = transactionEnvelopeInstance.toString()
-
-        //     transactionObjects.transactionEnvelope = transactionEnvelopeInstance
-
-        // })
-
-        // submitButton.addEventListener('click', async event => {
-        //     const { transactionEnvelope } = transactionObjects
-
-        //     const stellarResponse = await fetch(`${horizon.network.endpoint}/transactions?tx=${encodeURIComponent(transactionEnvelope.toString())}`, { method: 'POST', headers: { Accept: "application/json" } })
-
-        //     console.log('line 246', transactionEnvelope)
-
-        //     console.log('line 248', stellarResponse)
-
-        // })
-
         window.horizon = horizon
-        console.log('line 254', horizon)
+        console.log('line 186', horizon)
         // test account on test netwwork: GA5VCCBNG4SIEST6HYIW2F3KKZRHA4UZZ2XFSMZ4VRQ4MCBRHSQRRIPE
 
     </script>
@@ -395,8 +290,8 @@
                     <fieldset name="operations"><small>No operations added.</small></fieldset>
                 </label>
                 <label>
-                    <strong>Private Key</strong>
-                    <input name="private_key" placeholder="Source Account private key. Not sent to any server! "
+                    <strong>Secret Key</strong>
+                    <input name="secret_key" placeholder="Source Account secret key. Not sent to any server! "
                         value="SBBVL33C4M4YF2B5CUKFC2LDVRXVPOVHFYVIA5D5XLY6LSTSUVIDJDEU">
                 </label>
                 <button type="button" class="get-result">Build, Sign and Submit</button>
@@ -404,62 +299,33 @@
             <!-- <code class="example">Example Code</code> -->
             <!-- <pre class="result">Transaction Object</pre> -->
         </section>
-        <section id="simple-transaction">
-            <h2>Simple Object</h2>
-            <p>View the transaction as a simple object</p>
+        <section id="transaction">
+            <h2>Transaction Input Object</h2>
+            <p>View the transaction as the simple object used as the input</p>
             <!-- <code class="example">Example Code</code> -->
-            <pre class="result" style="height: 37em;">Transaction as a simple object</pre>
+            <pre class="result" style="height: 37em;">Transaction input object</pre>
         </section>
-        <section id="source-transaction">
-            <h2>Source Object</h2>
-            <p>View the transaction as a source object</p>
+        <section id="tx">
+            <h2>Transaction XDR Object</h2>
+            <p>View the transaction as an object ready to consume by the SimpleXDR helper library</p>
             <code class="example">Example Code</code>
-            <pre class="result">Transaction as a source object</pre>
+            <pre class="result">Transaction as a SimpleXDR object</pre>
         </section>
-        <section id="transaction-xdr">
-            <h2>Unsigned Transaction Envelope XDR</h2>
-            <p>View the unsigned transaction as an XDR string</p>
+        <section id="hash">
+            <h2>Transaction Hash</h2>
+            <p>View the hash of the transaction that will be signed in hex format</p>
             <code class="example">Example Code</code>
-            <pre class="result" style="height: 3em;">Unsigned Transaction as an XDR string</pre>
+            <pre class="result">Transaction hash</pre>
         </section>
-        <section id="signature-payload-json">
-            <h2>Signature Payload JSON</h2>
-            <p>View the TransactionSignaturePayload as a JSON object</p>
+        <section id="signatures">
+            <h2>Signatures</h2>
+            <p>View the base64 encoded decorated signatures</p>
             <code class="example">Example Code</code>
-            <pre class="result">TransactionSignaturePayload as a JSON object</pre>
+            <pre class="result" style="height: 3em;">base64 encoded signatures</pre>
         </section>
-        <section id="signature-payload-xdr">
-            <h2>Signature Payload XDR</h2>
-            <p>View the TransactionSignaturePayload as an XDR string</p>
-            <code class="example">Example Code</code>
-            <pre class="result" style="height: 3em;">TransactionSignaturePayload as an XDR string</pre>
-        </section>
-        <section id="signature-payload-hash">
-            <h2>Signature Payload Hash</h2>
-            <p>Hex format SHA-256 hash of the TransactionSignaturePayload bytes</p>
-            <code class="example">Example Code</code>
-            <pre class="result" style="height: 3em;">TransactionSignaturePayload hash as hex</pre>
-        </section>
-        <section id="sign">
-            <h2>Sign</h2>
-            <p>Sign the transaction</p>
-            <code class="example">Example Code</code>
-        </section>
-        <section id="envelope-json">
-            <h2>Transaction Envelope as a JSON object</h2>
-            <p>View the signed transaction envelope as a JSON object</p>
-            <code class="example">Example Code</code>
-            <pre class="result">Signed TransactionEnvelope as a JSON object</pre>
-        </section>
-        <section id="envelope-xdr">
-            <h2>Transaction Envelope as an XDR string</h2>
-            <p>View the signed transaction envelope in XDR format</p>
-            <code class="example">Example Code</code>
-            <pre class="result" style="height: 3em;">Signed TransactionEnvelope as a signed XDR envelope</pre>
-        </section>
-        <section id="submit">
-            <h2>Submit</h2>
-            <p>Submit the transaction</p>
+        <section id="response">
+            <h2>Response</h2>
+            <p>View the response from Stellar</p>
             <code class="example">Example Code</code>
             <pre class="result">Response from Stellar network as a JSON object</pre>
         </section>
