@@ -141,17 +141,17 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
         enumerable: true,
         value: async function* (transaction = {}, keyPairs = {}) {
             // don't forget ENVELOPE_TYPE_TX_FEE_BUMP transaction type
-            await this.utils._install('send')
-            await this.utils._install('xdr', 'xdr')
-            await this.utils.xdr.factory('https://raw.githubusercontent.com/stellar/stellar-xdr/curr/Stellar-transaction.x', 'TransactionEnvelope', { namespace: 'stellar' })
-            await this.utils.xdr.factory('https://raw.githubusercontent.com/stellar/stellar-xdr/curr/Stellar-transaction.x', 'TransactionSignaturePayload', { namespace: 'stellar' })
-
             if (typeof keyPairs === 'string' && transaction.sourceAccount) keyPairs = { [transaction.sourceAccount]: keyPairs }
             const keyPairsEntries = Array.isArray(keyPairs) ? keyPairs : Object.entries(keyPairs)
             let sourceAccount = transaction.sourceAccount
             if (!sourceAccount && keyPairsEntries.length === 1) sourceAccount = keyPairsEntries[0][0]
             transaction.sourceAccount ??= sourceAccount
             yield { transaction }
+
+            await this.utils._install('send')
+            await this.utils._install('xdr', 'xdr')
+            await this.utils.xdr.factory('https://raw.githubusercontent.com/stellar/stellar-xdr/curr/Stellar-transaction.x', 'TransactionSignaturePayload', { namespace: 'stellar' })
+            await this.utils.xdr.factory('https://raw.githubusercontent.com/stellar/stellar-xdr/curr/Stellar-transaction.x', 'TransactionEnvelope', { namespace: 'stellar' })
 
             const tx = await this.utils.createTransactionSourceObject(transaction)
             yield { tx }

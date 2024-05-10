@@ -169,11 +169,12 @@
                 console.log('line 169', emitted)
                 for (const id in emitted) {
                     const section = document.getElementById(id), v = emitted[id]
-                    let result
+                    let result, prefix = '', postfix = ''
                     if (!section) continue
                     switch (id) {
                         case 'transaction':
                             result = v
+                            prefix = 'const transaction = '
                             break
                         case 'tx':
                             await horizon.utils.xdr.factory('https://raw.githubusercontent.com/stellar/stellar-xdr/curr/Stellar-transaction.x', 'Transaction', { namespace: 'demo' })
@@ -198,14 +199,14 @@
                                 body: await v[v.status <= 201 ? 'json' : 'text']()
                             }
                     }
-                    section.querySelector('.result').textContent = JSON.stringify(result, null, 4)
+                    section.querySelector('.result').textContent = prefix + JSON.stringify(result, null, 4) + postfix
                 }
             }
 
         })
 
         window.horizon = horizon
-        console.log('line 208', horizon)
+        console.log('line 209', horizon)
         // test account on test netwwork: GA5VCCBNG4SIEST6HYIW2F3KKZRHA4UZZ2XFSMZ4VRQ4MCBRHSQRRIPE
 
     </script>
@@ -318,37 +319,34 @@
                 </label>
                 <button type="button" class="get-result">Build, Sign and Submit</button>
             </form>
-            <!-- <code class="example">Example Code</code> -->
-            <!-- <pre class="result">Transaction Object</pre> -->
+            <code class="example">
+                const secretKey = 'S...'
+                const { response } = await horizon.submit(transaction, secretKey)
+            </code>
         </section>
         <section id="transaction">
             <h2>Transaction Input Object</h2>
             <p>View the transaction as the simple object used as the input</p>
-            <!-- <code class="example">Example Code</code> -->
             <pre class="result" style="height: 37em;">Transaction input object</pre>
         </section>
         <section id="tx">
             <h2>Transaction XDR Object</h2>
             <p>View the transaction as an object ready to consume by the SimpleXDR helper library</p>
-            <code class="example">Example Code</code>
             <pre class="result" style="height: 87em;">Transaction as a SimpleXDR object</pre>
         </section>
         <section id="hash">
             <h2>Transaction Hash</h2>
             <p>View the hash of the transaction that will be signed in hex format</p>
-            <code class="example">Example Code</code>
             <pre class="result" style="height: 3em;">Transaction hash</pre>
         </section>
         <section id="signatures">
             <h2>Signatures</h2>
             <p>View the base64 encoded decorated signatures</p>
-            <code class="example">Example Code</code>
             <pre class="result" style="height: 17em;">base64 encoded signatures</pre>
         </section>
         <section id="response">
             <h2>Response</h2>
             <p>View the response from Stellar</p>
-            <code class="example">Example Code</code>
             <pre class="result" style="height: 87em;">Response from Stellar network as a JSON object</pre>
         </section>
 
