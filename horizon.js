@@ -7,8 +7,7 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
     options: {
         enumerable: true, value: {
             sources: {
-                // xdr: 'https://cdn.jsdelivr.net/gh/cloudouble/simple-xdr@1.2.1/xdr.min.js'
-                xdr: 'https://localhost:4433/Cloudouble/simple-xdr/xdr.js'
+                xdr: 'https://cdn.jsdelivr.net/gh/cloudouble/simple-xdr@1.2.4/xdr.min.js'
             }
         }
     },
@@ -149,10 +148,9 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
             transaction.sourceAccount ??= sourceAccount
             yield { transaction }
 
-            await this.utils._install('send')
+            await this.utils._install('submit')
             await this.utils._install('xdr', 'xdr')
-            await this.utils.xdr.factory('https://raw.githubusercontent.com/stellar/stellar-xdr/curr/Stellar-transaction.x', 'TransactionSignaturePayload', { namespace: 'stellar' })
-            await this.utils.xdr.factory('https://raw.githubusercontent.com/stellar/stellar-xdr/curr/Stellar-transaction.x', 'TransactionEnvelope', { namespace: 'stellar' })
+            await this.utils.xdr.import((new URL('./lib/stellar.xdr', import.meta.url)).href, 'stellar')
 
             const tx = await this.utils.createTransactionSourceObject(transaction)
             yield { tx }
@@ -191,7 +189,6 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
         value: Object.defineProperties({}, {
             _install: {
                 value: async function (scope, namespace) {
-                    if (!this._scopes?.base) this._scopes.base = !!Object.assign(this, (await import((new URL('./utils/base.js', import.meta.url)).href)).default)
                     if (!scope || this._scopes[scope]) return
                     const url = (new URL((this._horizon?.options?.sources ?? {})[scope] ?? `./utils/${scope}.js`, import.meta.url)).href
                     if (namespace) this[namespace] ??= {}

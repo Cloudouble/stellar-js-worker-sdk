@@ -177,7 +177,7 @@
                             prefix = 'const transaction = '
                             break
                         case 'tx':
-                            await horizon.utils.xdr.factory('https://raw.githubusercontent.com/stellar/stellar-xdr/curr/Stellar-transaction.x', 'Transaction', { namespace: 'demo' })
+                            await horizon.utils.xdr.import('./submit.xdr', 'demo')
                             const txXdr = new horizon.utils.xdr.types.demo.Transaction(v)
                             result = JSON.parse(JSON.stringify(txXdr))
                             result.sourceAccount.ed25519 = Object.values(result.sourceAccount.ed25519)
