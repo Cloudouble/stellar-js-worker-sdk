@@ -21,14 +21,9 @@
         networkExampleCode.textContent = (params.network !== 'public' || params.endpoint || params.passphrase)
             ? `const { horizon } = await import('../horizon.js?${queryParams}')` : `const { horizon } = await import('../horizon.js')`
 
-        const transactionObjects = {}
-
-        const buildSection = document.getElementById('build'), signSection = document.getElementById('sign'),
-            submitSection = document.getElementById('submit'),
+        const buildSection = document.getElementById('build'),
             operationsFieldset = buildSection.querySelector('fieldset[name="operations"]'),
             buildButton = buildSection.querySelector('button.get-result'),
-            signButton = signSection.querySelector('button.get-result'),
-            submitButton = submitSection.querySelector('button.get-result'),
             addOperationButton = buildSection.querySelector('button[name="add-operation"]'),
             operationTypes = {
                 CREATE_ACCOUNT: { destination: 'string', startingBalance: 'number' },
@@ -102,23 +97,42 @@
                 newOperation.remove()
             })
         })
+
+        const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567', base32Decode = base32String => {
+            let [bytes, bits, value, index, i] = [[], 0, 0, 0, 0]
+            for (; i < base32String.length; i++) {
+                [value, bits] = [(value << 5) | (index = base32Chars.indexOf(base32String[i])), bits + 5]
+                if (index === -1) throw new Error('Invalid base-32 character')
+                while (bits >= 8) {
+                    bytes.push(value >>> (bits - 8) & 0xFF)
+                    bits -= 8
+                    value &= (1 << bits) - 1
+                }
+            }
+            return new Uint8Array(bytes)
+        }, base32Encode = bytes => {
+            let [base32String, bits, value, index, i] = ['', 0, 0, 0, 0]
+            for (; i < bytes.length; i++) {
+                [value, bits] = [(value << 8) | bytes[i], bits + 8]
+                while (bits >= 5) [base32String, bits] = [base32String + base32Chars[index = (value >>> (bits - 5)) & 31], bits - 5]
+            }
+            if (bits > 0) [index, base32String] = [(value << (5 - bits)) & 31, base32String + base32Chars[index]]
+            return base32String
+        }
+
         buildButton.addEventListener('click', async event => {
-            const simpleTransactionSection = document.getElementById('simple-transaction'),
-                sourceTransactionSection = document.getElementById('source-transaction'),
-                simpleTransactionResult = simpleTransactionSection.querySelector('.result'),
-                sourceTransactionResult = sourceTransactionSection.querySelector('.result')
-            transactionObjects.simple = {
+            const transactionInputObject = {
                 sourceAccount: sourceAccountField.value,
                 fee: parseInt(buildSection.querySelector('[name="max_fee"]').value) || 0,
                 operations: []
             }
             const memoContent = buildSection.querySelector('[name="memo_content"]').value,
                 memoType = buildSection.querySelector('[name="memo_type"]').value
-            if (memoContent && memoType) transactionObjects.simple.memo = { type: memoType, content: memoContent }
+            if (memoContent && memoType) transactionInputObject.memo = { type: memoType, content: memoContent }
 
             if (buildSection.querySelector('[name="soroban_data"]').value) {
                 try {
-                    transactionObjects.simple.sorobanData = JSON.parse(buildSection.querySelector('[name="soroban_data"]').value)
+                    transactionInputObject.sorobanData = JSON.parse(buildSection.querySelector('[name="soroban_data"]').value)
                 } catch (e) { }
             }
             const preconditionFieldset = buildSection.querySelector('fieldset[name="preconditions"]'), preconditionsObject = {}
@@ -145,7 +159,7 @@
                         break
                 }
             }
-            if (Object.keys(preconditionsObject).length) transactionObjects.simple.cond = preconditionsObject
+            if (Object.keys(preconditionsObject).length) transactionInputObject.cond = preconditionsObject
             const operationElements = buildSection.querySelectorAll('fieldset[name="operations"] > div')
             for (const operationElement of operationElements) {
                 const operationType = operationElement.querySelector('select[name="type"]').value
@@ -166,30 +180,56 @@
                         operationObject.op[attrName] = attrValue
                     }
                 }
-                transactionObjects.simple.operations ||= []
-                transactionObjects.simple.operations.push(operationObject)
+                transactionInputObject.operations ||= []
+                transactionInputObject.operations.push(operationObject)
             }
-            simpleTransactionResult.textContent = JSON.stringify(transactionObjects.simple, null, 4)
 
-            // const { response, tx, hash, signatures } = await horizon.submit(transactionObjects.simple, { [sourceAccountField.value]: secretKeyField.value })
+            // const { response, tx, hash, signatures } = await horizon.submit(transactionInputObject, { [sourceAccountField.value]: secretKeyField.value })
 
-            for await (const emitted of horizon.submit(transactionObjects.simple, { [sourceAccountField.value]: secretKeyField.value })) {
+            const bytesToHex = bytes => Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('')
+            for await (const emitted of horizon.submit(transactionInputObject, { [sourceAccountField.value]: secretKeyField.value })) {
+                console.log('line 168', emitted)
                 for (const id in emitted) {
+                    const section = document.getElementById(id), v = emitted[id]
+                    let result
+                    if (!section) continue
                     switch (id) {
-
+                        case 'transaction':
+                            result = v
+                            break
+                        case 'tx':
+                            await horizon.utils.xdr.factory('https://raw.githubusercontent.com/stellar/stellar-xdr/curr/Stellar-transaction.x', 'Transaction', { namespace: 'demo' })
+                            const txXdr = new horizon.utils.xdr.types.demo.Transaction(v)
+                            result = JSON.parse(JSON.stringify(txXdr))
+                            result.sourceAccount.ed25519 = base32Encode(Object.values(result.sourceAccount.ed25519))
+                            for (const op of result.operations) if (op.sourceAccount?.ed25519) op.sourceAccount.ed25519 = base32Encode(Object.values(op.sourceAccount.ed25519))
+                            break
+                        case 'hash':
+                            result = bytesToHex(v)
+                            break
+                        case 'signatures':
+                            result = []
+                            for (const s of v) result.push({
+                                hint: Array.from(s.hint),
+                                signature: btoa(String.fromCharCode.apply(null, s.signature))
+                            })
+                            break
+                        case 'response':
+                            result = {
+                                status: v.status, ok: v.ok, statusText: v.statusText, headers: Object.fromEntries(v.headers.entries()),
+                                body: await v[v.status <= 201 ? 'json' : 'text']()
+                            }
                     }
+                    section.querySelector('.result').textContent = JSON.stringify(result, null, 4)
                 }
-
-                console.log('line 179', emitted)
             }
-
 
         })
 
         //     transactionEnvelopePlainObject.v1.signatures[0].signature = btoa(String.fromCharCode.apply(null, transactionEnvelopePlainObject.v1.signatures[0].signature))
 
         window.horizon = horizon
-        console.log('line 186', horizon)
+        console.log('line 204', horizon)
         // test account on test netwwork: GA5VCCBNG4SIEST6HYIW2F3KKZRHA4UZZ2XFSMZ4VRQ4MCBRHSQRRIPE
 
     </script>
@@ -321,13 +361,13 @@
             <h2>Transaction Hash</h2>
             <p>View the hash of the transaction that will be signed in hex format</p>
             <code class="example">Example Code</code>
-            <pre class="result">Transaction hash</pre>
+            <pre class="result" style="height: 3em;">Transaction hash</pre>
         </section>
         <section id="signatures">
             <h2>Signatures</h2>
             <p>View the base64 encoded decorated signatures</p>
             <code class="example">Example Code</code>
-            <pre class="result" style="height: 3em;">base64 encoded signatures</pre>
+            <pre class="result" style="height: 17em;">base64 encoded signatures</pre>
         </section>
         <section id="response">
             <h2>Response</h2>
