@@ -177,7 +177,7 @@
                             prefix = 'const transaction = '
                             break
                         case 'tx':
-                            await horizon.utils.xdr.import('./submit.xdr', 'demo')
+                            if (!horizon.utils.xdr.types.demo) await horizon.utils.xdr.import('./submit.xdr', 'demo')
                             const txXdr = new horizon.utils.xdr.types.demo.Transaction(v)
                             result = JSON.parse(JSON.stringify(txXdr))
                             result.sourceAccount.ed25519 = Object.values(result.sourceAccount.ed25519)

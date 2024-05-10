@@ -150,7 +150,7 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
 
             await this.utils._install('submit')
             await this.utils._install('xdr', 'xdr')
-            await this.utils.xdr.import((new URL('./lib/stellar.xdr', import.meta.url)).href, 'stellar')
+            if (!this.utils.xdr.types.stellar) await this.utils.xdr.import((new URL('./lib/stellar.xdr', import.meta.url)).href, 'stellar')
 
             const tx = await this.utils.createTransactionSourceObject(transaction)
             yield { tx }
@@ -190,7 +190,8 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
             _install: {
                 value: async function (scope, namespace) {
                     if (!scope || this._scopes[scope]) return
-                    const url = (new URL((this._horizon?.options?.sources ?? {})[scope] ?? `./utils/${scope}.js`, import.meta.url)).href
+                    const scopeFileName = import.meta.url.endsWith('.min.js') ? `${scope}.min` : scope
+                    const url = (new URL((this._horizon?.options?.sources ?? {})[scope] ?? `./utils/${scopeFileName}.js`, import.meta.url)).href
                     if (namespace) this[namespace] ??= {}
                     const importedUtil = (await import(url)).default
                     this._scopes[scope] = !!(namespace ? (this[namespace] = importedUtil) : Object.assign(this, importedUtil))
