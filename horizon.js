@@ -3,7 +3,7 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
     test: { endpoint: 'https://horizon-testnet.stellar.org', passphrase: 'Test SDF Network ; September 2015' },
     custom: { endpoint: metaOptions.get('endpoint'), passphrase: metaOptions.get('passphrase') }
 }, horizon = Object.defineProperties({}, {
-    version: { enumerable: true, value: '0.1.0' },
+    version: { enumerable: true, value: '0.9.0' },
     options: {
         enumerable: true, value: {
             sources: {
@@ -140,47 +140,41 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
     submit: {
         enumerable: true,
         value: async function* (transaction = {}, keyPairs = {}) {
-            // don't forget ENVELOPE_TYPE_TX_FEE_BUMP transaction type
             if (typeof keyPairs === 'string' && transaction.sourceAccount) keyPairs = { [transaction.sourceAccount]: keyPairs }
             const keyPairsEntries = Array.isArray(keyPairs) ? keyPairs : Object.entries(keyPairs)
             let sourceAccount = transaction.sourceAccount
             if (!sourceAccount && keyPairsEntries.length === 1) sourceAccount = keyPairsEntries[0][0]
             transaction.sourceAccount ??= sourceAccount
+            if (!transaction.sourceAccount) throw new Error('No transaction.sourceAccount specified')
             yield { transaction }
-
-            await this.utils._install('submit')
-            await this.utils._install('xdr', 'xdr')
+            await Promise.all([this.utils._install('submit'), this.utils._install('xdr', 'xdr')])
             if (!this.utils.xdr.types.stellar) await this.utils.xdr.import((new URL('./lib/stellar.xdr', import.meta.url)).href, 'stellar')
-
             const tx = await this.utils.createTransactionSourceObject(transaction)
             yield { tx }
-
             const signaturePayloadXdr = new this.utils.xdr.types.stellar.TransactionSignaturePayload({
                 networkId: Array.from(await this.utils.getSHA256HashBytes(this.network.passphrase)),
                 taggedTransaction: { type: 'ENVELOPE_TYPE_TX', tx }
             })
             yield { signaturePayloadXdr }
-
             const hash = await this.utils.getSHA256HashBytes(signaturePayloadXdr.bytes)
             yield { hash }
-
-            const signatures = []
+            const signatures = [], signaturePromises = []
             for (const [publicKey, secretKey] of keyPairsEntries) {
                 const [publicKeyBytes] = typeof publicKey === 'string' ? this.utils.addressToKeyBytes(publicKey) : [publicKey],
                     [secretKeyBytes] = typeof secretKey === 'string' ? this.utils.addressToKeyBytes(secretKey) : [secretKey]
-                signatures.push({
-                    hint: publicKeyBytes.slice(-4),
-                    signature: Array.from(await this.utils.signSignaturePayload(hash, secretKeyBytes))
-                })
+                signaturePromises.push(
+                    this.utils.signSignaturePayload(hash, secretKeyBytes).then(signature => signatures.push({
+                        hint: publicKeyBytes.slice(-4), signature: Array.from(signature)
+                    }))
+                )
             }
+            await Promise.all(signaturePromises)
             yield { signatures }
-
             const transactionEnvelopeXdr = new this.utils.xdr.types.stellar.TransactionEnvelope({ type: 'ENVELOPE_TYPE_TX', v1: { signatures, tx } })
             yield { transactionEnvelopeXdr }
-
             const response = await fetch(`${this.network.endpoint}/transactions?tx=${encodeURIComponent(transactionEnvelopeXdr.toString())}`, { method: 'POST', headers: { Accept: "application/json" } })
+            if (!response.ok) throw new Error(`Network request fetch failed for transaction: ${JSON.stringify(transaction)}: ${[response.status, response.statusText].join(': ')}`, { cause: response })
             yield { response }
-
             return { transaction, tx, signaturePayloadXdr, hash, signatures, transactionEnvelopeXdr, response }
         }
     },
@@ -190,8 +184,8 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
             _install: {
                 value: async function (scope, namespace) {
                     if (!scope || this._scopes[scope]) return
-                    const scopeFileName = import.meta.url.endsWith('.min.js') ? `${scope}.min` : scope
-                    const url = (new URL((this._horizon?.options?.sources ?? {})[scope] ?? `./utils/${scopeFileName}.js`, import.meta.url)).href
+                    const scopeFileName = import.meta.url.endsWith('.min.js') ? `${scope}.min` : scope,
+                        url = (new URL((this._horizon?.options?.sources ?? {})[scope] ?? `./utils/${scopeFileName}.js`, import.meta.url)).href
                     if (namespace) this[namespace] ??= {}
                     const importedUtil = (await import(url)).default
                     this._scopes[scope] = !!(namespace ? (this[namespace] = importedUtil) : Object.assign(this, importedUtil))

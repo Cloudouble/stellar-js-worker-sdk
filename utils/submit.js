@@ -18,9 +18,7 @@ const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567', base32Decode = base32Str
     }
     if (bits > 0) [index, base32String] = [(value << (5 - bits)) & 31, base32String + base32Chars[index]]
     return base32String
-}
-
-const keyTypeMap = {
+}, keyTypeMap = {
     STRKEY_PUBKEY: [6 << 3, 'PK'], STRKEY_MUXED: [12 << 3, 'PK'], STRKEY_PRIVKEY: [18 << 3, 'PK'],
     STRKEY_PRE_AUTH_TX: [19 << 3, 'Hash'], STRKEY_HASH_X: [23 << 3, 'Hash'],
     STRKEY_SIGNED_PAYLOAD: [15 << 3, 'PK'], STRKEY_CONTRACT: [2 << 3, 'Hash']
@@ -32,9 +30,7 @@ const keyTypeMap = {
     if (keyType === 'STRKEY_MUXED') memoBytes = bytes.slice(0, 8)
     if (keyType === 'STRKEY_SIGNED_PAYLOAD') payloadBytes = bytes.slice(4, 4 + (new DataView(bytes.buffer, 0, 4)).getUint32(0, false))
     return [addressBytes, memoBytes, payloadBytes, keyType]
-}
-
-const operationFieldProcessors = {
+}, operationFieldProcessors = {
     account: a => ({ ed25519: addressToKeyBytes(a)[0], type: 'KEY_TYPE_ED25519' }),
     asset: function (a) {
         const asset = { type: 'ASSET_TYPE_NATIVE' }
