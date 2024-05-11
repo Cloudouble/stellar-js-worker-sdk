@@ -99,7 +99,7 @@ export default {
         const tx = {
             sourceAccount: { ed25519: addressToKeyBytes(transaction.sourceAccount)[0], type: 'KEY_TYPE_ED25519' },
             ext: { v: 0 }, fee: transaction.fee, memo: { type: 'MEMO_NONE' }, cond: { type: 'PRECOND_NONE' },
-            seqNum: BigInt(parseInt((await this._horizon.get.accounts(transaction.sourceAccount)).sequence) + 1), operations: []
+            seqNum: BigInt(parseInt(transaction.seqNum) || (parseInt((await this._horizon.get.accounts(transaction.sourceAccount)).sequence) + 1)), operations: []
         }, contentFieldNameMap = { MEMO_TEXT: 'text', MEMO_ID: 'id', MEMO_HASH: 'hash', MEMO_RETURN: 'retHash' },
             memoType = transaction.memo?.type ?? 'MEMO_NONE'
         if (transaction.memo?.content && (memoType !== 'MEMO_NONE')) tx.memo = { type: memoType, [contentFieldNameMap[memoType]]: transaction.memo.content }
@@ -152,17 +152,19 @@ export default {
         if (transaction.sorobanData) tx.ext = { v: 1, sorobanData: transaction.sorobanData }
         return tx
     },
-    signSignaturePayload: async (payloadHash, secretKey) => {
+    signSignaturePayload: async function (payloadHash, secretKey) {
         const bytes = typeof payloadHash === 'string' ? Uint8Array.from(payloadHash.match(/.{1,2}/g).map((byte) => parseInt(byte, 16))) : payloadHash,
             secretKeyBytes = typeof secretKey === 'string' ? base32Decode(secretKey.slice(1)).slice(0, -2) : new Uint8Array(secretKey)
-        try {
-            const signingAlgorithm = { name: 'ECDSA', namedCurve: 'P-256', hash: 'SHA-256' },
-                key = await crypto.subtle.importKey('raw', secretKeyBytes, signingAlgorithm, false, ['sign'])
-            return new Uint8Array(await crypto.subtle.sign(signingAlgorithm, key, bytes))
-        } catch (e) {
-            const ed = await import('https://cdn.jsdelivr.net/npm/@noble/ed25519@2.1.0/+esm')
-            return await ed.signAsync(bytes, secretKeyBytes)
+        if (!this.ed25519) {
+            try {
+                const signingAlgorithm = { name: 'ECDSA', namedCurve: 'P-256', hash: 'SHA-256' },
+                    key = await crypto.subtle.importKey('raw', secretKeyBytes, signingAlgorithm, false, ['sign'])
+                return new Uint8Array(await crypto.subtle.sign(signingAlgorithm, key, bytes))
+            } catch (e) {
+                this.ed25519 ??= await import('https://cdn.jsdelivr.net/npm/@noble/ed25519@2.1.0/+esm')
+            }
         }
+        return await this.ed25519.signAsync(bytes, secretKeyBytes)
     }
 
 }

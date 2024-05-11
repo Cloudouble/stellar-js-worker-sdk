@@ -162,11 +162,10 @@
                 transactionInputObject.operations.push(operationObject)
             }
 
-            // const { response, tx, hash, signatures } = await horizon.submit(transactionInputObject, { [sourceAccountField.value]: secretKeyField.value })
-
             const bytesToHex = bytes => Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('')
+            for (const id of ['transaction', 'tx', 'hash', 'signatures', 'response']) document.getElementById(id).querySelector('.result').textContent = 'loading...'
             for await (const emitted of horizon.submit(transactionInputObject, { [sourceAccountField.value]: secretKeyField.value })) {
-                console.log('line 169', emitted)
+                console.log('line 168: emitted: ', emitted)
                 for (const id in emitted) {
                     const section = document.getElementById(id), v = emitted[id]
                     let result, prefix = '', postfix = ''
@@ -206,7 +205,7 @@
         })
 
         window.horizon = horizon
-        console.log('line 209', horizon)
+        console.log('line 208: horizon: ', horizon)
         // test account on test netwwork: GA5VCCBNG4SIEST6HYIW2F3KKZRHA4UZZ2XFSMZ4VRQ4MCBRHSQRRIPE
 
     </script>
