@@ -23,7 +23,7 @@ const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567', base32Decode = base32Str
     STRKEY_PRE_AUTH_TX: [19 << 3, 'Hash'], STRKEY_HASH_X: [23 << 3, 'Hash'],
     STRKEY_SIGNED_PAYLOAD: [15 << 3, 'PK'], STRKEY_CONTRACT: [2 << 3, 'Hash']
 }, addressToKeyBytes = addressString => {
-    let [bytes, addressBytes, memoBytes, payloadBytes] = [base32Decode(addressString)], keyType
+    let [bytes, addressBytes, memoBytes, payloadBytes] = [base32Decode(addressString), undefined, undefined, undefined], keyType
     for (const k in keyTypeMap) if (base32Encode([keyTypeMap[k][0]])[0] === addressString[0]) { keyType = k; break }
     bytes = bytes.slice(1, -2)
     addressBytes = bytes.slice(0, 32)
@@ -37,7 +37,7 @@ const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567', base32Decode = base32Str
         if (!a || (typeof a !== 'string')) return asset
         const [assetCode, issuer] = a.split(':', 2)
         if (!issuer) return asset
-        asset.type = assetCode <= 4 ? 'ASSET_TYPE_CREDIT_ALPHANUM4' : (assetCode <= 12 ? 'ASSET_TYPE_CREDIT_ALPHANUM12' : 'ASSET_TYPE_NATIVE')
+        asset.type = parseInt(assetCode) <= 4 ? 'ASSET_TYPE_CREDIT_ALPHANUM4' : (parseInt(assetCode) <= 12 ? 'ASSET_TYPE_CREDIT_ALPHANUM12' : 'ASSET_TYPE_NATIVE')
         if (asset.type === 'ASSET_TYPE_NATIVE') return asset
         const assetCodeToBytes = assetCode => {
             let bytes = []
@@ -157,7 +157,8 @@ export default {
                     key = await crypto.subtle.importKey('raw', secretKeyBytes, signingAlgorithm, false, ['sign'])
                 return new Uint8Array(await crypto.subtle.sign(signingAlgorithm, key, bytes))
             } catch (e) {
-                this.ed25519 ??= await import('https://cdn.jsdelivr.net/npm/@noble/ed25519@2.1.0/+esm')
+                this.ed25519 = {}
+                this.ed25519.signAsync = (await import(this._horizon.options.sources.ed25519)).signAsync
             }
         }
         return await this.ed25519.signAsync(bytes, secretKeyBytes)

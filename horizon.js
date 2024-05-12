@@ -1,4 +1,4 @@
-const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
+const metaOptions = 'url' in (import.meta || {}) ? (new URL(import.meta['url'])).searchParams : new URLSearchParams({}), networks = {
     futurenet: { endpoint: 'https://horizon-futurenet.stellar.org', passphrase: 'Test SDF Future Network ; October 2022' },
     test: { endpoint: 'https://horizon-testnet.stellar.org', passphrase: 'Test SDF Network ; September 2015' },
     custom: { endpoint: metaOptions.get('endpoint'), passphrase: metaOptions.get('passphrase') }
@@ -7,7 +7,8 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
     options: {
         enumerable: true, value: {
             sources: {
-                xdr: 'https://cdn.jsdelivr.net/gh/cloudouble/simple-xdr@1.2.4/xdr.min.js'
+                xdr: 'https://cdn.jsdelivr.net/gh/cloudouble/simple-xdr@1.2.4/xdr.min.js',
+                ed25519: 'https://cdn.jsdelivr.net/npm/@noble/ed25519@2.1.0/+esm'
             }
         }
     },
@@ -19,7 +20,7 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
         value: async function (resourceType, resourceId, scope, params = {}, fromStream = false) {
             if (!(resourceType in this._types)) throw new RangeError(`Invalid resource type: ${resourceType}, must be one of ${JSON.stringify(Object.keys(this._types))}`)
             const headers = { Accept: 'application/json' }
-            let result, cause, response
+            let result, cause, response = {}
             if (!resourceId) result = await fetch(`${this.network.endpoint}/${resourceType}?${new URLSearchParams(params)}`, { headers })
                 .then(r => { response = r; return r.json() }).catch(err => cause = err)
             if (!result && !scope) result = await fetch(`${this.network.endpoint}/${resourceType}/${resourceId}`, { headers })
@@ -43,22 +44,23 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
                 signal = abortController.signal, listener = new EventTarget()
             let eventSource
             try {
-                eventSource = new EventSource(url)
+                eventSource = new globalThis.EventSource(url)
             } catch (e) {
                 throw new Error(`Event source creation failed for resourceType: ${resourceType}, resourceId: ${resourceId}, scope: ${scope}: ${e}`, { cause: e })
             }
             let hasOpened
             return new Promise((resolve, reject) => {
                 eventSource.addEventListener('message', event => {
-                    const { data, origin, lastEventId, source, ports } = event
-                    listener.dispatchEvent(new MessageEvent('message', { data, origin, lastEventId, source, ports }))
+                    const { data, origin, lastEventId, source, ports } = event,
+                        options = { data, origin, lastEventId, source, ports }
+                    listener.dispatchEvent(new MessageEvent('message', options))
                 }, { signal })
                 eventSource.addEventListener('open', event => {
                     hasOpened = true
                     resolve({ listener, abortController, eventSource })
                 }, { signal })
                 eventSource.addEventListener('error', event => {
-                    hasOpened ? listener.dispatchEvent(new CustomEvent('error', { detail: event })) : reject()
+                    hasOpened ? listener.dispatchEvent(new globalThis.CustomEvent('error', { detail: event })) : reject()
                 }, { signal })
             })
         }
@@ -80,7 +82,7 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
                 pagingToken = record.paging_token
                 delete record.paging_token
                 yield record
-                if (!page.length && !isLastPage && pagingToken && (params && (typeof params === 'object'))) {
+                if (!page.length && !isLastPage && pagingToken && params) {
                     params.cursor = pagingToken
                     try {
                         page = await this._get(resourceType, resourceId, scope, params, true)
@@ -129,7 +131,7 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
         value: async function (accountId, key) {
             if (!accountId) throw new TypeError(`Invalid accountId: ${accountId}`)
             if (!key) throw new TypeError(`Invalid key: ${key}`)
-            let result, cause, response
+            let result, cause, response = {}
             result = (await fetch(`${this.network.endpoint}/accounts/${accountId}/data/${key}`, { headers: { Accept: "application/json" } })
                 .then(r => { response = r; return r.json() }).catch(err => cause = err))?.value
             if (cause || !response.ok) throw new Error(
@@ -148,7 +150,10 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
             if (!transaction.sourceAccount) throw new Error('No transaction.sourceAccount specified')
             yield { transaction }
             await Promise.all([this.utils._install('submit'), this.utils._install('xdr', 'xdr')])
-            if (!this.utils.xdr.types.stellar) await this.utils.xdr.import((new URL('./lib/stellar.xdr', import.meta.url)).href, 'stellar')
+            if (!this.utils.xdr.types.stellar) {
+                const importBase = import.meta && ('url' in import.meta) ? import.meta['url'] : ''
+                await this.utils.xdr.import((new URL('./lib/stellar.xdr', importBase)).href, 'stellar')
+            }
             const tx = await this.utils.createTransactionSourceObject(transaction)
             yield { tx }
             const signaturePayloadXdr = new this.utils.xdr.types.stellar.TransactionSignaturePayload({
@@ -184,12 +189,14 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
             _install: {
                 value: async function (scope, namespace) {
                     if (!scope || this._scopes[scope]) return
-                    const scopeFileName = import.meta.url.endsWith('.min.js') ? `${scope}.min` : scope,
-                        url = (new URL((this._horizon?.options?.sources ?? {})[scope] ?? `./utils/${scopeFileName}.js`, import.meta.url)).href
-                    if (namespace) this[namespace] ??= {}
-                    const importedUtil = (await import(url)).default
-                    this._scopes[scope] = !!(namespace ? (this[namespace] = importedUtil) : Object.assign(this, importedUtil))
-                    this._scope = scope
+                    if (import.meta && ('url' in import.meta)) {
+                        const scopeFileName = import.meta['url'].endsWith('.min.js') ? `${scope}.min` : scope,
+                            url = (new URL((this._horizon?.options?.sources ?? {})[scope] ?? `./utils/${scopeFileName}.js`, import.meta['url'])).href
+                        if (namespace) this[namespace] ??= {}
+                        const importedUtil = (await import(url)).default
+                        this._scopes[scope] = !!(namespace ? (this[namespace] = importedUtil) : Object.assign(this, importedUtil))
+                        this._scope = scope
+                    }
                 }
             },
             _scope: { writable: true, value: undefined },
@@ -198,11 +205,11 @@ const metaOptions = (new URL(import.meta.url)).searchParams, networks = {
     }
 })
 const listenable = ['ledgers', 'transactions', 'operations', 'payments', 'effects', 'accounts', 'trades', 'order_book']
-for (const t in horizon._types) {
-    horizon.get[t] = horizon._get.bind(horizon, t)
-    horizon.stream[t] = horizon._stream.bind(horizon, t)
-    if (listenable.includes(t)) horizon.listen[t] = horizon._listen.bind(horizon, t)
+for (const t in horizon['_types']) {
+    horizon['get'][t] = horizon['_get'].bind(horizon, t)
+    horizon['stream'][t] = horizon['_stream'].bind(horizon, t)
+    if (listenable.includes(t)) horizon['listen'][t] = horizon['_listen'].bind(horizon, t)
 }
-Object.defineProperty(horizon.utils, '_horizon', { value: horizon })
+Object.defineProperty(horizon['utils'], '_horizon', { value: horizon })
 export { horizon }
 

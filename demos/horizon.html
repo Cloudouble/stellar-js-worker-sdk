@@ -12,7 +12,7 @@
     <link rel="modulepreload" href="../horizon.js?network=test">
     <script type="module">
         const params = Object.fromEntries(Array.from((new URLSearchParams(document.location.search)).entries()).filter(ent => !!ent[1])),
-            queryParams = new URLSearchParams(params),
+            selectedNetwork = params.network ?? 'public', queryParams = new URLSearchParams(params),
             { horizon } = await import(`../horizon.js?${queryParams}`),
             networkSelector = document.getElementById('select-network')
         for (const paramName in params) networkSelector.querySelector(`[name="${paramName}"]`).value = params[paramName]
@@ -62,7 +62,6 @@
                 running = !running
                 if (!running) return
                 const resourceType = resourceTypeSelect.value, resourceId = resourceIdInput.value || undefined,
-                    implementation = implementationSelect.value,
                     resourceScope = resourceScopeSelect.value || undefined,
                     paramFields = queryParamsFieldset ? queryParamsFieldset.querySelectorAll('div') : undefined,
                     params = paramFields?.length
@@ -90,6 +89,7 @@ listener.addEventListener('message', event => console.log(event.data))`
                 exampleCode.textContent = exampleCodeContent
                 switch (sectionId) {
                     case 'get':
+                        const implementation = implementationSelect.value
                         let result
                         const runSW = async (sectionId, resourceType, resourceId, resourceScope, params) => {
                             const registration = await navigator.serviceWorker.register("sw.js", { type: 'module' })
@@ -114,7 +114,10 @@ listener.addEventListener('message', event => console.log(event.data))`
                                 result = await runSW(sectionId, resourceType, resourceId, resourceScope, params)
                                 break
                             case 'cf':
-
+                                const urlPath = [sectionId, resourceType, resourceId, resourceScope].filter(s => !!s).join('/'),
+                                    queryString = new URLSearchParams({ ...(params ?? {}), ...horizon.network, network: selectedNetwork }).toString()
+                                result = await (await fetch(`https://stellar-js-worker-sdk-demo.cloudouble.workers.dev/${urlPath}?${queryString}`)).json()
+                                console.log('line 120', result)
                                 break
                             case 'deno':
 
