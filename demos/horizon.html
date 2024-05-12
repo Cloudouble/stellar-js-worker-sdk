@@ -117,7 +117,6 @@ listener.addEventListener('message', event => console.log(event.data))`
                                 const urlPath = [sectionId, resourceType, resourceId, resourceScope].filter(s => !!s).join('/'),
                                     queryString = new URLSearchParams({ ...(params ?? {}), ...horizon.network, network: selectedNetwork }).toString()
                                 result = await (await fetch(`https://stellar-js-worker-sdk-demo.cloudouble.workers.dev/${urlPath}?${queryString}`)).json()
-                                console.log('line 120', result)
                                 break
                             case 'deno':
 

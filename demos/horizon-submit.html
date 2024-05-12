@@ -12,7 +12,7 @@
     <link rel="modulepreload" href="../horizon.js?network=test">
     <script type="module">
         const params = Object.fromEntries(Array.from((new URLSearchParams(document.location.search)).entries()).filter(ent => !!ent[1])),
-            queryParams = new URLSearchParams(params),
+            selectedNetwork = params.network ?? 'public', queryParams = new URLSearchParams(params),
             { horizon } = await import(`../horizon.js?${queryParams}`),
             networkSelector = document.getElementById('select-network')
         for (const paramName in params) networkSelector.querySelector(`[name="${paramName}"]`).value = params[paramName]
@@ -229,6 +229,14 @@
             switch (implementation) {
                 case 'sw':
                     await processEmitted(await runSW())
+                    break
+                case 'cf':
+                    const queryString = new URLSearchParams({ ...(params ?? {}), ...horizon.network, network: selectedNetwork }).toString()
+                    const result = await (await fetch(`https://stellar-js-worker-sdk-demo.cloudouble.workers.dev/?${queryString}`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ transaction: transactionInputObject, keyPair })
+                    })).json()
+                    await processEmitted(result)
                     break
                 default:
                     for await (const emitted of horizon.submit(transactionInputObject, keyPair)) await processEmitted(emitted)

@@ -6,6 +6,7 @@ export default {
             "Access-Control-Allow-Methods": "GET,POST,DELETE,PUT,OPTIONS", "Access-Control-Max-Age": "86400",
             "Content-Type": "application/json", "Allow": "GET,POST,DELETE,PUT,OPTIONS"
         }
+        if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers })
         const horizon = (await import('./include/stellar-js-worker-sdk/horizon.js')).horizon
         const submit = (await import('./include/stellar-js-worker-sdk/utils/submit.js')).default
         const signAsync = (await import('./include/noble/ed25519.js')).signAsync
