@@ -3,7 +3,7 @@ const metaOptions = 'url' in (import.meta || {}) ? (new URL(import.meta['url']))
     test: { endpoint: 'https://horizon-testnet.stellar.org', passphrase: 'Test SDF Network ; September 2015' },
     custom: { endpoint: metaOptions.get('endpoint'), passphrase: metaOptions.get('passphrase') }
 }, horizon = Object.defineProperties({}, {
-    version: { enumerable: true, value: '0.9.0' },
+    version: { enumerable: true, value: '0.9.2' },
     options: {
         enumerable: true, value: {
             sources: {
