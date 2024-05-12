@@ -164,8 +164,30 @@
 
             const bytesToHex = bytes => Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('')
             for (const id of ['transaction', 'tx', 'hash', 'signatures', 'response']) document.getElementById(id).querySelector('.result').textContent = 'loading...'
-            for await (const emitted of horizon.submit(transactionInputObject, { [sourceAccountField.value]: secretKeyField.value })) {
-                console.log('line 168: emitted: ', emitted)
+
+            const implementation = buildSection.querySelector('select[name="implementation"]').value
+            const keyPair = { [sourceAccountField.value]: secretKeyField.value }
+            const runSW = async () => {
+                const registration = await navigator.serviceWorker.register("sw.js", { type: 'module' })
+                if (registration.installing) {
+                    console.log("Service worker installing");
+                } else if (registration.waiting) {
+                    console.log("Service worker installed");
+                } else if (registration.active) {
+                    console.log("Service worker active");
+                }
+                const abortController = new AbortController(), signal = abortController.signal, r = await new Promise(resolve => {
+                    navigator.serviceWorker.addEventListener('message', event => resolve(event.data.result), { signal })
+                    navigator.serviceWorker.ready.then(registration => {
+                        registration.active.postMessage({
+                            transaction: transactionInputObject, keyPair, network: horizon.network
+                        })
+                    })
+                })
+                abortController.abort()
+                return r
+            }
+            const processEmitted = async emitted => {
                 for (const id in emitted) {
                     const section = document.getElementById(id), v = emitted[id]
                     let result, prefix = '', postfix = ''
@@ -176,6 +198,7 @@
                             prefix = 'const transaction = '
                             break
                         case 'tx':
+                            if (!horizon.utils.xdr) await horizon.utils._install('xdr', 'xdr')
                             if (!horizon.utils.xdr.types.demo) await horizon.utils.xdr.import('./submit.xdr', 'demo')
                             const txXdr = new horizon.utils.xdr.types.demo.Transaction(v)
                             result = JSON.parse(JSON.stringify(txXdr))
@@ -194,12 +217,21 @@
                             break
                         case 'response':
                             result = {
-                                status: v.status, ok: v.ok, statusText: v.statusText, headers: Object.fromEntries(v.headers.entries()),
-                                body: await v[v.status <= 201 ? 'json' : 'text']()
+                                status: v.status, ok: v.ok, statusText: v.statusText,
+                                headers: Object.fromEntries(v.headers.entries ? v.headers.entries() : Object.entries(v.headers)),
+                                body: v.headers.entries ? await v[v.status <= 201 ? 'json' : 'text']() : v.body
                             }
                     }
                     section.querySelector('.result').textContent = prefix + JSON.stringify(result, null, 4) + postfix
                 }
+            }
+
+            switch (implementation) {
+                case 'sw':
+                    await processEmitted(await runSW())
+                    break
+                default:
+                    for await (const emitted of horizon.submit(transactionInputObject, keyPair)) await processEmitted(emitted)
             }
 
         })
@@ -315,6 +347,15 @@
                     <strong>Secret Key</strong>
                     <input name="secret_key" placeholder="Source Account secret key. Not sent to any server! "
                         value="SBBVL33C4M4YF2B5CUKFC2LDVRXVPOVHFYVIA5D5XLY6LSTSUVIDJDEU">
+                </label>
+                <label>
+                    <strong>Use Implementation</strong>
+                    <select name="implementation">
+                        <option value="browser">Browser</option>
+                        <option value="sw">Service Worker</option>
+                        <option value="cf">Cloudflare Worker</option>
+                        <option value="deno">Deno</option>
+                    </select>
                 </label>
                 <button type="button" class="get-result">Build, Sign and Submit</button>
             </form>

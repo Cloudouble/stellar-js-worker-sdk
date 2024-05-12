@@ -23,6 +23,7 @@
         const setupSection = sectionId => {
             const section = document.getElementById(sectionId), resourceTypeOptions = [],
                 resourceTypeSelect = section.querySelector('[name="resource-type"]'),
+                implementationSelect = section.querySelector('[name="implementation"]'),
                 resourceIdInput = section.querySelector('[name="resource-id"]'),
                 resourceScopeSelect = section.querySelector('[name="resource-scope"]'),
                 addQueryParameterButton = section.querySelector('[name="add-query-parameter"]'),
@@ -61,6 +62,7 @@
                 running = !running
                 if (!running) return
                 const resourceType = resourceTypeSelect.value, resourceId = resourceIdInput.value || undefined,
+                    implementation = implementationSelect.value,
                     resourceScope = resourceScopeSelect.value || undefined,
                     paramFields = queryParamsFieldset ? queryParamsFieldset.querySelectorAll('div') : undefined,
                     params = paramFields?.length
@@ -88,8 +90,40 @@ listener.addEventListener('message', event => console.log(event.data))`
                 exampleCode.textContent = exampleCodeContent
                 switch (sectionId) {
                     case 'get':
+                        let result
+                        const runSW = async (sectionId, resourceType, resourceId, resourceScope, params) => {
+                            const registration = await navigator.serviceWorker.register("sw.js", { type: 'module' })
+                            if (registration.installing) {
+                                console.log("Service worker installing");
+                            } else if (registration.waiting) {
+                                console.log("Service worker installed");
+                            } else if (registration.active) {
+                                console.log("Service worker active");
+                            }
+                            const abortController = new AbortController(), signal = abortController.signal, r = await new Promise(resolve => {
+                                navigator.serviceWorker.addEventListener('message', event => resolve(event.data.result), { signal })
+                                navigator.serviceWorker.ready.then(registration => {
+                                    registration.active.postMessage({ sectionId, resourceType, resourceId, resourceScope, params, network: horizon.network })
+                                })
+                            })
+                            abortController.abort()
+                            return r
+                        }
+                        switch (implementation) {
+                            case 'sw':
+                                result = await runSW(sectionId, resourceType, resourceId, resourceScope, params)
+                                break
+                            case 'cf':
+
+                                break
+                            case 'deno':
+
+                                break
+                            default:
+                                result = await horizon[sectionId][resourceType](resourceId, resourceScope, params)
+                        }
                         try {
-                            resultOutput.textContent = JSON.stringify(await horizon[sectionId][resourceType](resourceId, resourceScope, params), null, 4)
+                            resultOutput.textContent = JSON.stringify(result, null, 4)
                         } catch (e) {
                             resultOutput.textContent = e
                         }
@@ -220,6 +254,15 @@ listener.addEventListener('message', event => console.log(event.data))`
                     <strong>Query Parameters</strong><button type="button" name="add-query-parameter"
                         title="click to add a query parameter">+</button>
                     <fieldset name="params"><small>No query parameters set.</small></fieldset>
+                </label>
+                <label>
+                    <strong>Use Implementation</strong>
+                    <select name="implementation">
+                        <option value="browser">Browser</option>
+                        <option value="sw">Service Worker</option>
+                        <option value="cf">Cloudflare Worker</option>
+                        <option value="deno">Deno</option>
+                    </select>
                 </label>
                 <button type="button" class="get-result">Get Result</button>
             </form>
