@@ -14,7 +14,7 @@ This will load everything you need to use the SDK for read-only functions right 
 See the code of the [demo pages](https://github.com/Cloudouble/stellar-js-worker-sdk/tree/main/demos) for a complete example of how to use the SDK in a web browser.
 
 
-### Web Service Worker
+### Web Service Worker and Deno Script
 
 ```
 import { horizon } from 'https://cdn.jsdelivr.net/gh/cloudouble/stellar-js-worker-sdk@latest/horizon.min.js'
@@ -29,6 +29,9 @@ horizon.utils.ed25519 = { signAsync }
 ```
 
 See the [demo code of the example Service Worker](https://github.com/Cloudouble/stellar-js-worker-sdk/blob/main/demos/sw.js). 
+
+See the [demo code of the example Deno Script](https://github.com/Cloudouble/stellar-js-worker-sdk/blob/main/demos/deno/main.js). 
+
 
 ### Cloudflare Worker
 
@@ -47,7 +50,6 @@ horizon['utils']._scopes.xdr = !!(horizon['utils'].xdr = xdr)
 The above assumes that you put local copies of the SDK and supporting resources in a folder called `include` in the root of your project.
 
 See the [demo code of the example Cloudflare Worker](https://github.com/Cloudouble/stellar-js-worker-sdk/blob/main/demos/cloudflare/worker.js)
-
 
 ---
 
