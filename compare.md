@@ -2,9 +2,9 @@
 
 This document will provide a quick comparison of coding styles between the two JavaScript Stellar SDKs - the existing [JS Stellar SDK](https://github.com/stellar/js-stellar-sdk) and this ***new*** [Stellar JS Worker SDK](https://github.com/Cloudouble/stellar-js-worker-sdk).
 
-The code examples will be drawn from the examples found in the [JS Stellar SDK](https://github.com/stellar/js-stellar-sdk), and attempt to reproduce the same functionality using the [Stellar JS Worker SDK](https://github.com/Cloudouble/stellar-js-worker-sdk).
+The code examples will be drawn from the examples found in the [JS Stellar SDK](https://github.com/stellar/js-stellar-sdk) documentation, and reproduces the same functionality using the [Stellar JS Worker SDK](https://github.com/Cloudouble/stellar-js-worker-sdk).
 
-**Two demo pages are available to interact with the JS Worker SDK**, this pages contain generated code snippets to help you learn the SDK:  
+**Two demo pages are available to interact with the JS Worker SDK**, these demo pages also contain generated code snippets to help you learn the SDK:  
 
 * *Read-Only Test of Horizon API*: https://stellar-js-worker-sdk.pages.dev/demos/horizon
 * *Transaction Submission Test Using Horizon API*: https://stellar-js-worker-sdk.pages.dev/demos/horizon-submit
@@ -13,9 +13,11 @@ The code examples will be drawn from the examples found in the [JS Stellar SDK](
 
 The existing JS Stellar SDK has a browser footprint of 181kB (using this version https://cdn.jsdelivr.net/npm/@stellar/stellar-sdk@12.0.0-rc.2/dist/stellar-sdk.min.js). The browser network tab details a 181kB transfer size, with a total resource size of 811kB.
 
-The new Stellar JS Worker SDK has a browser footprint of 3.5kB (using this version https://cdn.jsdelivr.net/gh/cloudouble/stellar-js-worker-sdk@latest/horizon.min.js) when initially loaded. The browser network tab details a 3.5kB transfer size, with a total resource size of 7.5kB.
+The new Stellar JS Worker SDK has a browser footprint of 3.5kB (using this version https://cdn.jsdelivr.net/gh/cloudouble/stellar-js-worker-sdk@latest/horizon.min.js) when initially loaded. The browser network tab details a 3.5kB transfer size, with a total resource size of 7.5kB. This is all that is required if only using the read-only functionality. 
 
-Only when the `submit()` method is called for the first time does the JS Worker SDK load additional resources, which then brings the total SDK footprint up to 60kB in transfer size and up to 80kB in total resource size, depending on the execution environment. These additional resources can be optionally preloaded at any time if required to remove any delay when submitting a first transaction.
+Only when the `submit()` method is called for the first time (to create new transactions) does the JS Worker SDK load additional resources, which then brings the total SDK footprint up to 60kB in transfer size and up to 80kB in total resource size, depending on the execution environment. These additional resources can be optionally preloaded at any time if required to remove any delay when submitting a first transaction.
+
+This is a significant reduction in the browser footprint, and helps in the effort to create snappy user experiences where end-users are likely to want to see information immediate, but will be more tolerant of longer waiting times when submitting new transactions. The once-only loading delay for the inital `submit()` transaction will typically be more shorter than the actual time for Stellar to respond anyway, so the end-user will never notice any delay beyond what built-in to the Stellar network.
 
 ## Cloudflare Worker Support
 
