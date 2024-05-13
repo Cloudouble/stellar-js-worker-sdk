@@ -49,6 +49,9 @@ The above assumes that you put local copies of the SDK and supporting resources 
 See the [demo code of the example Cloudflare Worker](https://github.com/Cloudouble/stellar-js-worker-sdk/blob/main/demos/cloudflare/worker.js)
 
 
+---
+
+
 ## Technical Architecture
 
 This SDK focuses on the following:
@@ -67,7 +70,7 @@ For example, to use the Stellar Horizon API, you can import the `horizon` module
 import { horizon } from './horizon.js'
 ```
 
-While to use the Anchor, Disbursement and Soroban RPC APIs (in planning), you would import the relevant modules as follows: 
+While to use the Anchor, Disbursement and Soroban RPC APIs (in planning as at May 2024), you would import the relevant modules as follows: 
 
 ```
 import { anchor } from './anchor.js'
@@ -78,14 +81,16 @@ import { soroban } from './soroban.js'
 Also, given that the code weight for reading from the API is much lighter than writing to the API, the module for writing to API is only loaded when it is first used. Thus if you call: 
 
 ```
-horizon.submit(transaction, secretKey)
+await horizon.submit(transaction, secretKey)
 ```
 
-Only then will the XDR helpers be loaded into the SDK. 
+Only then will the XDR helpers be loaded into the SDK in the background. 
 
 This allows for applications to load quickly for initial rendering of data read from the network, while still allowing developers transparent access to the write functions without thinking about the underlying implementation.
 
-## Network Selection
+## Horizon Usage 
+
+### Network Selection
 
 To choose which network to use, specify the network name in the import URL: 
 
@@ -104,7 +109,13 @@ import { horizon } from './horizon.js?network=custom&endpoint=ENDPOINT&passphras
 
 ```
 
-## Refection of Horizon API endpoints
+Alternatively, you can specify or change the network anytime after importing as in the following example: 
+
+```
+horizon.network = { endpoint: 'https://horizon-testnet.stellar.org', passphrase: 'Test SDF Network ; September 2015' }
+```
+
+### Refection of Horizon API endpoints
 
 The SDK is designed to be as close to the Horizon API as possible. This means that the SDK will have the same endpoints as the Horizon itself, this allows for developers to intuitively understand how to use the SDK by simply reading the API documentation. 
 
@@ -129,7 +140,7 @@ const myOperationEffects = await horizon.get.operations(operationId, 'effects')
 
 ```
 
-## Auto Pagination using `stream`
+### Auto Pagination using `stream`
 
 The SDK also provides a `stream` endpoint to allow for auto pagination of API endpoints. This endpoint works on all API endpoints with the same semantics as the previous `get` endpoint.
 
@@ -157,7 +168,7 @@ for await (const effect of horizon.stream.operations(operationId, 'effects')) {
 In all cases, the potential looping will continue until the complete record set is exhausted, and background requests will be made to capture each subsequent result page.
 
 
-## Listening for New Records
+### Listening for New Records
 
 The EventSource capabilities of the Horizon API are encapsulated just as easily: 
 
@@ -182,4 +193,7 @@ transactions.addEventListener('close', event => {
 })
 
 ```
+
+
+
 
