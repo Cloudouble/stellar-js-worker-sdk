@@ -1,6 +1,54 @@
 # stellar-js-worker-sdk
 A lightweight JavaScript SDK for Stellar
 
+## Getting Started
+
+### Web Browser
+
+```
+import {horizon} from 'https://cdn.jsdelivr.net/gh/cloudouble/stellar-js-worker-sdk@latest/horizon.min.js'
+```
+
+This will load everything you need to use the SDK in a web browser, transaction write function will autoload when you call it.
+
+See the code of the [demo pages](https://github.com/Cloudouble/stellar-js-worker-sdk/tree/main/demos) for a complete example of how to use the SDK in a web browser.
+
+
+### Web Service Worker
+
+```
+import { horizon } from 'https://cdn.jsdelivr.net/gh/cloudouble/stellar-js-worker-sdk@latest/horizon.min.js'
+
+// the following lines are only required if you will be using transaction write functions
+import submit from 'https://cdn.jsdelivr.net/gh/cloudouble/stellar-js-worker-sdk@latest/utils/submit.min.js'
+import xdr from 'https://cdn.jsdelivr.net/gh/cloudouble/simple-xdr@1.2.4/xdr.min.js'
+import { signAsync } from 'https://cdn.jsdelivr.net/npm/@noble/ed25519@2.1.0/+esm'
+horizon.utils._scopes.submit = !!Object.assign(horizon.utils, submit)
+horizon.utils._scopes.xdr = !!(horizon.utils.xdr = xdr)
+horizon.utils.ed25519 = { signAsync }
+```
+
+See the [demo code of the example Service Worker](https://github.com/Cloudouble/stellar-js-worker-sdk/blob/main/demos/sw.js). 
+
+### Cloudflare Worker
+
+```
+const horizon = (await import('./include/stellar-js-worker-sdk/horizon.js')).horizon
+
+// the following six lines are only required to support transaction submitting functionality
+const submit = (await import('./include/stellar-js-worker-sdk/utils/submit.js')).default
+const signAsync = (await import('./include/noble/ed25519.js')).signAsync
+const xdr = (await import('./include/simple-xdr/xdr.js')).default
+horizon['utils']._scopes.submit = !!Object.assign(horizon['utils'], submit)
+horizon['utils'].ed25519 = { signAsync }
+horizon['utils']._scopes.xdr = !!(horizon['utils'].xdr = xdr)
+```
+
+The above assumes that you put local copies of the SDK and supporting resources in a folder called `include` in the root of your project.
+
+See the [demo code of the example Cloudflare Worker](https://github.com/Cloudouble/stellar-js-worker-sdk/blob/main/demos/cloudflare/worker.js)
+
+
 ## Technical Architecture
 
 This SDK focuses on the following:
@@ -19,19 +67,21 @@ For example, to use the Stellar Horizon API, you can import the `horizon` module
 import { horizon } from './horizon.js'
 ```
 
-While to use the Anchor API (possible future inclusion), you would import the `anchor` module: 
+While to use the Anchor, Disbursement and Soroban RPC APIs (in planning), you would import the relevant modules as follows: 
 
 ```
 import { anchor } from './anchor.js'
+import { disbursement } from './disbursement.js'
+import { soroban } from './soroban.js'
 ```
 
 Also, given that the code weight for reading from the API is much lighter than writing to the API, the module for writing to API is only loaded when it is first used. Thus if you call: 
 
 ```
-horizon.send(myTransaction)
+horizon.submit(transaction, secretKey)
 ```
 
-Only then will the more weighty `xdr.js` module be loaded into the SDK. 
+Only then will the XDR helpers be loaded into the SDK. 
 
 This allows for applications to load quickly for initial rendering of data read from the network, while still allowing developers transparent access to the write functions without thinking about the underlying implementation.
 
