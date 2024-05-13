@@ -90,6 +90,13 @@ This allows for applications to load quickly for initial rendering of data read 
 
 ## Horizon Usage 
 
+***View the live demo pages***: 
+
+* [Reading Stellar with Horizon](https://stellar-js-worker-sdk.pages.dev/demos/horizon)
+* [Writing to Stellar with Horizon](https://stellar-js-worker-sdk.pages.dev/demos/horizon-submit)
+
+These pages contain live examples with code snippets that you can copy and paste for your own use.
+
 ### Network Selection
 
 To choose which network to use, specify the network name in the import URL: 
@@ -194,6 +201,47 @@ transactions.addEventListener('close', event => {
 
 ```
 
+### Writing Transactions
 
+Submitting transactions to Stellar is designed to be as simple as possible. The SDK provides a `submit()` function that will automatically handle the conversion of the transaction to XDR and submission to the network. If you are working in a browser environment (or anywhere else which correctly supports dynamic imports using the native JavaScript `import()` function), the necessary helper libraries and type data will be automatically loaded the first time the `submit()` function is called. Otherwise, you will need to preload these resources as shown in the web service worker example in the *Getting Started* section above.
 
+In a nutshell, you submit a transaction like this: 
 
+```
+const secretKey = 'S...'
+const { response } = await horizon.submit(transaction, secretKey)
+```
+
+The `transaction` argument is a plain object in a simplified form which is detailed below. Here is an example: 
+
+```
+const transaction = {
+    "sourceAccount": "G...",
+    "fee": 100,
+    "operations": [
+        {
+            "type": "MANAGE_DATA",
+            "op": {
+                "dataName": "test",
+                "dataValue": [
+                    105
+                ]
+            }
+        }
+    ],
+    "cond": {
+        "timeBounds": {
+            "min": 1,
+            "max": 17151741120
+        }
+    }
+}
+```
+
+The `secretKey` argument is either a single secret key as a string (as in the example above), or an object mapping one or more account addresses with their secret keys.
+
+```
+const { response } = await horizon.submit(transaction, {'G1...': 'S1...', 'G2...': 'S2...'})
+```
+
+The transaction will be signed by all of the addressed in the `secretKey` object.
