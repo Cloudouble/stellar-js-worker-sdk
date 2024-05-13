@@ -4,9 +4,26 @@ This document will provide a quick comparison of coding styles between the two J
 
 The code examples will be drawn from the examples found in the [JS Stellar SDK](https://github.com/stellar/js-stellar-sdk), and attempt to reproduce the same functionality using the [Stellar JS Worker SDK](https://github.com/Cloudouble/stellar-js-worker-sdk).
 
-**Note**: at the time of writing (February 2024) the JS Worker SDK is still in early development and lacks many features of the mature [JS Stellar SDK](https://github.com/stellar/js-stellar-sdk). This document will be updated as the *Stellar JS Worker SDK* matures. 
+**Two demo pages are available to interact with the JS Worker SDK**, this pages contain generated code snippets to help you learn the SDK:  
 
-## Querying Horizon
+* *Read-Only Test of Horizon API*: https://stellar-js-worker-sdk.pages.dev/demos/horizon
+* *Transaction Submission Test Using Horizon API*: https://stellar-js-worker-sdk.pages.dev/demos/horizon-submit
+
+## SDK Footprint
+
+The existing JS Stellar SDK has a browser footprint of 181kB (using this version https://cdn.jsdelivr.net/npm/@stellar/stellar-sdk@12.0.0-rc.2/dist/stellar-sdk.min.js). The browser network tab details a 181kB transfer size, with a total resource size of 811kB.
+
+The new Stellar JS Worker SDK has a browser footprint of 3.5kB (using this version https://cdn.jsdelivr.net/gh/cloudouble/stellar-js-worker-sdk@latest/horizon.min.js) when initially loaded. The browser network tab details a 3.5kB transfer size, with a total resource size of 7.5kB.
+
+Only when the `submit()` method is called for the first time does the JS Worker SDK load additional resources, which then brings the total SDK footprint up to 60kB in transfer size and up to 80kB in total resource size, depending on the execution environment. These additional resources can be optionally preloaded at any time if required to remove any delay when submitting a first transaction.
+
+## Cloudflare Worker Support
+
+The existing JS Stellar SDK requires some tweaking to support Cloudflare Workers, see the *Usage with Cloudflare Workers* section of the [JS Stellar SDK](https://stellar.github.io/js-stellar-sdk/) documentation for more details.
+
+**The new JS Worker SDK supports Cloudflare Workers out of the box for reading**, and only requires pre-loading of additional resources for submitting transactions. See the working example at https://github.com/Cloudouble/stellar-js-worker-sdk/blob/main/demos/cloudflare/worker.js which includes the lines for pre-loading required for the `submit()` method to work.
+
+## Code Example: Querying Horizon
 
 ### JS Stellar SDK (Existing)
 
@@ -27,7 +44,7 @@ server.transactions()
 ### Stellar JS Worker SDK (New)
 
 ```
-import { horizon } from 'https://cdn.jsdelivr.net/gh/Cloudouble/stellar-js-worker-sdk/horizon.min.js?network=test'
+import { horizon } from 'https://cdn.jsdelivr.net/gh/cloudouble/stellar-js-worker-sdk@latest/horizon.min.js?network=test'
 
 // get a list of transactions that occurred in ledger 1400
 const r = await horizon.get.ledgers(1400, "transactions")
@@ -36,7 +53,7 @@ const r = await horizon.get.ledgers(1400, "transactions")
 const r = await horizon.get.accounts("GASOCNHNNLYFNMDJYQ3XFMI7BYHIOCFW3GJEOWRPEGK2TDPGTG2E5EDW", "transactions")
 ```
 
-## Streaming Requests
+## Code Example: Streaming Requests
 
 ### JS Stellar SDK (Existing)
 
@@ -60,28 +77,86 @@ var es = server.transactions()
 ### Stellar JS Worker SDK (New)
 
 ```
-import { horizon } from 'https://cdn.jsdelivr.net/gh/Cloudouble/stellar-js-worker-sdk/horizon.min.js?network=test'
+import { horizon } from 'https://cdn.jsdelivr.net/gh/cloudouble/stellar-js-worker-sdk@latest/horizon.min.js?network=test'
 const lastCursor=0; // or load where you left off
 
-const {listener: transactions} = horizon.listen.accounts(accountAddress, "transactions", {cursor: lastCursor})
+const {listener: transactions} = await horizon.listen.accounts(accountAddress, "transactions", {cursor: lastCursor})
 transactions.addEventListener('message', event => console.log(event.data))
 
 ```
 
-## XDR
+## Code Example: Auto-paginate Results
 
-As of mid-February 2024, the *Stellar JS Worker SDK* does not provide an XDR decoder/encoder, however this is next on the roadmap for the near future and should be added by around the end of February 2024.
+### Stellar JS Worker SDK (New)
 
+```
+import { horizon } from 'https://cdn.jsdelivr.net/gh/cloudouble/stellar-js-worker-sdk@latest/horizon.min.js?network=test'
+
+for await (const transaction of horizon.stream.accounts(accountAddress, "transactions")) { 
+    console.log(transaction)
+    // it will continue to fetch transactions automatically (in batches) until the loop is exited with a `break`
+}
+```
 
 ## Submitting Transactions
 
-As of mid-February 2024, the *Stellar JS Worker SDK* does not provide capacity to submit transactions (see XDR point above!), however this is next on the roadmap for right after XDR support is added. The anticipated syntax for submitting transactions will be as close as possible to: 
+### JS Stellar SDK (Existing)
+
+Based on the example in the [Send and Receive Payments](https://developers.stellar.org/docs/tutorials/send-and-receive-payments) documentation, simplified to remove error checking to make these examples as direct a comparison as possible: 
 
 ```
-import { horizon } from 'https://cdn.jsdelivr.net/gh/Cloudouble/stellar-js-worker-sdk/horizon.min.js?network=test'
+var StellarSdk = require("stellar-sdk");
+var server = new StellarSdk.Horizon.Server("https://horizon-testnet.stellar.org");
+var sourceKeys = StellarSdk.Keypair.fromSecret("S...");
+var destinationId = "G...";
+var transaction;
 
-// some code here to get the values for the sending account, fee, and to create an array of operation objects
+const transaction = new StellarSdk.TransactionBuilder(sourceAccount, {
+      fee: StellarSdk.BASE_FEE,
+      networkPassphrase: StellarSdk.Networks.TESTNET,
+    })
+      .addOperation(
+        StellarSdk.Operation.payment({
+          destination: destinationId,
+          asset: StellarSdk.Asset.native(),
+          amount: "10",
+        }),
+      )
+      .addMemo(StellarSdk.Memo.text("Test Transaction"))
+      .setTimeout(180)
+      .build();
 
-cons transactionResult = await horizon.send({account, fee, operations})
+transaction.sign(sourceKeys);
+
+const result = await server.submitTransaction(transaction);
 
 ```
+
+
+### Stellar JS Worker SDK (New)
+
+```
+import { horizon } from 'https://cdn.jsdelivr.net/gh/cloudouble/stellar-js-worker-sdk@latest/horizon.min.js?network=test'
+
+const secretKey = 'S...'
+const transaction = {
+    sourceAccount: 'G...',
+    fee: 100, 
+    memo: 'Test Transaction', 
+    operations: [{
+        type: 'PAYMENT',
+        op: { destination: 'G...', asset: 'XLM', amount: 10 }
+    }]
+}
+const { result } = await horizon.submit(transaction, secretKey)
+
+```
+
+The fact that transactions are inputted into the `submit()` method as plain objects makes it trivial to load transactions via JSON or other generic formats with minimal code required to make them suitable for use by the SDK. 
+
+For live examples on how to format the input transaction, see the demo page at [Transaction Submission Test Using Horizon API](https://stellar-js-worker-sdk.pages.dev/demos/horizon-submit)
+
+
+## XDR
+
+A companion dedicated XDR parser and serializer library ([SimpleXDR](https://github.com/Cloudouble/simple-xdr)) has been developed to be used alongside and by the JS Worker SDK, it is available at https://github.com/Cloudouble/simple-xdr . However, you do not need to know anything about this library to use the JS Worker SDK, and the JS Worker SDK includes SimpleXDR automatically when required.

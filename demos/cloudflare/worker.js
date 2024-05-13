@@ -8,6 +8,8 @@ export default {
         }
         if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers })
         const horizon = (await import('./include/stellar-js-worker-sdk/horizon.js')).horizon
+
+        // the following six lines are only required to support transaction submitting functionality
         const submit = (await import('./include/stellar-js-worker-sdk/utils/submit.js')).default
         const signAsync = (await import('./include/noble/ed25519.js')).signAsync
         const xdr = (await import('./include/simple-xdr/xdr.js')).default
@@ -33,6 +35,7 @@ export default {
 
         switch (request.method) {
             case 'POST': case 'PUT':
+                // this case handles transaction submitting
                 await horizon['utils'].xdr.import('https://cdn.jsdelivr.net/gh/cloudouble/stellar-js-worker-sdk@0.9.0/lib/stellar.xdr', 'stellar')
                 const { transaction, keyPair } = await request.json()
                 for await (const emitted of horizon['submit'](transaction, keyPair)) {
