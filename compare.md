@@ -21,9 +21,10 @@ This is a significant reduction in the browser footprint, and helps in the effor
 
 ## Cloudflare Worker Support
 
+**The new JS Worker SDK supports Cloudflare Workers out of the box for reading**, and only requires pre-loading of additional resources for submitting transactions. See the working example at https://github.com/Cloudouble/stellar-js-worker-sdk/blob/main/demos/cloudflare/worker.js which includes the lines for pre-loading required for the `submit()` method to work. The SDK itself is unchanged, these lines are only required to control how Cloudflare handles dynamic imports.
+
 The existing JS Stellar SDK requires some tweaking to support Cloudflare Workers, see the *Usage with Cloudflare Workers* section of the [JS Stellar SDK](https://stellar.github.io/js-stellar-sdk/) documentation for more details.
 
-**The new JS Worker SDK supports Cloudflare Workers out of the box for reading**, and only requires pre-loading of additional resources for submitting transactions. See the working example at https://github.com/Cloudouble/stellar-js-worker-sdk/blob/main/demos/cloudflare/worker.js which includes the lines for pre-loading required for the `submit()` method to work.
 
 ## Code Example: Querying Horizon
 
