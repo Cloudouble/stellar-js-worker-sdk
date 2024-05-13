@@ -230,9 +230,10 @@
                 case 'sw':
                     await processEmitted(await runSW())
                     break
-                case 'cf':
-                    const queryString = new URLSearchParams({ ...(params ?? {}), ...horizon.network, network: selectedNetwork }).toString()
-                    const result = await (await fetch(`https://stellar-js-worker-sdk-demo.cloudouble.workers.dev/?${queryString}`, {
+                case 'cf': case 'deno':
+                    const queryString = new URLSearchParams({ ...(params ?? {}), ...horizon.network, network: selectedNetwork }).toString(),
+                        apiHost = implementation === 'cf' ? 'cloudouble.workers' : 'deno'
+                    const result = await (await fetch(`https://stellar-js-worker-sdk-demo.${apiHost}.dev/?${queryString}`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ transaction: transactionInputObject, keyPair })
                     })).json()
@@ -245,7 +246,7 @@
         })
 
         window.horizon = horizon
-        console.log('line 208: horizon: ', horizon)
+        console.log('line 249: horizon: ', horizon)
         // test account on test netwwork: GA5VCCBNG4SIEST6HYIW2F3KKZRHA4UZZ2XFSMZ4VRQ4MCBRHSQRRIPE
 
     </script>

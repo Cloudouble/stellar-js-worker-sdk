@@ -113,13 +113,11 @@ listener.addEventListener('message', event => console.log(event.data))`
                             case 'sw':
                                 result = await runSW(sectionId, resourceType, resourceId, resourceScope, params)
                                 break
-                            case 'cf':
+                            case 'cf': case 'deno':
                                 const urlPath = [sectionId, resourceType, resourceId, resourceScope].filter(s => !!s).join('/'),
-                                    queryString = new URLSearchParams({ ...(params ?? {}), ...horizon.network, network: selectedNetwork }).toString()
-                                result = await (await fetch(`https://stellar-js-worker-sdk-demo.cloudouble.workers.dev/${urlPath}?${queryString}`)).json()
-                                break
-                            case 'deno':
-
+                                    queryString = new URLSearchParams({ ...(params ?? {}), ...horizon.network, network: selectedNetwork }).toString(),
+                                    apiHost = implementation === 'cf' ? 'cloudouble.workers' : 'deno'
+                                result = await (await fetch(`https://stellar-js-worker-sdk-demo.${apiHost}.dev/${urlPath}?${queryString}`)).json()
                                 break
                             default:
                                 result = await horizon[sectionId][resourceType](resourceId, resourceScope, params)
