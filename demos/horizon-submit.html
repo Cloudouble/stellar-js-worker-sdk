@@ -351,6 +351,17 @@
                     <strong>Operations</strong><button type="button" name="add-operation"
                         title="click to add an operation">+</button>
                     <fieldset name="operations"><small>No operations added.</small></fieldset>
+                    <small><br><i><b>Note</b>: not all operation types have been fully tested in this demo page as at
+                            May
+                            13, 2024. Testing is ongoing for all the operation types available on Stellar. This message
+                            will be removed once all operation types have been exhaustively tested and confirmed as
+                            working in this demo.<br>
+                            For a simple, and safely repeatable test operation try a <code>MANAGE_DATA</code> operation
+                            type with a byte array such as <code>[97, 98, 99]</code> in the dataValue field.
+                            The <code>`sourceAccount`</code> field is always optional.</i><br>
+                        Lastly, this SDK is still in beta! So <b>you should definitely be using the test network</b>
+                        here...<br><br>
+                    </small>
                 </label>
                 <label>
                     <strong>Secret Key</strong>
