@@ -9,7 +9,7 @@ A lightweight JavaScript SDK for Stellar
 import {horizon} from 'https://cdn.jsdelivr.net/gh/cloudouble/stellar-js-worker-sdk@latest/horizon.min.js'
 ```
 
-This will load everything you need to use the SDK in a web browser, transaction write function will autoload when you call it.
+This will load everything you need to use the SDK for read-only functions right away, with transaction write functionality being autoloaded silently in the background when you call it for the first time with no further intervention required.
 
 See the code of the [demo pages](https://github.com/Cloudouble/stellar-js-worker-sdk/tree/main/demos) for a complete example of how to use the SDK in a web browser.
 
@@ -19,7 +19,7 @@ See the code of the [demo pages](https://github.com/Cloudouble/stellar-js-worker
 ```
 import { horizon } from 'https://cdn.jsdelivr.net/gh/cloudouble/stellar-js-worker-sdk@latest/horizon.min.js'
 
-// the following lines are only required if you will be using transaction write functions
+// the following lines are ONLY required if you will be using transaction write functions
 import submit from 'https://cdn.jsdelivr.net/gh/cloudouble/stellar-js-worker-sdk@latest/utils/submit.min.js'
 import xdr from 'https://cdn.jsdelivr.net/gh/cloudouble/simple-xdr@1.2.4/xdr.min.js'
 import { signAsync } from 'https://cdn.jsdelivr.net/npm/@noble/ed25519@2.1.0/+esm'
@@ -35,7 +35,7 @@ See the [demo code of the example Service Worker](https://github.com/Cloudouble/
 ```
 const horizon = (await import('./include/stellar-js-worker-sdk/horizon.js')).horizon
 
-// the following six lines are only required to support transaction submitting functionality
+// the following six lines are ONLY required to support transaction submitting functionality
 const submit = (await import('./include/stellar-js-worker-sdk/utils/submit.js')).default
 const signAsync = (await import('./include/noble/ed25519.js')).signAsync
 const xdr = (await import('./include/simple-xdr/xdr.js')).default
@@ -70,7 +70,7 @@ For example, to use the Stellar Horizon API, you can import the `horizon` module
 import { horizon } from './horizon.js'
 ```
 
-While to use the Anchor, Disbursement and Soroban RPC APIs (in planning as at May 2024), you would import the relevant modules as follows: 
+While to use the Anchor, Disbursement and Soroban RPC APIs ***(in planning as at May 2024)***, you would import the relevant modules as follows: 
 
 ```
 import { anchor } from './anchor.js'
@@ -244,7 +244,7 @@ The `secretKey` argument is either a single secret key as a string (as in the ex
 const { response } = await horizon.submit(transaction, {'G1...': 'S1...', 'G2...': 'S2...'})
 ```
 
-The transaction will be signed by all of the addressed in the `secretKey` object.
+The transaction will be signed by all of the addresses in the `secretKey` object.
 
 #### Format of the `transaction` Object
 
