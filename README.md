@@ -245,3 +245,15 @@ const { response } = await horizon.submit(transaction, {'G1...': 'S1...', 'G2...
 ```
 
 The transaction will be signed by all of the addressed in the `secretKey` object.
+
+#### Format of the `transaction` Object
+
+The transaction argument is a plain object with the following format: 
+
+* `sourceAccount`: a string account address
+* `fee`: an integer in stroops for the transaction maximum fee
+* `memo`: either a string for a `MEMO_TEXT` memo type, or an object with `type` and `content` properties for any memo type.
+* `operations`: an array of operations to be included in the transaction. Each operation is an object with `type` and `op` properties. The `op` property is an object with the operation-specific properties. The required and allowed properties vary by operation type.
+* `cond`: an optional object with additional transaction conditions, the most common being the `timeBounds` condition as shown in the example above
+
+The [submit demo page](https://stellar-js-worker-sdk.pages.dev/demos/horizon-submit) allows you to create transactions in this format using a simple input form, you can learn by example on this page the details of the format, including for all of the possible operation types.
