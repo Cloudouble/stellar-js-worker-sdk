@@ -145,9 +145,9 @@
                 const operationObject = { type: operationType, op: {} }
                 for (const operationAttributeInput of operationElement.querySelectorAll('.operation-attributes > input')) {
                     const attrName = operationAttributeInput.name, attrValue = operationAttributeInput.value
-                    if (!attrValue) continue
+                    // if (!attrValue) continue
                     if (operationAttributeInput.getAttribute('type') === 'number') {
-                        operationObject.op[attrName] = parseInt(attrValue) ?? undefined
+                        operationObject.op[attrName] = attrValue ? (parseInt(attrValue) ?? undefined) : 0
                     } else if (operationAttributeInput.dataset.type === 'json') {
                         try {
                             operationObject.op[attrName] = JSON.parse(attrValue)
@@ -251,6 +251,8 @@
         window.horizon = horizon
         console.log('line 249: horizon: ', horizon)
         // test account on test netwwork: GA5VCCBNG4SIEST6HYIW2F3KKZRHA4UZZ2XFSMZ4VRQ4MCBRHSQRRIPE
+
+        // and also GBGVRLLAKPQSQKXPAAPI4WM4WGKA56FO7DSAMF4TB2YK3TXBZD3YBIPM
 
     </script>
 

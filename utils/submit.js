@@ -37,7 +37,7 @@ const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567', base32Decode = base32Str
         if (!a || (typeof a !== 'string')) return asset
         const [assetCode, issuer] = a.split(':', 2)
         if (!issuer) return asset
-        asset.type = parseInt(assetCode) <= 4 ? 'ASSET_TYPE_CREDIT_ALPHANUM4' : (parseInt(assetCode) <= 12 ? 'ASSET_TYPE_CREDIT_ALPHANUM12' : 'ASSET_TYPE_NATIVE')
+        asset.type = assetCode.length <= 4 ? 'ASSET_TYPE_CREDIT_ALPHANUM4' : (assetCode.length <= 12 ? 'ASSET_TYPE_CREDIT_ALPHANUM12' : 'ASSET_TYPE_NATIVE')
         if (asset.type === 'ASSET_TYPE_NATIVE') return asset
         const assetCodeToBytes = assetCode => {
             let bytes = []
@@ -46,7 +46,7 @@ const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567', base32Decode = base32Str
             while (bytes.length < paddingLength) bytes.push(0)
             return bytes
         }
-        asset[asset.type === 'ASSET_TYPE_CREDIT_ALPHANUM4' ? 'alphaNum4' : 'alphaNum12'] = { assetCode: assetCodeToBytes(assetCode), issuer: this.account(issuer) }
+        asset[asset.type === 'ASSET_TYPE_CREDIT_ALPHANUM4' ? 'alphaNum4' : 'alphaNum12'] = { assetCode: assetCodeToBytes(assetCode), issuer: this.publicKey(issuer) }
         return asset
     },
     hyper: n => BigInt(n),
@@ -144,7 +144,7 @@ export default {
         }
         for (const operation of (transaction.operations ?? [])) {
             const { type, op } = operation, { sourceAccount } = op
-            if (sourceAccount) delete op.sourceAccount
+            delete op.sourceAccount
             if (type in operationFieldProcessorMap) for (const p in op) if (p in operationFieldProcessorMap[type]) op[p] = operationFieldProcessorMap[type][p].bind(operationFieldProcessors)(op[p])
             const operationProperty = type.toLowerCase().split('_').map((v, i) => i ? `${v[0].toUpperCase()}${v.slice(1)}` : v).join('') + 'Op',
                 operationObject = { body: { type, [operationProperty]: { ...op } } }
