@@ -92,15 +92,9 @@ export default {
     addressToKeyBytes,
     getSHA256HashBytes: async (input) => new Uint8Array(await crypto.subtle.digest('SHA-256', (typeof input === 'string' ? (new TextEncoder()).encode(input) : input))),
     createTransactionSourceObject: async function (transaction) {
-        if (transaction.memo) {
-            if (typeof transaction.memo === 'string') {
-                transaction.memo = { type: 'MEMO_TEXT', content: transaction.memo }
-            } else if (Number.isInteger(transaction.memo)) {
-                transaction.memo = { type: 'MEMO_ID', content: transaction.memo }
-            }
-        } else {
-            delete transaction.memo
-        }
+        if (!transaction.memo) delete transaction.memo
+        transaction.memo &&= typeof transaction.memo === 'string' ? { type: 'MEMO_TEXT', content: transaction.memo }
+            : (Number.isInteger(transaction.memo) ? { type: 'MEMO_ID', content: transaction.memo } : transaction.memo)
         const tx = {
             sourceAccount: { ed25519: addressToKeyBytes(transaction.sourceAccount)[0], type: 'KEY_TYPE_ED25519' },
             ext: { v: 0 }, fee: transaction.fee, memo: { type: 'MEMO_NONE' }, cond: { type: 'PRECOND_NONE' },
