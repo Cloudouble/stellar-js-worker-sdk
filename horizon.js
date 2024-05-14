@@ -148,13 +148,15 @@ const metaOptions = 'url' in (import.meta || {}) ? (new URL(import.meta['url']))
             if (!sourceAccount && keyPairsEntries.length === 1) sourceAccount = keyPairsEntries[0][0]
             transaction.sourceAccount ??= sourceAccount
             if (!transaction.sourceAccount) throw new Error('No transaction.sourceAccount specified')
+            const isXdrTransaction = this.utils?.xdr?.types._base.Composite && (transaction instanceof this.utils.xdr.types._base.Composite)
+            if (isXdrTransaction) transaction = transaction.value
             yield { transaction }
             await Promise.all([this.utils._install('submit'), this.utils._install('xdr', 'xdr')])
             if (!this.utils.xdr.types.stellar) {
                 const importBase = import.meta && ('url' in import.meta) ? import.meta['url'] : ''
                 await this.utils.xdr.import((new URL('./lib/stellar.xdr', importBase)).href, 'stellar')
             }
-            const tx = await this.utils.createTransactionSourceObject(transaction)
+            const tx = isXdrTransaction ? transaction : (await this.utils.createTransactionSourceObject(transaction))
             yield { tx }
             const signaturePayloadXdr = new this.utils.xdr.types.stellar.TransactionSignaturePayload({
                 networkId: Array.from(await this.utils.getSHA256HashBytes(this.network.passphrase)),
