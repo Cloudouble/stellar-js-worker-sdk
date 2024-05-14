@@ -98,16 +98,6 @@ export default {
             } else if (Number.isInteger(transaction.memo)) {
                 transaction.memo = { type: 'MEMO_ID', content: transaction.memo }
             }
-            switch (transaction.memo.type) {
-                case 'MEMO_TEXT':
-                    transaction.memo.content = `${transaction.memo.content}`
-                    break
-                case 'MEMO_ID':
-                    transaction.memo.content = BigInt(transaction.memo.content)
-                    break
-                default:
-                    if (transaction.memo.content) transaction.memo.content = Array.from(transaction.memo.content)
-            }
         } else {
             delete transaction.memo
         }
@@ -117,7 +107,10 @@ export default {
             seqNum: BigInt(parseInt(transaction.seqNum) || (parseInt((await this._horizon.get.accounts(transaction.sourceAccount)).sequence) + 1)), operations: []
         }, contentFieldNameMap = { MEMO_TEXT: 'text', MEMO_ID: 'id', MEMO_HASH: 'hash', MEMO_RETURN: 'retHash' },
             memoType = transaction.memo?.type ?? 'MEMO_NONE'
-        if (transaction.memo?.content && (memoType !== 'MEMO_NONE')) tx.memo = { type: memoType, [contentFieldNameMap[memoType]]: transaction.memo.content }
+        if (transaction.memo?.content && (memoType !== 'MEMO_NONE')) {
+            let memoContent = memoType === 'MEMO_TEXT' ? `${transaction.memo.content}` : (memoType === 'MEMO_ID' ? BigInt(transaction.memo.content) : Array.from(transaction.memo.content))
+            tx.memo = { type: memoType, [contentFieldNameMap[memoType]]: memoContent }
+        }
         for (const condType of ['timeBounds', 'ledgerBounds', 'minSeqNum', 'minSeqAge', 'minSeqLedgerGap', 'extraSigners']) {
             if (!(transaction?.cond ?? {})[condType]) continue
             delete tx.cond.type
