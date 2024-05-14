@@ -163,7 +163,7 @@
             }
 
             const bytesToHex = bytes => Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('')
-            for (const id of ['transaction', 'tx', 'hash', 'signatures', 'response']) document.getElementById(id).querySelector('.result').textContent = 'loading...'
+            for (const id of ['transaction', 'tx', 'hash', 'signatures', 'response']) document.getElementById(id).querySelector('.result').textContent = ''
 
             const implementation = buildSection.querySelector('select[name="implementation"]').value
             const keyPair = { [sourceAccountField.value]: secretKeyField.value }
@@ -240,7 +240,10 @@
                     await processEmitted(result)
                     break
                 default:
-                    for await (const emitted of horizon.submit(transactionInputObject, keyPair)) await processEmitted(emitted)
+                    for await (const emitted of horizon.submit(transactionInputObject, keyPair)) {
+                        await processEmitted(emitted)
+                        if (implementation == 'browser-dry' && emitted.signatures) break
+                    }
             }
 
         })
@@ -370,10 +373,11 @@
                 <label>
                     <strong>Use Implementation</strong>
                     <select name="implementation">
-                        <option value="browser">Browser</option>
-                        <option value="sw">Service Worker</option>
-                        <option value="cf">Cloudflare Worker</option>
-                        <option value="deno">Deno</option>
+                        <option value="browser-dry">Browser: local build and sign only - no submit</option>
+                        <option value="browser">Browser: local build, sign and submit</option>
+                        <option value="sw">Service Worker: local background build, sign and submit</option>
+                        <option value="cf">Cloudflare Worker: remote build, sign and submit</option>
+                        <option value="deno">Deno: remote build, sign and submit</option>
                     </select>
                 </label>
                 <button type="button" class="get-result">Build, Sign and Submit</button>
