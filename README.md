@@ -5,7 +5,7 @@ A lightweight JavaScript SDK for Stellar
 
 ### Web Browser
 
-```
+```js
 import {horizon} from 'https://cdn.jsdelivr.net/gh/cloudouble/stellar-js-worker-sdk@latest/horizon.min.js'
 ```
 
@@ -16,7 +16,7 @@ See the code of the [demo pages](https://github.com/Cloudouble/stellar-js-worker
 
 ### Web Service Worker and Deno Script
 
-```
+```js
 import { horizon } from 'https://cdn.jsdelivr.net/gh/cloudouble/stellar-js-worker-sdk@latest/horizon.min.js'
 
 // the following lines are ONLY required if you will be using transaction write functions
@@ -35,7 +35,7 @@ See the [demo code of the example Deno Script](https://github.com/Cloudouble/ste
 
 ### Cloudflare Worker
 
-```
+```js
 const horizon = (await import('./include/stellar-js-worker-sdk/horizon.js')).horizon
 
 // the following six lines are ONLY required to support transaction submitting functionality
@@ -68,13 +68,13 @@ The SDK is organized with separate modules for each Stellar API, each module can
 
 For example, to use the Stellar Horizon API, you can import the `horizon` module:
 
-```
+```js
 import { horizon } from './horizon.js'
 ```
 
 While to use the Anchor, Disbursement and Soroban RPC APIs ***(in planning as at May 2024)***, you would import the relevant modules as follows: 
 
-```
+```js
 import { anchor } from './anchor.js'
 import { disbursement } from './disbursement.js'
 import { soroban } from './soroban.js'
@@ -82,7 +82,7 @@ import { soroban } from './soroban.js'
 
 Also, given that the code weight for reading from the API is much lighter than writing to the API, the module for writing to API is only loaded when it is first used. Thus if you call: 
 
-```
+```js
 await horizon.submit(transaction, secretKey)
 ```
 
@@ -103,7 +103,7 @@ These pages contain live examples with code snippets that you can copy and paste
 
 To choose which network to use, specify the network name in the import URL: 
 
-```
+```js
 // connect to the public / production network
 import { horizon } from './horizon.js'
 
@@ -120,7 +120,7 @@ import { horizon } from './horizon.js?network=custom&endpoint=ENDPOINT&passphras
 
 Alternatively, you can specify or change the network anytime after importing as in the following example: 
 
-```
+```js
 horizon.network = { endpoint: 'https://horizon-testnet.stellar.org', passphrase: 'Test SDF Network ; September 2015' }
 ```
 
@@ -132,13 +132,13 @@ For example:
 
 [Retrieve an account](https://developers.stellar.org/api/horizon/resources/retrieve-an-account) with: 
 
-```
+```js
 const myAccountRecord = await horizon.get.accounts(accountId)
 ```
 
 This same pattern applies to all API endpoints, with the following patterns being universal as far as the underlying API allows. For example: 
 
-```
+```js
 const myTransaction = await horizon.get.transactions(transactionId)
 
 const myAccountTransactions = await horizon.get.accounts(accountId, 'transactions')
@@ -155,7 +155,7 @@ The SDK also provides a `stream` endpoint to allow for auto pagination of API en
 
 We could re-write the examples above to use `stream` instead of `get`, in order to loop over each individual record instead of retrieving all at once: 
 
-```
+```js
 // this will loop over all found transactions until it reaches one with the `id` of "abc"
 for await (const t of horizon.stream.transactions(accountId, 'transactions')) {
     console.log(t)
@@ -181,7 +181,7 @@ In all cases, the potential looping will continue until the complete record set 
 
 The EventSource capabilities of the Horizon API are encapsulated just as easily: 
 
-```
+```js
 // Create an EventSource for the transactions endpoint, emitting the records as they are received
 const { listener: transactions, abortController } = await horizon.listen.transactions()
 transactions.addEventListener('message', event => console.log(event.data))
@@ -209,14 +209,14 @@ Submitting transactions to Stellar is designed to be as simple as possible. The 
 
 In a nutshell, you submit a transaction like this: 
 
-```
+```js
 const secretKey = 'S...'
 const { response } = await horizon.submit(transaction, secretKey)
 ```
 
 The `transaction` argument is a plain object in a simplified form which is detailed below. Here is an example: 
 
-```
+```js
 const transaction = {
     "sourceAccount": "G...",
     "fee": 100,
@@ -242,7 +242,7 @@ const transaction = {
 
 The `secretKey` argument is either a single secret key as a string (as in the example above), or an object mapping one or more account addresses with their secret keys.
 
-```
+```js
 const { response } = await horizon.submit(transaction, {'G1...': 'S1...', 'G2...': 'S2...'})
 ```
 
