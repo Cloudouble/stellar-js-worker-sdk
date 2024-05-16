@@ -361,9 +361,18 @@
                             13, 2024. Testing is ongoing for all the operation types available on Stellar. This message
                             will be removed once all operation types have been exhaustively tested and confirmed as
                             working in this demo.<br>
-                            For a simple, and safely repeatable test operation try a <code>MANAGE_DATA</code> operation
-                            type with a byte array such as <code>[97, 98, 99]</code> in the dataValue field.
-                            The <code>`sourceAccount`</code> field is always optional.</i><br>
+                            Some ideas to try:
+                            <ul>
+                                <li>CREATE_ACCOUNT + destination: 'G...[account address]...' +
+                                    startingBalance: [integer stroops]
+                                </li>
+                                <li>PAYMENT + destination: 'G... [account address]' + asset: [blank for native or
+                                    code:issuer string] + amount: [integer]</li>
+                                <li>MANAGE_DATA + dataName: '[any string]' + dataValue: [array of bytes as integers,
+                                    e.g. [97,98,99] for 'abc' ]</li>
+                            </ul>
+                            The <code>`sourceAccount`</code> field is always optional and is a 'G...' formatted address.
+                        </i><br>
                         Lastly, this SDK is still in beta! So <b>you should definitely be using the test network</b>
                         here...<br><br>
                     </small>
