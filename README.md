@@ -3,6 +3,14 @@ A lightweight JavaScript SDK for Stellar
 
 ## Getting Started
 
+***Learn by doing with the live demo pages***: 
+
+* [Reading Stellar with Horizon](https://stellar-js-worker-sdk.pages.dev/demos/horizon)
+* [Writing to Stellar with Horizon](https://stellar-js-worker-sdk.pages.dev/demos/horizon-submit)
+
+These pages contain live examples with code snippets that you can copy and paste for your own use.
+
+
 ### Web Browser
 
 ```
